@@ -39,7 +39,10 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     priority: 'all'
   });
 
-  const priorityTasks = tasks.filter(task => task.important || task.isToday);
+  const priorityTasks = tasks.filter(task => 
+    (task.important || task.isToday) && !task.completed
+  );
+  const regularTasks = tasks.filter(task => !task.completed);
   
   // Group priority tasks by priority level
   const priorityTasksByLevel = {
@@ -54,6 +57,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     if (filters.important && !task.important) return false;
     if (filters.urgent && !task.urgent) return false;
     if (filters.priority !== 'all' && task.priority !== filters.priority) return false;
+    if (task.completed) return false;
     return true;
   });
 

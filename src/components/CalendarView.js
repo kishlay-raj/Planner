@@ -149,7 +149,13 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
         eventPropGetter={(event) => ({
           className: 'calendar-event',
           style: {
-            backgroundColor: event.resource?.urgent && event.resource?.important ? '#f44336' : '#1976d2'
+            backgroundColor: event.resource?.completed 
+              ? '#66bb6a'  // Green for completed tasks
+              : event.resource?.urgent && event.resource?.important 
+                ? '#f44336' 
+                : '#1976d2',
+            textDecoration: event.resource?.completed ? 'line-through' : 'none',
+            opacity: event.resource?.completed ? 0.7 : 1
           }
         })}
       />
