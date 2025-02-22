@@ -264,55 +264,120 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
 
   const renderFilters = () => (
     <Box sx={{ 
-      p: 1, 
-      borderBottom: 1, 
-      borderColor: 'divider',
+      p: 2,
+      backgroundColor: 'white',
+      borderRadius: 2,
+      margin: '8px 4px',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       '& .MuiFormControlLabel-root': {
-        marginRight: 1,
+        margin: 0,
+        minWidth: 'auto',
         '& .MuiTypography-root': {
-          fontSize: '0.875rem'
+          fontSize: '0.875rem',
+          fontWeight: 500,
+          color: 'rgba(0, 0, 0, 0.7)'
         }
       }
     }}>
-      <FormGroup row sx={{ gap: 2, alignItems: 'center' }}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              size="small"
-              checked={filters.important}
-              onChange={(e) => setFilters({ ...filters, important: e.target.checked })}
-            />
+      <FormGroup row sx={{ 
+        gap: 2,
+        alignItems: 'center',
+        flexWrap: 'nowrap',
+        '& .MuiCheckbox-root': {
+          padding: '6px',
+          borderRadius: '6px',
+          transition: 'all 0.2s',
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)'
           }
-          label="Important"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              size="small"
-              checked={filters.urgent}
-              onChange={(e) => setFilters({ ...filters, urgent: e.target.checked })}
-            />
-          }
-          label="Urgent"
-        />
+        }
+      }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={filters.important}
+                onChange={(e) => setFilters({ ...filters, important: e.target.checked })}
+                sx={{
+                  color: theme.palette.priority.p1,
+                  '&.Mui-checked': {
+                    color: theme.palette.priority.p1
+                  }
+                }}
+              />
+            }
+            label="Important"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={filters.urgent}
+                onChange={(e) => setFilters({ ...filters, urgent: e.target.checked })}
+                sx={{
+                  color: theme.palette.error.main,
+                  '&.Mui-checked': {
+                    color: theme.palette.error.main
+                  }
+                }}
+              />
+            }
+            label="Urgent"
+          />
+        </Box>
+        <Box sx={{ 
+          borderLeft: '1px solid rgba(0, 0, 0, 0.08)', 
+          height: 24, 
+          mx: 2 
+        }} />
         <Select
           size="small"
           value={filters.priority}
           onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
           sx={{ 
-            minWidth: 100,
+            minWidth: 140,
             height: 32,
             fontSize: '0.875rem',
+            fontWeight: 500,
             '& .MuiSelect-select': {
-              padding: '4px 8px'
+              padding: '4px 12px'
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'rgba(0, 0, 0, 0.12)'
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'rgba(0, 0, 0, 0.24)'
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: theme.palette.primary.main
             }
           }}
         >
-          <MenuItem value="all">All Priorities</MenuItem>
-          <MenuItem value="P1">P1</MenuItem>
-          <MenuItem value="P2">P2</MenuItem>
-          <MenuItem value="P3">P3</MenuItem>
-          <MenuItem value="P4">P4</MenuItem>
+          <MenuItem value="all" sx={{ fontSize: '0.875rem' }}>All Priorities</MenuItem>
+          <MenuItem value="P1" sx={{ 
+            fontSize: '0.875rem',
+            color: theme.palette.priority.p1,
+            fontWeight: 500 
+          }}>P1 - Urgent</MenuItem>
+          <MenuItem value="P2" sx={{ 
+            fontSize: '0.875rem',
+            color: theme.palette.priority.p2,
+            fontWeight: 500 
+          }}>P2 - High</MenuItem>
+          <MenuItem value="P3" sx={{ 
+            fontSize: '0.875rem',
+            color: theme.palette.priority.p3,
+            fontWeight: 500 
+          }}>P3 - Medium</MenuItem>
+          <MenuItem value="P4" sx={{ 
+            fontSize: '0.875rem',
+            color: theme.palette.priority.p4,
+            fontWeight: 500 
+          }}>P4 - Low</MenuItem>
         </Select>
       </FormGroup>
     </Box>

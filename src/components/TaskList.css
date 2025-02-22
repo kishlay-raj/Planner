@@ -154,9 +154,18 @@
 /* Filter styles */
 .filter-section {
   background-color: white;
-  padding: 12px;
+  padding: 16px;
   margin-bottom: 8px;
   border-radius: 8px;
   margin: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Checkbox styles */
+.MuiCheckbox-root {
+  &.Mui-checked {
+    & + .MuiFormControlLabel-label {
+      color: rgba(0, 0, 0, 0.87);
+    }
+  }
 } 
