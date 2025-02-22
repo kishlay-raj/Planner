@@ -69,10 +69,14 @@ function PlannerScreen() {
         const updatedScheduledTasks = scheduledTasks.map(t => t.id === taskId ? updatedTask : t);
         setScheduledTasks(updatedScheduledTasks);
       } else {
-        // If task is new, add it to scheduledTasks and remove from tasks
+        // If task is new, add it to scheduledTasks but keep it in allTasks
         const updatedScheduledTasks = [...scheduledTasks, updatedTask];
         setScheduledTasks(updatedScheduledTasks);
-        setAllTasks(allTasks.filter(t => t.id !== taskId));
+        // Update the task in allTasks to reflect its scheduled status
+        const updatedAllTasks = allTasks.map(t => 
+          t.id === taskId ? { ...t, scheduledTime: timeSlot } : t
+        );
+        setAllTasks(updatedAllTasks);
       }
     }
   };
