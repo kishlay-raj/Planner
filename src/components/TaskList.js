@@ -180,12 +180,15 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                       marginTop: 0.5
                     },
                     borderLeft: task.important ? `4px solid ${theme.palette.priority.p1}` : 'none',
-                    paddingLeft: task.important ? 2 : 3,
+                    paddingLeft: 0,
                     '&:hover .MuiIconButton-root': {
                       color: theme.palette.primary.main
                     }
                   }}
                 >
+                  <div {...provided.dragHandleProps} className="drag-handle">
+                    <DragIndicatorIcon sx={{ fontSize: '1.2rem' }} />
+                  </div>
                   <Checkbox
                     size="small"
                     checked={task.completed || false}
@@ -207,9 +210,6 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                       }
                     }}
                   />
-                  <div {...provided.dragHandleProps} className="drag-handle">
-                    <DragIndicatorIcon sx={{ fontSize: '1.2rem' }} />
-                  </div>
                   <ListItemText
                     primary={task.name}
                     sx={{
