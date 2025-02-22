@@ -26,7 +26,7 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
 
   const events = scheduledTasks.map(task => ({
     id: task.id,
-    title: task.name,
+    title: `${task.name} (${task.duration}min)`,
     start: new Date(task.scheduledTime),
     end: new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000),
     resource: task

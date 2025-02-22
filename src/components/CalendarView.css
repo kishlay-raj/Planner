@@ -20,8 +20,11 @@
   border: none;
   border-radius: 4px;
   padding: 2px 5px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   cursor: move;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rbc-event.rbc-selected {
@@ -35,6 +38,18 @@
 .calendar-event {
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* Hide the default time display */
+.rbc-event-label {
+  display: none;
+}
+
+/* Adjust content padding since we removed the time label */
+.rbc-event-content {
+  padding: 0;
 }
 
 .calendar-event:hover {
