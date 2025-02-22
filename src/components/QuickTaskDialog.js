@@ -20,7 +20,8 @@ function QuickTaskDialog({ open, onClose, onSave, startTime }) {
     duration: 30,
     priority: 'P3',
     urgent: false,
-    important: false
+    important: false,
+    isToday: true
   });
 
   const handleSave = () => {
@@ -34,7 +35,8 @@ function QuickTaskDialog({ open, onClose, onSave, startTime }) {
         duration: 30,
         priority: 'P3',
         urgent: false,
-        important: false
+        important: false,
+        isToday: true
       });
       onClose();
     }
@@ -89,6 +91,15 @@ function QuickTaskDialog({ open, onClose, onSave, startTime }) {
             />
           }
           label="Important"
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={task.isToday}
+              onChange={(e) => setTask({ ...task, isToday: e.target.checked })}
+            />
+          }
+          label={task.isToday ? "Today" : "Dump"}
         />
       </DialogContent>
       <DialogActions>

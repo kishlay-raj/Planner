@@ -23,7 +23,8 @@ function TaskCreationButton({ onTaskCreate }) {
     tag: '',
     priority: 'P3',
     urgent: false,
-    important: false
+    important: false,
+    isToday: true
   });
 
   const handleSubmit = () => {
@@ -35,7 +36,8 @@ function TaskCreationButton({ onTaskCreate }) {
         tag: '',
         priority: 'P3',
         urgent: false,
-        important: false
+        important: false,
+        isToday: true
       });
       setOpen(false);
     }
@@ -107,6 +109,15 @@ function TaskCreationButton({ onTaskCreate }) {
               />
             }
             label="Important"
+          />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={task.isToday}
+                onChange={(e) => setTask({ ...task, isToday: e.target.checked })}
+              />
+            }
+            label={task.isToday ? "Today" : "Dump"}
           />
         </DialogContent>
         <DialogActions>
