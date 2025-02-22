@@ -26,6 +26,10 @@ const DnDCalendar = withDragAndDrop(Calendar);
 function CalendarView({ scheduledTasks, onTaskSchedule }) {
   const [draggedEvent, setDraggedEvent] = useState(null);
 
+  // Get current time for initial scroll
+  const now = new Date();
+  const scrollTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0);
+
   const events = scheduledTasks.map(task => ({
     id: task.id,
     title: `${task.name} (${task.duration}min) - ${format(new Date(task.scheduledTime), 'HH:mm')} to ${format(new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000), 'HH:mm')}`,
@@ -145,6 +149,7 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
         views={['day', 'week']}
         step={15}
         timeslots={4}
+        scrollToTime={scrollTime}
         components={components}
         eventPropGetter={(event) => ({
           className: 'calendar-event',
