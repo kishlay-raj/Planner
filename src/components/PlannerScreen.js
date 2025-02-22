@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Grid, Paper } from '@mui/material';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
@@ -6,15 +6,43 @@ import TaskCreationButton from './TaskCreationButton';
 import './PlannerScreen.css';
 
 function PlannerScreen() {
-  const [tasks, setTasks] = useState([]);
-  const [scheduledTasks, setScheduledTasks] = useState([]);
+  // Initialize states with data from localStorage
+  const [allTasks, setAllTasks] = useState(() => {
+    const savedTasks = localStorage.getItem('allTasks');
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
+
+  const [scheduledTasks, setScheduledTasks] = useState(() => {
+    const savedScheduled = localStorage.getItem('scheduledTasks');
+    return savedScheduled ? JSON.parse(savedScheduled) : [];
+  });
+
+  // Save tasks to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('allTasks', JSON.stringify(allTasks));
+  }, [allTasks]);
+
+  useEffect(() => {
+    localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
+  }, [scheduledTasks]);
 
   const handleTaskCreate = (newTask) => {
-    setTasks([...tasks, { ...newTask, id: Date.now() }]);
+    const updatedTasks = [...allTasks, { ...newTask, id: Date.now() }];
+    setAllTasks(updatedTasks);
+  };
+
+  const handleTaskUpdate = (updatedTasks) => {
+    setAllTasks(updatedTasks);
+    // Update scheduled tasks if any of the updated tasks are scheduled
+    const updatedScheduled = scheduledTasks.map(scheduledTask => {
+      const updatedTask = updatedTasks.find(t => t.id === scheduledTask.id);
+      return updatedTask ? { ...scheduledTask, ...updatedTask } : scheduledTask;
+    });
+    setScheduledTasks(updatedScheduled);
   };
 
   const handleTaskSchedule = (taskId, timeSlot, newDuration) => {
-    const task = tasks.find(t => t.id === taskId) || 
+    const task = allTasks.find(t => t.id === taskId) || 
                 scheduledTasks.find(t => t.id === taskId);
     
     if (task) {
@@ -26,13 +54,13 @@ function PlannerScreen() {
 
       // If task is already in scheduledTasks, update it
       if (scheduledTasks.find(t => t.id === taskId)) {
-        setScheduledTasks(
-          scheduledTasks.map(t => t.id === taskId ? updatedTask : t)
-        );
+        const updatedScheduledTasks = scheduledTasks.map(t => t.id === taskId ? updatedTask : t);
+        setScheduledTasks(updatedScheduledTasks);
       } else {
         // If task is new, add it to scheduledTasks and remove from tasks
-        setScheduledTasks([...scheduledTasks, updatedTask]);
-        setTasks(tasks.filter(t => t.id !== taskId));
+        const updatedScheduledTasks = [...scheduledTasks, updatedTask];
+        setScheduledTasks(updatedScheduledTasks);
+        setAllTasks(allTasks.filter(t => t.id !== taskId));
       }
     }
   };
@@ -52,8 +80,8 @@ function PlannerScreen() {
         <Grid item xs={12} md={5}>
           <Paper className="task-list-container">
             <TaskList 
-              tasks={tasks}
-              onTaskUpdate={setTasks}
+              tasks={allTasks}
+              onTaskUpdate={handleTaskUpdate}
               onTaskSchedule={handleTaskSchedule}
             />
           </Paper>

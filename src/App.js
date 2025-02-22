@@ -78,22 +78,27 @@ const theme = createTheme({
 });
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(() => {
+    // Load initial tasks from localStorage if available
+    const savedTasks = localStorage.getItem('allTasks');
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
 
   const handleTaskCreate = (taskData) => {
     const newTask = {
       id: Date.now(),
       name: taskData.name,
       duration: taskData.duration,
-      priority: taskData.priority,
+      priority: taskData.priority || 'P4',
       tag: taskData.tag,
-      urgent: taskData.urgent,
-      important: taskData.important,
-      isToday: taskData.isToday,
+      important: taskData.important || false,
+      urgent: taskData.urgent || false,
       completed: false,
-      scheduledTime: null
+      isToday: false
     };
-    setTasks([...tasks, newTask]);
+    const updatedTasks = [...tasks, newTask];
+    setTasks(updatedTasks);
+    localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
   };
 
   return (
