@@ -187,11 +187,22 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   );
 
   const renderFilters = () => (
-    <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+    <Box sx={{ 
+      p: 1, 
+      borderBottom: 1, 
+      borderColor: 'divider',
+      '& .MuiFormControlLabel-root': {
+        marginRight: 1,
+        '& .MuiTypography-root': {
+          fontSize: '0.875rem'
+        }
+      }
+    }}>
       <FormGroup row sx={{ gap: 2, alignItems: 'center' }}>
         <FormControlLabel
           control={
             <Checkbox
+              size="small"
               checked={filters.important}
               onChange={(e) => setFilters({ ...filters, important: e.target.checked })}
             />
@@ -201,6 +212,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         <FormControlLabel
           control={
             <Checkbox
+              size="small"
               checked={filters.urgent}
               onChange={(e) => setFilters({ ...filters, urgent: e.target.checked })}
             />
@@ -211,7 +223,14 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
           size="small"
           value={filters.priority}
           onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
-          sx={{ minWidth: 120 }}
+          sx={{ 
+            minWidth: 100,
+            height: 32,
+            fontSize: '0.875rem',
+            '& .MuiSelect-select': {
+              padding: '4px 8px'
+            }
+          }}
         >
           <MenuItem value="all">All Priorities</MenuItem>
           <MenuItem value="P1">P1</MenuItem>
