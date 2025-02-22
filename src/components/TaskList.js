@@ -186,11 +186,36 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                     }
                   }}
                 >
+                  <Checkbox
+                    size="small"
+                    checked={task.completed || false}
+                    onChange={() => {
+                      const updatedTasks = tasks.map(t =>
+                        t.id === task.id ? { ...t, completed: !t.completed } : t
+                      );
+                      onTaskUpdate(updatedTasks);
+                    }}
+                    sx={{
+                      padding: '4px',
+                      marginRight: '8px',
+                      color: 'rgba(0, 0, 0, 0.3)',
+                      '&.Mui-checked': {
+                        color: theme.palette.success.main
+                      },
+                      '&:hover': {
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                      }
+                    }}
+                  />
                   <div {...provided.dragHandleProps} className="drag-handle">
                     <DragIndicatorIcon sx={{ fontSize: '1.2rem' }} />
                   </div>
                   <ListItemText
                     primary={task.name}
+                    sx={{
+                      textDecoration: task.completed ? 'line-through' : 'none',
+                      opacity: task.completed ? 0.7 : 1
+                    }}
                     secondary={
                       <div className="task-details">
                         <Chip 
