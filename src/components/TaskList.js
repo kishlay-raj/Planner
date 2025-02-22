@@ -64,7 +64,11 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
+    // Get source and destination lists
     let sourceList;
+    let destinationList;
+    let updatedTask;
+
     if (result.source.droppableId.startsWith('P')) {
       sourceList = priorityTasksByLevel[result.source.droppableId.split('-')[0]];
     } else if (result.source.droppableId === 'today-list') {
@@ -72,14 +76,26 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     } else {
       sourceList = dumpTasks;
     }
+
+    // Get the task being moved
+    const taskToMove = sourceList[result.source.index];
     
-    const items = Array.from(sourceList);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    // Update task's isToday status based on destination
+    if (result.destination.droppableId === 'today-list') {
+      updatedTask = { ...taskToMove, isToday: true };
+    } else if (result.destination.droppableId === 'dump-list') {
+      updatedTask = { ...taskToMove, isToday: false };
+    } else if (result.destination.droppableId.startsWith('P')) {
+      // If moving to a priority section, update priority and keep isToday status
+      const newPriority = result.destination.droppableId.split('-')[0];
+      updatedTask = { ...taskToMove, priority: newPriority };
+    } else {
+      updatedTask = taskToMove;
+    }
 
     const updatedTasks = tasks.map(task => {
-      if (sourceList.find(t => t.id === task.id)) {
-        return items.find(t => t.id === task.id) || task;
+      if (task.id === taskToMove.id) {
+        return updatedTask;
       }
       return task;
     });
