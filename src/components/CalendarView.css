@@ -145,10 +145,54 @@
 
 .rbc-time-content {
   border-top: 1px solid rgba(0, 0, 0, 0.08);
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  outline: none;
+  max-height: calc(100vh - 180px);
+}
+
+/* Subtle scrollbar styling */
+.rbc-time-content {
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  transition: all 0.3s ease;
+}
+
+.rbc-time-content::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.rbc-time-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rbc-time-content::-webkit-scrollbar-thumb {
+  background: transparent;
+  transition: background 0.3s ease;
+}
+
+/* Only show scrollbar on hover */
+.rbc-time-content:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.rbc-time-content:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Smooth scroll behavior */
+.rbc-time-content {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;  /* Prevent content shift when scrollbar appears */
 }
 
 .rbc-time-header-content {
   border-left: 1px solid rgba(0, 0, 0, 0.08);
+  margin-right: 4px;  /* Align with content padding */
 }
 
 .rbc-time-gutter {
@@ -156,6 +200,9 @@
   color: rgba(0, 0, 0, 0.6);
   font-weight: 500;
   background: white;
+  position: sticky;
+  left: 0;
+  z-index: 2;
 }
 
 /* Current time indicator */
@@ -167,21 +214,9 @@
   z-index: 3;
 }
 
-/* Scrollbar styling */
-.rbc-time-content {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-.rbc-time-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.rbc-time-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.rbc-time-content::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+/* Prevent content jump on scroll */
+.rbc-time-view {
+  margin-right: 0;
+  border-right: 4px solid transparent;
+  overflow: hidden;  /* Contain the scrollbar */
 } 
