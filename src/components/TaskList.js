@@ -23,10 +23,16 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import EditIcon from '@mui/icons-material/Edit';
 import './TaskList.css';
+import TaskEditDialog from './TaskEditDialog';
 
 function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   const [currentTab, setCurrentTab] = useState(0);
+  const [editDialog, setEditDialog] = useState({
+    open: false,
+    task: null
+  });
   const [filters, setFilters] = useState({
     important: false,
     urgent: false,
@@ -95,6 +101,20 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     }
   };
 
+  const handleTaskEdit = (task) => {
+    setEditDialog({
+      open: true,
+      task: task
+    });
+  };
+
+  const handleTaskSave = (editedTask) => {
+    const updatedTasks = tasks.map(task =>
+      task.id === editedTask.id ? editedTask : task
+    );
+    onTaskUpdate(updatedTasks);
+  };
+
   const TaskListContent = ({ listId, items }) => (
     <Droppable droppableId={listId}>
       {(provided) => (
@@ -144,6 +164,12 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                       </div>
                     }
                   />
+                  <IconButton
+                    onClick={() => handleTaskEdit(task)}
+                    className="edit-button"
+                  >
+                    <EditIcon />
+                  </IconButton>
                   <IconButton 
                     onClick={() => onTaskSchedule(task.id, new Date())}
                     className="schedule-button"
@@ -259,6 +285,12 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
           )}
         </DragDropContext>
       </div>
+      <TaskEditDialog
+        open={editDialog.open}
+        task={editDialog.task}
+        onClose={() => setEditDialog({ open: false, task: null })}
+        onSave={handleTaskSave}
+      />
     </Paper>
   );
 }
