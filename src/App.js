@@ -16,6 +16,18 @@ const theme = createTheme({
       light: '#ff79b0',
       dark: '#c60055'
     },
+    priority: {
+      p1: '#f44336', // Red
+      p2: '#ff9800', // Orange
+      p3: '#2196f3', // Blue
+      p4: '#78909c'  // Blue Grey
+    },
+    tag: {
+      work: '#4caf50',     // Green
+      personal: '#9c27b0', // Purple
+      study: '#ff9800',    // Orange
+      health: '#00bcd4'    // Cyan
+    },
     background: {
       default: '#f5f7fa',
       paper: '#ffffff'

@@ -26,6 +26,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import './TaskList.css';
 import TaskEditDialog from './TaskEditDialog';
+import { useTheme } from '@mui/material/styles';
 
 function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   const [currentTab, setCurrentTab] = useState(0);
@@ -112,13 +113,26 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     event.dataTransfer.effectAllowed = 'move';
   };
 
+  const theme = useTheme();
+
   const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'critical': return 'error';
-      case 'high': return 'warning';
-      case 'medium': return 'info';
-      default: return 'default';
-    }
+    const colors = {
+      P1: theme.palette.priority.p1,
+      P2: theme.palette.priority.p2,
+      P3: theme.palette.priority.p3,
+      P4: theme.palette.priority.p4
+    };
+    return colors[priority] || colors.P4;
+  };
+
+  const getTagColor = (tag) => {
+    const colors = {
+      work: theme.palette.tag.work,
+      personal: theme.palette.tag.personal,
+      study: theme.palette.tag.study,
+      health: theme.palette.tag.health
+    };
+    return colors[tag.toLowerCase()] || theme.palette.grey[500];
   };
 
   const handleTaskEdit = (task) => {
@@ -160,11 +174,13 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                     '& .MuiListItemText-primary': {
                       fontWeight: 500,
                       fontSize: '0.9rem',
-                      color: 'rgba(0, 0, 0, 0.87)'
+                      color: task.important ? theme.palette.priority.p1 : 'rgba(0, 0, 0, 0.87)'
                     },
                     '& .MuiListItemText-secondary': {
                       marginTop: 0.25
-                    }
+                    },
+                    borderLeft: task.important ? `4px solid ${theme.palette.priority.p1}` : 'none',
+                    paddingLeft: task.important ? 1 : 2
                   }}
                 >
                   <div {...provided.dragHandleProps} className="drag-handle">
@@ -178,18 +194,20 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                           label={`${task.duration}min`} 
                           size="small" 
                           variant="outlined"
+                          sx={{ 
+                            backgroundColor: 'rgba(33, 150, 243, 0.08)',
+                            color: theme.palette.primary.main,
+                            fontWeight: 500
+                          }}
                         />
                         <Chip 
                           label={task.priority} 
-                          size="small" 
-                          color={getPriorityColor(task.priority)}
+                          size="small"
                           sx={{ 
+                            backgroundColor: `${getPriorityColor(task.priority)}15`,
+                            color: getPriorityColor(task.priority),
                             fontWeight: 500,
-                            backgroundColor: task.priority === 'P1' ? '#ff5252 !important' : 
-                              task.priority === 'P2' ? '#ff9100 !important' : 
-                              task.priority === 'P3' ? '#00bcd4 !important' : 
-                              '#78909c !important',
-                            color: '#fff !important'
+                            borderColor: getPriorityColor(task.priority)
                           }}
                         />
                         {task.tag && (
@@ -197,6 +215,23 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                             label={task.tag} 
                             size="small" 
                             variant="outlined"
+                            sx={{ 
+                              backgroundColor: `${getTagColor(task.tag)}15`,
+                              color: getTagColor(task.tag),
+                              fontWeight: 500,
+                              borderColor: getTagColor(task.tag)
+                            }}
+                          />
+                        )}
+                        {task.urgent && (
+                          <Chip 
+                            label="Urgent"
+                            size="small"
+                            sx={{ 
+                              backgroundColor: `${theme.palette.error.main}15`,
+                              color: theme.palette.error.main,
+                              fontWeight: 500
+                            }}
                           />
                         )}
                       </div>

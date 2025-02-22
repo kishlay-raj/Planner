@@ -31,6 +31,23 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   padding: 8px 12px;
   margin: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.task-item.urgent::after {
+  background-color: #f44336;
 }
 
 .task-item:active {
@@ -41,7 +58,7 @@
 
 .task-item:hover {
   background-color: #f8fafd;
-  border-color: #e0e0e0;
+  border-color: rgba(33, 150, 243, 0.2);
 }
 
 .task-item.dragging {
