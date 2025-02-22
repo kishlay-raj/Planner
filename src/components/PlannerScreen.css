@@ -1,0 +1,17 @@
+.planner-screen {
+  padding: 20px;
+  height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.calendar-container {
+  padding: 20px;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.task-list-container {
+  padding: 20px;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+} 

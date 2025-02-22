@@ -1,0 +1,15 @@
+.calendar-view {
+  height: 100%;
+}
+
+.rbc-event {
+  background-color: #3174ad;
+}
+
+.rbc-event.rbc-selected {
+  background-color: #265985;
+}
+
+.rbc-today {
+  background-color: #f5f5f5;
+} 
