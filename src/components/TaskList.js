@@ -13,11 +13,16 @@ import {
   Checkbox,
   Select,
   MenuItem,
-  Box
+  Box,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ScheduleIcon from '@mui/icons-material/Schedule';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import './TaskList.css';
 
 function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
@@ -37,6 +42,10 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     if (filters.priority !== 'all' && task.priority !== filters.priority) return false;
     return true;
   });
+
+  // Separate tasks into Today and Dump
+  const todayTasks = filteredTasks.filter(task => task.isToday);
+  const dumpTasks = filteredTasks.filter(task => !task.isToday);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -172,6 +181,23 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     </Box>
   );
 
+  const renderTaskSection = (sectionTasks, sectionId, title) => (
+    <Accordion defaultExpanded>
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        sx={{ 
+          backgroundColor: 'rgba(0, 0, 0, 0.03)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.12)'
+        }}
+      >
+        <Typography>{`${title} (${sectionTasks.length})`}</Typography>
+      </AccordionSummary>
+      <AccordionDetails sx={{ padding: 0 }}>
+        <TaskListContent listId={sectionId} items={sectionTasks} />
+      </AccordionDetails>
+    </Accordion>
+  );
+
   return (
     <Paper className="task-list">
       <Tabs
@@ -189,7 +215,8 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
           ) : (
             <>
               {renderFilters()}
-              <TaskListContent listId="regular-list" items={filteredTasks} />
+              {renderTaskSection(todayTasks, 'today-list', 'Today')}
+              {renderTaskSection(dumpTasks, 'dump-list', 'Dump')}
             </>
           )}
         </DragDropContext>

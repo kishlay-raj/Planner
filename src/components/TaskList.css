@@ -9,6 +9,10 @@
   overflow-y: auto;
 }
 
+.task-list-content > :last-child {
+  margin-bottom: 0;
+}
+
 .task-list-items {
   min-height: 100px;
   padding: 8px;
@@ -52,4 +56,18 @@
 
 .task-item:hover .schedule-button {
   opacity: 1;
+}
+
+.MuiAccordion-root {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.MuiAccordionSummary-root {
+  min-height: 48px !important;
+}
+
+.MuiAccordionSummary-content {
+  margin: 8px 0 !important;
 } 
