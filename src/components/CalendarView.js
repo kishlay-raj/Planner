@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
+import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
+import { format, parse, startOfWeek, getDay, addMinutes } from 'date-fns';
+import { Paper } from '@mui/material';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import './CalendarView.css';
 
 const locales = {
@@ -16,7 +19,11 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
+const DnDCalendar = withDragAndDrop(Calendar);
+
 function CalendarView({ scheduledTasks, onTaskSchedule }) {
+  const [draggedEvent, setDraggedEvent] = useState(null);
+
   const events = scheduledTasks.map(task => ({
     id: task.id,
     title: task.name,
@@ -25,44 +32,72 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
     resource: task
   }));
 
-  const handleSelectSlot = (slotInfo) => {
-    // This would typically open a dialog to select from unscheduled tasks
-    console.log('Selected slot:', slotInfo);
-  };
+  const handleSelectSlot = useCallback(({ start }) => {
+    if (draggedEvent) {
+      onTaskSchedule(draggedEvent.id, start);
+      setDraggedEvent(null);
+    }
+  }, [draggedEvent, onTaskSchedule]);
 
-  const handleEventResize = ({ event, start, end }) => {
-    const updatedTasks = scheduledTasks.map(task =>
-      task.id === event.id
-        ? { ...task, scheduledTime: start, duration: (end - start) / 60000 }
-        : task
-    );
-    onTaskSchedule(event.id, start);
-  };
+  const handleDragOver = useCallback((event) => {
+    event.preventDefault();
+  }, []);
 
-  const handleEventDrop = ({ event, start, end }) => {
-    const updatedTasks = scheduledTasks.map(task =>
-      task.id === event.id
-        ? { ...task, scheduledTime: start }
-        : task
-    );
-    onTaskSchedule(event.id, start);
+  const handleDrop = useCallback((event) => {
+    const taskData = JSON.parse(event.dataTransfer.getData('task'));
+    const calendarElement = document.querySelector('.rbc-calendar');
+    const calendarRect = calendarElement.getBoundingClientRect();
+    const dropTime = getTimeFromPosition(event.clientY - calendarRect.top);
+    
+    onTaskSchedule(taskData.id, dropTime);
+  }, [onTaskSchedule]);
+
+  const handleEventDrop = useCallback(({ event, start, end }) => {
+    // Calculate new duration based on the drop
+    const duration = (end - start) / (1000 * 60); // Convert to minutes
+    onTaskSchedule(event.id, start, duration);
+  }, [onTaskSchedule]);
+
+  const handleEventResize = useCallback(({ event, start, end }) => {
+    const duration = (end - start) / (1000 * 60); // Convert to minutes
+    onTaskSchedule(event.id, start, duration);
+  }, [onTaskSchedule]);
+
+  const getTimeFromPosition = (y) => {
+    const now = new Date();
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0));
+    const minutesPerPixel = (24 * 60) / document.querySelector('.rbc-time-content').offsetHeight;
+    const minutes = y * minutesPerPixel;
+    return addMinutes(startOfDay, minutes);
   };
 
   return (
-    <div className="calendar-view">
-      <Calendar
+    <div 
+      className="calendar-view"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      <DnDCalendar
         localizer={localizer}
         events={events}
         startAccessor="start"
         endAccessor="end"
         style={{ height: '100%' }}
         selectable
-        onSelectSlot={handleSelectSlot}
+        resizable
         onEventDrop={handleEventDrop}
         onEventResize={handleEventResize}
-        resizable
+        onSelectSlot={handleSelectSlot}
         defaultView="day"
         views={['day', 'week']}
+        step={15}
+        timeslots={4}
+        eventPropGetter={(event) => ({
+          className: 'calendar-event',
+          style: {
+            backgroundColor: event.resource?.urgent && event.resource?.important ? '#f44336' : '#1976d2'
+          }
+        })}
       />
     </div>
   );

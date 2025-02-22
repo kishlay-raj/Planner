@@ -13,15 +13,27 @@ function PlannerScreen() {
     setTasks([...tasks, { ...newTask, id: Date.now() }]);
   };
 
-  const handleTaskSchedule = (taskId, timeSlot) => {
-    const task = tasks.find(t => t.id === taskId);
+  const handleTaskSchedule = (taskId, timeSlot, newDuration) => {
+    const task = tasks.find(t => t.id === taskId) || 
+                scheduledTasks.find(t => t.id === taskId);
+    
     if (task) {
-      const updatedTask = { ...task, scheduledTime: timeSlot };
-      setScheduledTasks([
-        ...scheduledTasks.filter(t => t.id !== taskId),
-        updatedTask
-      ]);
-      setTasks(tasks.filter(t => t.id !== taskId));
+      const updatedTask = { 
+        ...task, 
+        scheduledTime: timeSlot,
+        duration: newDuration || task.duration
+      };
+
+      // If task is already in scheduledTasks, update it
+      if (scheduledTasks.find(t => t.id === taskId)) {
+        setScheduledTasks(
+          scheduledTasks.map(t => t.id === taskId ? updatedTask : t)
+        );
+      } else {
+        // If task is new, add it to scheduledTasks and remove from tasks
+        setScheduledTasks([...scheduledTasks, updatedTask]);
+        setTasks(tasks.filter(t => t.id !== taskId));
+      }
     }
   };
 

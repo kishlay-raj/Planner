@@ -16,6 +16,7 @@
     "@emotion/styled": "^11.11.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-big-calendar": "^1.8.5",
+    "react-big-calendar-dnd": "^0.1.6",
     "date-fns": "^2.30.0"
   },
   "scripts": {

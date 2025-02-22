@@ -19,6 +19,18 @@
   margin-bottom: 8px;
   border-radius: 4px;
   background-color: white;
+  cursor: grab;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.task-item:active {
+  cursor: grabbing;
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.task-item.dragging {
+  opacity: 0.5;
 }
 
 .drag-handle {

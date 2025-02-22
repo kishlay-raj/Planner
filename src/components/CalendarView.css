@@ -1,15 +1,43 @@
 .calendar-view {
   height: 100%;
+  position: relative;
+}
+
+.rbc-calendar {
+  background: white;
+}
+
+.rbc-time-slot {
+  transition: background-color 0.2s;
+}
+
+.rbc-time-slot.drag-over {
+  background-color: rgba(25, 118, 210, 0.1);
 }
 
 .rbc-event {
-  background-color: #3174ad;
+  background-color: #1976d2;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 0.875rem;
+  cursor: move;
 }
 
 .rbc-event.rbc-selected {
-  background-color: #265985;
+  background-color: #1565c0;
 }
 
 .rbc-today {
   background-color: #f5f5f5;
+}
+
+.calendar-event {
+  position: relative;
+  z-index: 1;
+}
+
+.calendar-event:hover {
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 } 

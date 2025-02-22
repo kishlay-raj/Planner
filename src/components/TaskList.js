@@ -38,6 +38,11 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     onTaskUpdate(updatedTasks);
   };
 
+  const handleDragStart = (event, task) => {
+    event.dataTransfer.setData('task', JSON.stringify(task));
+    event.dataTransfer.effectAllowed = 'move';
+  };
+
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'critical': return 'error';
@@ -66,6 +71,8 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                   ref={provided.innerRef}
                   {...provided.draggableProps}
                   className="task-item"
+                  draggable="true"
+                  onDragStart={(e) => handleDragStart(e, task)}
                 >
                   <div {...provided.dragHandleProps} className="drag-handle">
                     <DragIndicatorIcon />
