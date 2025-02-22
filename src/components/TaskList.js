@@ -35,6 +35,14 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
 
   const priorityTasks = tasks.filter(task => task.important || task.isToday);
   
+  // Group priority tasks by priority level
+  const priorityTasksByLevel = {
+    P1: priorityTasks.filter(task => task.priority === 'P1'),
+    P2: priorityTasks.filter(task => task.priority === 'P2'),
+    P3: priorityTasks.filter(task => task.priority === 'P3'),
+    P4: priorityTasks.filter(task => task.priority === 'P4')
+  };
+
   // Apply filters to regular tasks
   const filteredTasks = tasks.filter(task => {
     if (filters.important && !task.important) return false;
@@ -50,7 +58,15 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
-    const sourceList = result.source.droppableId === 'priority-list' ? priorityTasks : filteredTasks;
+    let sourceList;
+    if (result.source.droppableId.startsWith('P')) {
+      sourceList = priorityTasksByLevel[result.source.droppableId.split('-')[0]];
+    } else if (result.source.droppableId === 'today-list') {
+      sourceList = todayTasks;
+    } else {
+      sourceList = dumpTasks;
+    }
+    
     const items = Array.from(sourceList);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
@@ -211,7 +227,29 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
       <div className="task-list-content">
         <DragDropContext onDragEnd={handleDragEnd}>
           {currentTab === 0 ? (
-            <TaskListContent listId="priority-list" items={priorityTasks} />
+            <>
+              {['P1', 'P2', 'P3', 'P4'].map(priority => (
+                priorityTasksByLevel[priority].length > 0 && (
+                  <Accordion key={priority} defaultExpanded>
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      sx={{
+                        backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                        borderBottom: '1px solid rgba(0, 0, 0, 0.12)'
+                      }}
+                    >
+                      <Typography>{`${priority} (${priorityTasksByLevel[priority].length})`}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ padding: 0 }}>
+                      <TaskListContent 
+                        listId={`${priority}-priority-list`} 
+                        items={priorityTasksByLevel[priority]} 
+                      />
+                    </AccordionDetails>
+                  </Accordion>
+                )
+              ))}
+            </>
           ) : (
             <>
               {renderFilters()}
