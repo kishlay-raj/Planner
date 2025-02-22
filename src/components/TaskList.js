@@ -156,9 +156,19 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                   className="task-item"
                   draggable="true"
                   onDragStart={(e) => handleDragStart(e, task)}
+                  sx={{
+                    '& .MuiListItemText-primary': {
+                      fontWeight: 500,
+                      fontSize: '0.9rem',
+                      color: 'rgba(0, 0, 0, 0.87)'
+                    },
+                    '& .MuiListItemText-secondary': {
+                      marginTop: 0.25
+                    }
+                  }}
                 >
                   <div {...provided.dragHandleProps} className="drag-handle">
-                    <DragIndicatorIcon />
+                    <DragIndicatorIcon sx={{ fontSize: '1.2rem' }} />
                   </div>
                   <ListItemText
                     primary={task.name}
@@ -173,6 +183,14 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                           label={task.priority} 
                           size="small" 
                           color={getPriorityColor(task.priority)}
+                          sx={{ 
+                            fontWeight: 500,
+                            backgroundColor: task.priority === 'P1' ? '#ff5252 !important' : 
+                              task.priority === 'P2' ? '#ff9100 !important' : 
+                              task.priority === 'P3' ? '#00bcd4 !important' : 
+                              '#78909c !important',
+                            color: '#fff !important'
+                          }}
                         />
                         {task.tag && (
                           <Chip 
