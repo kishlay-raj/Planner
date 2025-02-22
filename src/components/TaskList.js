@@ -17,8 +17,8 @@ import './TaskList.css';
 function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   const [currentTab, setCurrentTab] = useState(0);
 
-  const priorityTasks = tasks.filter(task => task.urgent && task.important);
-  const regularTasks = tasks.filter(task => !(task.urgent && task.important));
+  const priorityTasks = tasks.filter(task => task.important || task.isToday);
+  const regularTasks = tasks;
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -124,8 +124,8 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         onChange={(_, newValue) => setCurrentTab(newValue)}
         variant="fullWidth"
       >
-        <Tab label={`Priorities (${priorityTasks.length})`} />
-        <Tab label={`Tasks (${regularTasks.length})`} />
+        <Tab label={`Important & Today (${priorityTasks.length})`} />
+        <Tab label={`All Tasks (${tasks.length})`} />
       </Tabs>
       <div className="task-list-content">
         <DragDropContext onDragEnd={handleDragEnd}>
