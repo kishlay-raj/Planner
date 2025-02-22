@@ -21,7 +21,7 @@ function TaskCreationButton({ onTaskCreate }) {
     name: '',
     duration: 30,
     tag: '',
-    priority: 'medium',
+    priority: 'P3',
     urgent: false,
     important: false
   });
@@ -33,7 +33,7 @@ function TaskCreationButton({ onTaskCreate }) {
         name: '',
         duration: 30,
         tag: '',
-        priority: 'medium',
+        priority: 'P3',
         urgent: false,
         important: false
       });
@@ -84,10 +84,10 @@ function TaskCreationButton({ onTaskCreate }) {
               value={task.priority}
               onChange={(e) => setTask({ ...task, priority: e.target.value })}
             >
-              <MenuItem value="low">Low</MenuItem>
-              <MenuItem value="medium">Medium</MenuItem>
-              <MenuItem value="high">High</MenuItem>
-              <MenuItem value="critical">Critical</MenuItem>
+              <MenuItem value="P1">P1</MenuItem>
+              <MenuItem value="P2">P2</MenuItem>
+              <MenuItem value="P3">P3</MenuItem>
+              <MenuItem value="P4">P4</MenuItem>
             </Select>
           </FormControl>
           <FormControlLabel
