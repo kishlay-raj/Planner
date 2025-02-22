@@ -229,10 +229,14 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         expandIcon={<ExpandMoreIcon />}
         sx={{ 
           backgroundColor: 'rgba(0, 0, 0, 0.03)',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.12)'
+          borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+          minHeight: '40px !important',
+          '& .MuiAccordionSummary-content': {
+            margin: '4px 0 !important'
+          }
         }}
       >
-        <Typography>{`${title} (${sectionTasks.length})`}</Typography>
+        <Typography variant="subtitle2">{`${title} (${sectionTasks.length})`}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ padding: 0 }}>
         <TaskListContent listId={sectionId} items={sectionTasks} />
@@ -261,10 +265,14 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                       expandIcon={<ExpandMoreIcon />}
                       sx={{
                         backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                        borderBottom: '1px solid rgba(0, 0, 0, 0.12)'
+                        borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                        minHeight: '40px !important',
+                        '& .MuiAccordionSummary-content': {
+                          margin: '4px 0 !important'
+                        }
                       }}
                     >
-                      <Typography>{`${priority} (${priorityTasksByLevel[priority].length})`}</Typography>
+                      <Typography variant="subtitle2">{`${priority} (${priorityTasksByLevel[priority].length})`}</Typography>
                     </AccordionSummary>
                     <AccordionDetails sx={{ padding: 0 }}>
                       <TaskListContent 

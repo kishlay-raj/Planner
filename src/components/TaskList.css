@@ -74,9 +74,9 @@
 }
 
 .MuiAccordionSummary-root {
-  min-height: 48px !important;
+  min-height: 40px !important;
 }
 
 .MuiAccordionSummary-content {
-  margin: 8px 0 !important;
+  margin: 4px 0 !important;
 } 
