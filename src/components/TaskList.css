@@ -37,6 +37,12 @@
   opacity: 0.5;
 }
 
+.drag-handle {
+  padding: 8px;
+  cursor: grab;
+  color: #757575;
+}
+
 .task-details {
   display: flex;
   gap: 8px;
