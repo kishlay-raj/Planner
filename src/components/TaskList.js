@@ -173,14 +173,17 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                   sx={{
                     '& .MuiListItemText-primary': {
                       fontWeight: 500,
-                      fontSize: '0.9rem',
+                      fontSize: '0.875rem',
                       color: task.important ? theme.palette.priority.p1 : 'rgba(0, 0, 0, 0.87)'
                     },
                     '& .MuiListItemText-secondary': {
-                      marginTop: 0.25
+                      marginTop: 0.5
                     },
                     borderLeft: task.important ? `4px solid ${theme.palette.priority.p1}` : 'none',
-                    paddingLeft: task.important ? 1 : 2
+                    paddingLeft: task.important ? 2 : 3,
+                    '&:hover .MuiIconButton-root': {
+                      color: theme.palette.primary.main
+                    }
                   }}
                 >
                   <div {...provided.dragHandleProps} className="drag-handle">
@@ -320,11 +323,19 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
         sx={{ 
-          backgroundColor: 'rgba(0, 0, 0, 0.03)',
+          backgroundColor: 'white',
           borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
           minHeight: '40px !important',
           '& .MuiAccordionSummary-content': {
             margin: '4px 0 !important'
+          },
+          '& .MuiTypography-root': {
+            fontWeight: 500,
+            color: 'rgba(0, 0, 0, 0.87)'
+          },
+          '& .MuiSvgIcon-root': {
+            fontSize: '1.2rem',
+            color: 'rgba(0, 0, 0, 0.54)'
           }
         }}
       >
@@ -342,6 +353,14 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         value={currentTab}
         onChange={(_, newValue) => setCurrentTab(newValue)}
         variant="fullWidth"
+        sx={{
+          '& .MuiTab-root': {
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            minHeight: 48
+          }
+        }}
       >
         <Tab label={`Important & Today (${priorityTasks.length})`} />
         <Tab label={`All Tasks (${tasks.length})`} />
