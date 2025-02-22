@@ -7,11 +7,11 @@
 .task-list-content {
   flex-grow: 1;
   overflow-y: auto;
-  padding: 8px;
 }
 
 .task-list-items {
   min-height: 100px;
+  padding: 8px;
 }
 
 .task-item {

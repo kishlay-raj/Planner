@@ -7,7 +7,13 @@ import {
   ListItemText,
   IconButton,
   Chip,
-  Paper
+  Paper,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Select,
+  MenuItem,
+  Box
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
@@ -16,14 +22,26 @@ import './TaskList.css';
 
 function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   const [currentTab, setCurrentTab] = useState(0);
+  const [filters, setFilters] = useState({
+    important: false,
+    urgent: false,
+    priority: 'all'
+  });
 
   const priorityTasks = tasks.filter(task => task.important || task.isToday);
-  const regularTasks = tasks;
+  
+  // Apply filters to regular tasks
+  const filteredTasks = tasks.filter(task => {
+    if (filters.important && !task.important) return false;
+    if (filters.urgent && !task.urgent) return false;
+    if (filters.priority !== 'all' && task.priority !== filters.priority) return false;
+    return true;
+  });
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
-    const sourceList = result.source.droppableId === 'priority-list' ? priorityTasks : regularTasks;
+    const sourceList = result.source.droppableId === 'priority-list' ? priorityTasks : filteredTasks;
     const items = Array.from(sourceList);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
@@ -117,6 +135,43 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     </Droppable>
   );
 
+  const renderFilters = () => (
+    <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+      <FormGroup row sx={{ gap: 2, alignItems: 'center' }}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filters.important}
+              onChange={(e) => setFilters({ ...filters, important: e.target.checked })}
+            />
+          }
+          label="Important"
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filters.urgent}
+              onChange={(e) => setFilters({ ...filters, urgent: e.target.checked })}
+            />
+          }
+          label="Urgent"
+        />
+        <Select
+          size="small"
+          value={filters.priority}
+          onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
+          sx={{ minWidth: 120 }}
+        >
+          <MenuItem value="all">All Priorities</MenuItem>
+          <MenuItem value="P1">P1</MenuItem>
+          <MenuItem value="P2">P2</MenuItem>
+          <MenuItem value="P3">P3</MenuItem>
+          <MenuItem value="P4">P4</MenuItem>
+        </Select>
+      </FormGroup>
+    </Box>
+  );
+
   return (
     <Paper className="task-list">
       <Tabs
@@ -132,7 +187,10 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
           {currentTab === 0 ? (
             <TaskListContent listId="priority-list" items={priorityTasks} />
           ) : (
-            <TaskListContent listId="regular-list" items={regularTasks} />
+            <>
+              {renderFilters()}
+              <TaskListContent listId="regular-list" items={filteredTasks} />
+            </>
           )}
         </DragDropContext>
       </div>
