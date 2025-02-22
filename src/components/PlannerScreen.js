@@ -27,8 +27,20 @@ function PlannerScreen() {
   }, [scheduledTasks]);
 
   const handleTaskCreate = (newTask) => {
-    const updatedTasks = [...allTasks, { ...newTask, id: Date.now() }];
+    const updatedTasks = [...allTasks, { 
+      ...newTask, 
+      id: Date.now(),
+      scheduledTime: newTask.scheduledTime || null
+    }];
     setAllTasks(updatedTasks);
+    
+    // If task has scheduledTime, add it to scheduledTasks
+    if (newTask.scheduledTime) {
+      setScheduledTasks([...scheduledTasks, {
+        ...newTask,
+        id: Date.now()
+      }]);
+    }
   };
 
   const handleTaskUpdate = (updatedTasks) => {
@@ -74,6 +86,7 @@ function PlannerScreen() {
             <CalendarView 
               scheduledTasks={scheduledTasks}
               onTaskSchedule={handleTaskSchedule}
+              onTaskCreate={handleTaskCreate}
             />
           </Paper>
         </Grid>

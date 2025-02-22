@@ -8,6 +8,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import './CalendarView.css';
+import QuickTaskDialog from './QuickTaskDialog';
 
 const locales = {
   'en-US': require('date-fns/locale/en-US')
@@ -23,8 +24,12 @@ const localizer = dateFnsLocalizer({
 
 const DnDCalendar = withDragAndDrop(Calendar);
 
-function CalendarView({ scheduledTasks, onTaskSchedule }) {
+function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate }) {
   const [draggedEvent, setDraggedEvent] = useState(null);
+  const [quickTaskDialog, setQuickTaskDialog] = useState({
+    open: false,
+    selectedTime: null
+  });
 
   // Get current time for initial scroll
   const now = new Date();
@@ -42,6 +47,12 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
     if (draggedEvent) {
       onTaskSchedule(draggedEvent.id, start);
       setDraggedEvent(null);
+    } else {
+      // Open quick task dialog with selected time
+      setQuickTaskDialog({
+        open: true,
+        selectedTime: start
+      });
     }
   }, [draggedEvent, onTaskSchedule]);
 
@@ -128,6 +139,16 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
     )
   };
 
+  const handleQuickTaskCreate = (taskData) => {
+    // Create and schedule the task immediately
+    const task = {
+      ...taskData,
+      scheduledTime: quickTaskDialog.selectedTime
+    };
+    onTaskCreate(task);
+    setQuickTaskDialog({ open: false, selectedTime: null });
+  };
+
   return (
     <div 
       className="calendar-view"
@@ -163,6 +184,12 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
             opacity: event.resource?.completed ? 0.7 : 1
           }
         })}
+      />
+      <QuickTaskDialog
+        open={quickTaskDialog.open}
+        selectedTime={quickTaskDialog.selectedTime}
+        onClose={() => setQuickTaskDialog({ open: false, selectedTime: null })}
+        onSave={handleQuickTaskCreate}
       />
     </div>
   );
