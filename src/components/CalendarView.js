@@ -3,6 +3,8 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { format, parse, startOfWeek, getDay, addMinutes } from 'date-fns';
 import { Paper } from '@mui/material';
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import './CalendarView.css';
@@ -91,6 +93,37 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
     onTaskSchedule(event.id, start, duration);
   }, [onTaskSchedule]);
 
+  const components = {
+    toolbar: (props) => (
+      <div className="rbc-toolbar">
+        <span className="rbc-btn-group">
+          <button type="button" onClick={() => props.onNavigate('PREV')}>
+            <NavigateBeforeIcon />
+          </button>
+          <button type="button" onClick={() => props.onNavigate('TODAY')}>
+            Today
+          </button>
+          <button type="button" onClick={() => props.onNavigate('NEXT')}>
+            <NavigateNextIcon />
+          </button>
+        </span>
+        <span className="rbc-toolbar-label">{props.label}</span>
+        <span className="rbc-btn-group">
+          {props.views.map(view => (
+            <button
+              key={view}
+              type="button"
+              className={view === props.view ? 'rbc-active' : ''}
+              onClick={() => props.onView(view)}
+            >
+              {view.charAt(0).toUpperCase() + view.slice(1)}
+            </button>
+          ))}
+        </span>
+      </div>
+    )
+  };
+
   return (
     <div 
       className="calendar-view"
@@ -112,6 +145,7 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
         views={['day', 'week']}
         step={15}
         timeslots={4}
+        components={components}
         eventPropGetter={(event) => ({
           className: 'calendar-event',
           style: {

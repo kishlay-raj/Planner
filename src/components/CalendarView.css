@@ -62,4 +62,43 @@
 .calendar-event:hover {
   z-index: 2;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Toolbar navigation buttons */
+.rbc-toolbar button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  min-width: 32px;
+}
+
+.rbc-toolbar button svg {
+  font-size: 18px;
+}
+
+.rbc-toolbar-label {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.rbc-btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+.rbc-btn-group button {
+  margin: 0 !important;
+  border-radius: 4px !important;
+}
+
+/* Remove default button group styling */
+.rbc-btn-group > button:first-child:not(:last-child) {
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;
+}
+
+.rbc-btn-group > button:last-child:not(:first-child) {
+  border-top-left-radius: 4px !important;
+  border-bottom-left-radius: 4px !important;
 } 
