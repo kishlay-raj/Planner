@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Paper } from '@mui/material';
+import { Grid, Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
 import TaskCreationButton from './TaskCreationButton';
@@ -17,6 +18,8 @@ function PlannerScreen() {
     return savedScheduled ? JSON.parse(savedScheduled) : [];
   });
 
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+
   // Save tasks to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('allTasks', JSON.stringify(allTasks));
@@ -25,6 +28,14 @@ function PlannerScreen() {
   useEffect(() => {
     localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
   }, [scheduledTasks]);
+
+  const handleReset = () => {
+    localStorage.removeItem('allTasks');
+    localStorage.removeItem('scheduledTasks');
+    setAllTasks([]);
+    setScheduledTasks([]);
+    setResetDialogOpen(false);
+  };
 
   const handleTaskCreate = (newTask) => {
     const updatedTasks = [...allTasks, { 
@@ -83,7 +94,24 @@ function PlannerScreen() {
 
   return (
     <div className="planner-screen">
-      <TaskCreationButton onTaskCreate={handleTaskCreate} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <TaskCreationButton onTaskCreate={handleTaskCreate} />
+        <Tooltip title="Reset All Tasks">
+          <IconButton 
+            onClick={() => setResetDialogOpen(true)}
+            sx={{ 
+              color: 'error.main',
+              '&:hover': {
+                backgroundColor: 'error.light',
+                color: 'error.dark'
+              }
+            }}
+          >
+            <RestartAltIcon />
+          </IconButton>
+        </Tooltip>
+      </div>
+
       <Grid container spacing={2}>
         <Grid item xs={12} md={7}>
           <Paper className="calendar-container">
@@ -104,6 +132,28 @@ function PlannerScreen() {
           </Paper>
         </Grid>
       </Grid>
+
+      <Dialog
+        open={resetDialogOpen}
+        onClose={() => setResetDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Reset All Tasks?</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete all tasks? This action cannot be undone.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={handleReset}
+            color="error"
+            variant="contained"
+          >
+            Reset All
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
