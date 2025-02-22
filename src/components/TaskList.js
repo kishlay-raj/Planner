@@ -20,7 +20,6 @@ import {
   Typography
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
@@ -153,15 +152,27 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                 <ListItem
                   ref={provided.innerRef}
                   {...provided.draggableProps}
+                  {...provided.dragHandleProps}
                   className="task-item"
                   draggable="true"
                   onDragStart={(e) => handleDragStart(e, task)}
                 >
-                  <div {...provided.dragHandleProps} className="drag-handle">
-                    <DragIndicatorIcon />
-                  </div>
+                  <Checkbox
+                    size="small"
+                    checked={task.completed || false}
+                    onChange={() => {
+                      const updatedTasks = tasks.map(t =>
+                        t.id === task.id ? { ...t, completed: !t.completed } : t
+                      );
+                      onTaskUpdate(updatedTasks);
+                    }}
+                  />
                   <ListItemText
                     primary={task.name}
+                    sx={{
+                      textDecoration: task.completed ? 'line-through' : 'none',
+                      opacity: task.completed ? 0.7 : 1
+                    }}
                     secondary={
                       <div className="task-details">
                         <Chip 
