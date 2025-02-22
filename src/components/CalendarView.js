@@ -43,11 +43,39 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
     event.preventDefault();
   }, []);
 
+  const getTimeFromPosition = (y) => {
+    // Get the time content element and its dimensions
+    const timeContent = document.querySelector('.rbc-time-content');
+    const timeSlot = document.querySelector('.rbc-timeslot-group');
+    
+    // Calculate time based on position
+    const slotHeight = timeSlot.offsetHeight;
+    const minutesPerSlot = 15; // Each slot is 15 minutes
+    const slotsFromTop = y / (slotHeight / 4); // Divide by 4 as each hour has 4 slots
+    
+    // Calculate hours and minutes
+    const totalMinutes = slotsFromTop * minutesPerSlot;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = Math.round((totalMinutes % 60) / 15) * 15; // Round to nearest 15 minutes
+    
+    // Create new date at the calculated time
+    const dropTime = new Date();
+    dropTime.setHours(hours, minutes, 0, 0);
+    
+    return dropTime;
+  };
+
   const handleDrop = useCallback((event) => {
     const taskData = JSON.parse(event.dataTransfer.getData('task'));
     const calendarElement = document.querySelector('.rbc-calendar');
     const calendarRect = calendarElement.getBoundingClientRect();
-    const dropTime = getTimeFromPosition(event.clientY - calendarRect.top);
+    const timeContent = document.querySelector('.rbc-time-content');
+    const timeContentRect = timeContent.getBoundingClientRect();
+    
+    // Calculate position relative to time content
+    const relativeY = event.clientY - timeContentRect.top + timeContent.scrollTop;
+    
+    const dropTime = getTimeFromPosition(relativeY);
     
     onTaskSchedule(taskData.id, dropTime);
   }, [onTaskSchedule]);
@@ -62,14 +90,6 @@ function CalendarView({ scheduledTasks, onTaskSchedule }) {
     const duration = (end - start) / (1000 * 60); // Convert to minutes
     onTaskSchedule(event.id, start, duration);
   }, [onTaskSchedule]);
-
-  const getTimeFromPosition = (y) => {
-    const now = new Date();
-    const startOfDay = new Date(now.setHours(0, 0, 0, 0));
-    const minutesPerPixel = (24 * 60) / document.querySelector('.rbc-time-content').offsetHeight;
-    const minutes = y * minutesPerPixel;
-    return addMinutes(startOfDay, minutes);
-  };
 
   return (
     <div 
