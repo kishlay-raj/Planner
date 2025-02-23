@@ -47,11 +47,25 @@ function TaskCreationButton({ onTaskCreate }) {
     <>
       <Button
         variant="contained"
-        startIcon={<AddIcon />}
+        startIcon={<AddIcon fontSize="small" />}
         onClick={() => setOpen(true)}
-        sx={{ marginBottom: 2 }}
+        sx={{ 
+          backgroundColor: 'transparent',
+          color: 'text.secondary',
+          boxShadow: 'none',
+          border: '1px solid',
+          borderColor: 'divider',
+          textTransform: 'none',
+          padding: '4px 12px',
+          minHeight: '32px',
+          fontSize: '0.875rem',
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            boxShadow: 'none'
+          }
+        }}
       >
-        Add Task
+        New Task
       </Button>
 
       <Dialog open={open} onClose={() => setOpen(false)}>

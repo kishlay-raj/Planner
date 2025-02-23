@@ -2,9 +2,10 @@ import React, { useState, useCallback } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { format, parse, startOfWeek, getDay, addMinutes } from 'date-fns';
-import { Paper } from '@mui/material';
+import { Paper, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import TodayIcon from '@mui/icons-material/Today';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import './CalendarView.css';
@@ -111,30 +112,36 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate }) {
   const components = {
     toolbar: (props) => (
       <div className="rbc-toolbar">
-        <span className="rbc-btn-group">
-          <button type="button" onClick={() => props.onNavigate('PREV')}>
-            <NavigateBeforeIcon />
-          </button>
-          <button type="button" onClick={() => props.onNavigate('TODAY')}>
-            Today
-          </button>
-          <button type="button" onClick={() => props.onNavigate('NEXT')}>
-            <NavigateNextIcon />
-          </button>
-        </span>
-        <span className="rbc-toolbar-label">{props.label}</span>
-        <span className="rbc-btn-group">
-          {props.views.map(view => (
-            <button
-              key={view}
-              type="button"
-              className={view === props.view ? 'rbc-active' : ''}
-              onClick={() => props.onView(view)}
+        <div className="toolbar-left">
+          <Tooltip title="Previous">
+            <IconButton 
+              onClick={() => props.onNavigate('PREV')}
+              size="small"
+              sx={{ color: 'text.secondary' }}
             >
-              {view.charAt(0).toUpperCase() + view.slice(1)}
-            </button>
-          ))}
-        </span>
+              <NavigateBeforeIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Today">
+            <IconButton 
+              onClick={() => props.onNavigate('TODAY')}
+              size="small"
+              sx={{ color: 'text.secondary' }}
+            >
+              <TodayIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Next">
+            <IconButton 
+              onClick={() => props.onNavigate('NEXT')}
+              size="small"
+              sx={{ color: 'text.secondary' }}
+            >
+              <NavigateNextIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </div>
+        <span className="rbc-toolbar-label">{props.label}</span>
       </div>
     )
   };
@@ -158,32 +165,19 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate }) {
       <DnDCalendar
         localizer={localizer}
         events={events}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: '100%' }}
-        selectable
-        resizable
-        onEventDrop={handleEventDrop}
-        onEventResize={handleEventResize}
-        onSelectSlot={handleSelectSlot}
         defaultView="day"
-        views={['day', 'week']}
+        views={['day']}
+        min={new Date(0, 0, 0, 0, 0, 0)} // 12:00 AM
+        max={new Date(0, 0, 0, 23, 59, 59)} // 11:59 PM
         step={15}
         timeslots={4}
         scrollToTime={scrollTime}
+        onSelectSlot={handleSelectSlot}
+        selectable
+        resizable
         components={components}
-        eventPropGetter={(event) => ({
-          className: 'calendar-event',
-          style: {
-            backgroundColor: event.resource?.completed 
-              ? '#66bb6a'  // Green for completed tasks
-              : event.resource?.urgent && event.resource?.important 
-                ? '#f44336' 
-                : '#1976d2',
-            textDecoration: event.resource?.completed ? 'line-through' : 'none',
-            opacity: event.resource?.completed ? 0.7 : 1
-          }
-        })}
+        onEventDrop={handleEventDrop}
+        onEventResize={handleEventResize}
       />
       <QuickTaskDialog
         open={quickTaskDialog.open}

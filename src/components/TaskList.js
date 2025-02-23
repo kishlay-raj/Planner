@@ -443,17 +443,9 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         value={currentTab}
         onChange={(_, newValue) => setCurrentTab(newValue)}
         variant="fullWidth"
-        sx={{
-          '& .MuiTab-root': {
-            fontSize: '0.875rem',
-            fontWeight: 500,
-            textTransform: 'none',
-            minHeight: 48
-          }
-        }}
       >
-        <Tab label={`Important & Today (${priorityTasks.length})`} />
-        <Tab label={`All Tasks (${tasks.length})`} />
+        <Tab label="Priorities" />
+        <Tab label="Tasks" />
       </Tabs>
       <div className="task-list-content">
         <DragDropContext onDragEnd={handleDragEnd}>
@@ -473,7 +465,14 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                         }
                       }}
                     >
-                      <Typography variant="subtitle2">{`${priority} (${priorityTasksByLevel[priority].length})`}</Typography>
+                      <div className="priority-header">
+                        <div className="priority-header-text">
+                          <Typography variant="subtitle2">{priority}</Typography>
+                          <Typography variant="body2" className="priority-count">
+                            {priorityTasksByLevel[priority].length} tasks
+                          </Typography>
+                        </div>
+                      </div>
                     </AccordionSummary>
                     <AccordionDetails sx={{ padding: 0 }}>
                       <TaskListContent 

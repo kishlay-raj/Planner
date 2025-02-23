@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
@@ -94,26 +94,33 @@ function PlannerScreen() {
 
   return (
     <div className="planner-screen">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <TaskCreationButton onTaskCreate={handleTaskCreate} />
-        <Tooltip title="Reset All Tasks">
-          <IconButton 
-            onClick={() => setResetDialogOpen(true)}
-            sx={{ 
-              color: 'error.main',
-              '&:hover': {
-                backgroundColor: 'error.light',
-                color: 'error.dark'
-              }
-            }}
-          >
-            <RestartAltIcon />
-          </IconButton>
-        </Tooltip>
+      <div className="planner-header">
+        <div className="planner-nav">
+          <span className="planner-title">Planner</span>
+        </div>
+        <div className="planner-actions">
+          <TaskCreationButton onTaskCreate={handleTaskCreate} />
+          <Tooltip title="Reset All Tasks">
+            <IconButton 
+              onClick={() => setResetDialogOpen(true)}
+              sx={{ 
+                color: 'text.secondary',
+                padding: '2px',
+                width: '28px',
+                height: '28px',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                }
+              }}
+            >
+              <RestartAltIcon sx={{ fontSize: '18px' }} />
+            </IconButton>
+          </Tooltip>
+        </div>
       </div>
 
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={7}>
+      <Grid container spacing={0}>
+        <Grid item xs={12} md={9}>
           <Paper className="calendar-container">
             <CalendarView 
               scheduledTasks={scheduledTasks}
@@ -122,7 +129,7 @@ function PlannerScreen() {
             />
           </Paper>
         </Grid>
-        <Grid item xs={12} md={5}>
+        <Grid item xs={12} md={3}>
           <Paper className="task-list-container">
             <TaskList 
               tasks={allTasks}

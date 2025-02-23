@@ -1,23 +1,24 @@
 .calendar-view {
   height: 100%;
   position: relative;
-  padding: 16px;
-  background-color: rgba(25, 118, 210, 0.02);
+  padding: 0;
+  background-color: #ffffff;
 }
 
 .rbc-calendar {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
-  padding: 16px;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
   border: none;
-  height: calc(100% - 32px);
+  height: 100%;
 }
 
 .rbc-time-slot {
   transition: background-color 0.2s;
-  color: rgba(0, 0, 0, 0.6);
+  color: #666666;
   font-size: 0.85rem;
+  border-top: 1px solid #f0f0f0;
 }
 
 .rbc-time-slot.drag-over {
@@ -83,56 +84,29 @@
 
 /* Toolbar navigation buttons */
 .rbc-toolbar {
-  margin-bottom: 20px !important;
-  padding: 0 8px;
+  margin-bottom: 0 !important;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e5e5e5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.rbc-toolbar button {
-  color: rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background-color: white;
-  padding: 8px 16px;
-  font-weight: 600;
-  border-radius: 6px;
-  transition: all 0.2s;
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.rbc-toolbar button:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-  border-color: rgba(0, 0, 0, 0.24);
-}
-
-.rbc-toolbar button.rbc-active {
-  background-color: #1976d2;
-  color: white;
-  border-color: #1976d2;
+.toolbar-right {
+  display: flex;
+  align-items: center;
 }
 
 .rbc-toolbar-label {
   font-size: 1.25rem;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.87);
-}
-
-.rbc-btn-group {
-  display: flex;
-  gap: 4px;
-}
-
-.rbc-btn-group button {
-  margin: 0 !important;
-  border-radius: 4px !important;
-}
-
-/* Remove default button group styling */
-.rbc-btn-group > button:first-child:not(:last-child) {
-  border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;
-}
-
-.rbc-btn-group > button:last-child:not(:first-child) {
-  border-top-left-radius: 4px !important;
-  border-bottom-left-radius: 4px !important;
 }
 
 /* Time grid styles */
@@ -142,11 +116,11 @@
 
 .rbc-timeslot-group {
   min-height: 60px !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .rbc-time-content {
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  border-top: none;
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
@@ -193,7 +167,7 @@
 }
 
 .rbc-time-header-content {
-  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: none;
   margin-right: 4px;  /* Align with content padding */
 }
 
@@ -205,12 +179,13 @@
   position: sticky;
   left: 0;
   z-index: 2;
+  padding-left: 24px;
 }
 
 /* Current time indicator */
 .rbc-current-time-indicator {
-  background-color: #f44336;
-  height: 2px;
+  background-color: #ff0000;
+  height: 1px;
   width: 100%;
   pointer-events: none;
   z-index: 3;
@@ -221,4 +196,12 @@
   margin-right: 0;
   border-right: 4px solid transparent;
   overflow: hidden;  /* Contain the scrollbar */
+}
+
+.rbc-time-header {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.rbc-events-container {
+  margin-right: 0;
 } 
