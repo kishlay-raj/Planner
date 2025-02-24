@@ -225,4 +225,32 @@
 .MuiTabs-indicator {
   background-color: #1976d2 !important;
   height: 2px !important;
+}
+
+.quick-add-task {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #ffffff;
+}
+
+.quick-add-task .MuiInputBase-root {
+  font-size: 0.875rem;
+  color: #666666;
+}
+
+.quick-add-task .MuiInputBase-input::placeholder {
+  color: #999999;
+  opacity: 1;
+}
+
+.quick-add-task .MuiIconButton-root {
+  color: #666666;
+  padding: 4px;
+  margin-left: 8px;
+}
+
+.quick-add-task .MuiIconButton-root:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 } 

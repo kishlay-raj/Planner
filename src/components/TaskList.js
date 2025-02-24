@@ -17,18 +17,23 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Typography
+  Typography,
+  Tooltip,
+  InputBase
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 import './TaskList.css';
 import TaskEditDialog from './TaskEditDialog';
 import { useTheme } from '@mui/material/styles';
 
 function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
+  // Ensure tasks is an array
+  const taskList = Array.isArray(tasks) ? tasks : [];
   const [currentTab, setCurrentTab] = useState(0);
   const [editDialog, setEditDialog] = useState({
     open: false,
@@ -39,11 +44,12 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     urgent: false,
     priority: 'all'
   });
+  const [newTaskText, setNewTaskText] = useState('');
 
-  const priorityTasks = tasks.filter(task => 
+  const priorityTasks = taskList.filter(task => 
     (task.important || task.isToday) && !task.completed
   );
-  const regularTasks = tasks.filter(task => !task.completed);
+  const regularTasks = taskList.filter(task => !task.completed);
   
   // Group priority tasks by priority level
   const priorityTasksByLevel = {
@@ -54,7 +60,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   };
 
   // Apply filters to regular tasks
-  const filteredTasks = tasks.filter(task => {
+  const filteredTasks = taskList.filter(task => {
     if (filters.important && !task.important) return false;
     if (filters.urgent && !task.urgent) return false;
     if (filters.priority !== 'all' && task.priority !== filters.priority) return false;
@@ -98,7 +104,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
       updatedTask = taskToMove;
     }
 
-    const updatedTasks = tasks.map(task => {
+    const updatedTasks = taskList.map(task => {
       if (task.id === taskToMove.id) {
         return updatedTask;
       }
@@ -143,10 +149,28 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   };
 
   const handleTaskSave = (editedTask) => {
-    const updatedTasks = tasks.map(task =>
+    const updatedTasks = taskList.map(task =>
       task.id === editedTask.id ? editedTask : task
     );
     onTaskUpdate(updatedTasks);
+  };
+
+  const handleQuickAdd = (priority = 'P4', section = 'today') => {
+    if (newTaskText.trim()) {
+      const newTask = {
+        id: Date.now(),
+        name: newTaskText,
+        priority,
+        duration: 30,
+        isToday: section !== 'dump',
+        completed: false,
+        important: false,
+        urgent: false,
+        tag: ''
+      };
+      onTaskUpdate([...taskList, newTask]);
+      setNewTaskText('');
+    }
   };
 
   const TaskListContent = ({ listId, items }) => (
@@ -193,7 +217,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                     size="small"
                     checked={task.completed || false}
                     onChange={() => {
-                      const updatedTasks = tasks.map(t =>
+                      const updatedTasks = taskList.map(t =>
                         t.id === task.id ? { ...t, completed: !t.completed } : t
                       );
                       onTaskUpdate(updatedTasks);
@@ -432,6 +456,25 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         <Typography variant="subtitle2">{`${title} (${sectionTasks.length})`}</Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ padding: 0 }}>
+        <Box className="quick-add-task">
+          <InputBase
+            placeholder="Add a task..."
+            value={newTaskText}
+            onChange={(e) => setNewTaskText(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleQuickAdd(sectionId.split('-')[0].split('-')[0], sectionId.includes('dump') ? 'dump' : 'today');
+              }
+            }}
+            fullWidth
+          />
+          <IconButton 
+            size="small"
+            onClick={() => handleQuickAdd(sectionId.split('-')[0].split('-')[0], sectionId.includes('dump') ? 'dump' : 'today')}
+          >
+            <AddIcon fontSize="small" />
+          </IconButton>
+        </Box>
         <TaskListContent listId={sectionId} items={sectionTasks} />
       </AccordionDetails>
     </Accordion>
@@ -452,36 +495,71 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
           {currentTab === 0 ? (
             <>
               {['P1', 'P2', 'P3', 'P4'].map(priority => (
-                priorityTasksByLevel[priority].length > 0 && (
-                  <Accordion key={priority} defaultExpanded>
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      sx={{
-                        backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                        borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-                        minHeight: '40px !important',
-                        '& .MuiAccordionSummary-content': {
-                          margin: '4px 0 !important'
-                        }
-                      }}
-                    >
-                      <div className="priority-header">
-                        <div className="priority-header-text">
-                          <Typography variant="subtitle2">{priority}</Typography>
-                          <Typography variant="body2" className="priority-count">
-                            {priorityTasksByLevel[priority].length} tasks
-                          </Typography>
-                        </div>
+                <Accordion key={priority} defaultExpanded>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    sx={{
+                      backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                      borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                      minHeight: '40px !important',
+                      '& .MuiAccordionSummary-content': {
+                        margin: '4px 0 !important'
+                      }
+                    }}
+                  >
+                    <div className="priority-header">
+                      <div className="priority-header-text">
+                        <Typography variant="subtitle2">
+                          {priority === 'P1' ? 'P1 - Critical' :
+                           priority === 'P2' ? 'P2 - High' :
+                           priority === 'P3' ? 'P3 - Medium' :
+                           'P4 - Low'}
+                        </Typography>
+                        <Typography variant="body2" className="priority-count">
+                          {priorityTasksByLevel[priority].length} tasks
+                        </Typography>
                       </div>
-                    </AccordionSummary>
-                    <AccordionDetails sx={{ padding: 0 }}>
+                    </div>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ padding: 0 }}>
+                    <Box className="quick-add-task">
+                      <InputBase
+                        placeholder="Add a task..."
+                        value={newTaskText}
+                        onChange={(e) => setNewTaskText(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleQuickAdd(priority, priority);
+                          }
+                        }}
+                        fullWidth
+                      />
+                      <IconButton 
+                        size="small"
+                        onClick={() => handleQuickAdd(priority, priority)}
+                      >
+                        <AddIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                    {priorityTasksByLevel[priority].length === 0 ? (
+                      <Typography 
+                        className="priority-empty"
+                        sx={{ 
+                          padding: '12px 24px',
+                          color: 'text.secondary',
+                          fontSize: '0.875rem'
+                        }}
+                      >
+                        No tasks
+                      </Typography>
+                    ) : (
                       <TaskListContent 
                         listId={`${priority}-priority-list`} 
                         items={priorityTasksByLevel[priority]} 
                       />
-                    </AccordionDetails>
-                  </Accordion>
-                )
+                    )}
+                  </AccordionDetails>
+                </Accordion>
               ))}
             </>
           ) : (

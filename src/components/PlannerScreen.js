@@ -9,8 +9,13 @@ import './PlannerScreen.css';
 function PlannerScreen() {
   // Initialize states with data from localStorage
   const [allTasks, setAllTasks] = useState(() => {
-    const savedTasks = localStorage.getItem('allTasks');
-    return savedTasks ? JSON.parse(savedTasks) : [];
+    try {
+      const savedTasks = localStorage.getItem('allTasks');
+      return savedTasks ? JSON.parse(savedTasks) : [];
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+      return [];
+    }
   });
 
   const [scheduledTasks, setScheduledTasks] = useState(() => {
@@ -37,25 +42,33 @@ function PlannerScreen() {
     setResetDialogOpen(false);
   };
 
-  const handleTaskCreate = (newTask) => {
-    const updatedTasks = [...allTasks, { 
-      ...newTask, 
-      id: Date.now(),
-      scheduledTime: newTask.scheduledTime || null
-    }];
-    setAllTasks(updatedTasks);
+  const handleTaskCreate = (task) => {
+    const newTask = {
+      ...task,
+      id: Date.now()
+    };
+    setAllTasks(prevTasks => Array.isArray(prevTasks) ? [...prevTasks, newTask] : [newTask]);
     
     // If task has scheduledTime, add it to scheduledTasks
     if (newTask.scheduledTime) {
-      setScheduledTasks([...scheduledTasks, {
-        ...newTask,
-        id: Date.now()
-      }]);
+      setScheduledTasks(prevScheduled => [...prevScheduled, newTask]);
     }
   };
 
   const handleTaskUpdate = (updatedTasks) => {
-    setAllTasks(updatedTasks);
+    if (!Array.isArray(updatedTasks)) {
+      console.error('Updated tasks is not an array:', updatedTasks);
+      return;
+    }
+    // If it's a new task being added
+    if (updatedTasks.length > allTasks.length) {
+      const newTask = updatedTasks[updatedTasks.length - 1];
+      setAllTasks(prevTasks => [...prevTasks, newTask]);
+    } else {
+      // If it's an update to existing tasks
+      setAllTasks(updatedTasks);
+    }
+
     // Update scheduled tasks if any of the updated tasks are scheduled
     const updatedScheduled = scheduledTasks.map(scheduledTask => {
       const updatedTask = updatedTasks.find(t => t.id === scheduledTask.id);
