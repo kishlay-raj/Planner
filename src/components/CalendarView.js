@@ -41,7 +41,8 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate }) {
     title: `${task.name} (${task.duration}min) - ${format(new Date(task.scheduledTime), 'HH:mm')} to ${format(new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000), 'HH:mm')}`,
     start: new Date(task.scheduledTime),
     end: new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000),
-    resource: task
+    resource: task,
+    completed: task.completed
   }));
 
   const handleSelectSlot = useCallback(({ start }) => {
@@ -178,6 +179,14 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate }) {
         components={components}
         onEventDrop={handleEventDrop}
         onEventResize={handleEventResize}
+        eventPropGetter={(event) => ({
+          className: 'calendar-event',
+          style: {
+            backgroundColor: event.completed ? '#66bb6a' : '#1976d2',
+            opacity: event.completed ? 0.7 : 1,
+            textDecoration: event.completed ? 'line-through' : 'none'
+          }
+        })}
       />
       <QuickTaskDialog
         open={quickTaskDialog.open}
