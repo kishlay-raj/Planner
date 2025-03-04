@@ -433,27 +433,16 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   );
 
   const renderTaskSection = (sectionTasks, sectionId, title) => (
-    <Accordion defaultExpanded>
+    <Accordion defaultExpanded className="task-section">
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
-        sx={{ 
-          backgroundColor: 'white',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-          minHeight: '40px !important',
-          '& .MuiAccordionSummary-content': {
-            margin: '4px 0 !important'
-          },
-          '& .MuiTypography-root': {
-            fontWeight: 500,
-            color: 'rgba(0, 0, 0, 0.87)'
-          },
-          '& .MuiSvgIcon-root': {
-            fontSize: '1.2rem',
-            color: 'rgba(0, 0, 0, 0.54)'
-          }
-        }}
       >
-        <Typography variant="subtitle2">{`${title} (${sectionTasks.length})`}</Typography>
+        <Typography className="section-title">
+          {title}
+          <Typography component="span" className="section-count">
+            ({sectionTasks.length})
+          </Typography>
+        </Typography>
       </AccordionSummary>
       <AccordionDetails sx={{ padding: 0 }}>
         <Box className="quick-add-task">
@@ -495,7 +484,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
           {currentTab === 0 ? (
             <>
               {['P1', 'P2', 'P3', 'P4'].map(priority => (
-                <Accordion key={priority} defaultExpanded>
+                <Accordion key={priority} defaultExpanded className="priority-section">
                   <AccordionSummary
                     expandIcon={<ExpandMoreIcon />}
                     sx={{
@@ -509,13 +498,14 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                   >
                     <div className="priority-header">
                       <div className="priority-header-text">
-                        <Typography variant="subtitle2">
+                        <div className={`priority-indicator priority-${priority.toLowerCase()}`} />
+                        <Typography className="priority-title">
                           {priority === 'P1' ? 'P1 - Critical' :
                            priority === 'P2' ? 'P2 - High' :
                            priority === 'P3' ? 'P3 - Medium' :
                            'P4 - Low'}
                         </Typography>
-                        <Typography variant="body2" className="priority-count">
+                        <Typography className="priority-count">
                           {priorityTasksByLevel[priority].length} tasks
                         </Typography>
                       </div>

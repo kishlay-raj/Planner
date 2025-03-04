@@ -174,16 +174,10 @@
 }
 
 .priority-header {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 0;
-  padding: 16px 24px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #e5e5e5;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 8px;
 }
 
 .priority-header-text {
@@ -253,4 +247,64 @@
 
 .quick-add-task .MuiIconButton-root:hover {
   background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Priority section styling */
+.priority-section .MuiAccordionSummary-root {
+  min-height: 40px !important;
+  background-color: #fafafa;
+}
+
+.priority-section .MuiAccordionSummary-content {
+  margin: 8px 0 !important;
+}
+
+.priority-section .priority-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.priority-section .priority-count {
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, 0.6);
+  margin-left: 8px;
+}
+
+/* Priority color indicators */
+.priority-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.priority-p1 { background-color: #f44336; }
+.priority-p2 { background-color: #ff9800; }
+.priority-p3 { background-color: #2196f3; }
+.priority-p4 { background-color: #4caf50; }
+
+/* Task subsection styling */
+.task-section .MuiAccordionSummary-root {
+  min-height: 40px !important;
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.task-section .MuiAccordionSummary-content {
+  margin: 8px 0 !important;
+}
+
+.task-section .section-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-section .section-count {
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, 0.6);
 } 
