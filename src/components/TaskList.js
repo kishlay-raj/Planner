@@ -44,7 +44,14 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     urgent: false,
     priority: 'all'
   });
-  const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskTexts, setNewTaskTexts] = useState({
+    P1: '',
+    P2: '',
+    P3: '',
+    P4: '',
+    today: '',
+    dump: ''
+  });
 
   const priorityTasks = taskList.filter(task => 
     (task.important || task.isToday) && !task.completed
@@ -155,11 +162,12 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     onTaskUpdate(updatedTasks);
   };
 
-  const handleQuickAdd = (priority = 'P4', section = 'today') => {
-    if (newTaskText.trim()) {
+  const handleQuickAdd = (priority, section) => {
+    const text = newTaskTexts[section] || newTaskTexts[priority];
+    if (text.trim()) {
       const newTask = {
         id: Date.now(),
-        name: newTaskText,
+        name: text,
         priority,
         duration: 30,
         isToday: section !== 'dump',
@@ -169,7 +177,11 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         tag: ''
       };
       onTaskUpdate([...taskList, newTask]);
-      setNewTaskText('');
+      setNewTaskTexts(prev => ({
+        ...prev,
+        [section]: '',
+        [priority]: ''
+      }));
     }
   };
 
@@ -448,18 +460,21 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         <Box className="quick-add-task">
           <InputBase
             placeholder="Add a task..."
-            value={newTaskText}
-            onChange={(e) => setNewTaskText(e.target.value)}
+            value={newTaskTexts[sectionId.split('-')[0]] || ''}
+            onChange={(e) => setNewTaskTexts(prev => ({
+              ...prev,
+              [sectionId.split('-')[0]]: e.target.value
+            }))}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
-                handleQuickAdd(sectionId.split('-')[0].split('-')[0], sectionId.includes('dump') ? 'dump' : 'today');
+                handleQuickAdd(sectionId.split('-')[0], sectionId.includes('dump') ? 'dump' : 'today');
               }
             }}
             fullWidth
           />
           <IconButton 
             size="small"
-            onClick={() => handleQuickAdd(sectionId.split('-')[0].split('-')[0], sectionId.includes('dump') ? 'dump' : 'today')}
+            onClick={() => handleQuickAdd(sectionId.split('-')[0], sectionId.includes('dump') ? 'dump' : 'today')}
           >
             <AddIcon fontSize="small" />
           </IconButton>
@@ -515,8 +530,11 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                     <Box className="quick-add-task">
                       <InputBase
                         placeholder="Add a task..."
-                        value={newTaskText}
-                        onChange={(e) => setNewTaskText(e.target.value)}
+                        value={newTaskTexts[priority] || ''}
+                        onChange={(e) => setNewTaskTexts(prev => ({
+                          ...prev,
+                          [priority]: e.target.value
+                        }))}
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') {
                             handleQuickAdd(priority, priority);
