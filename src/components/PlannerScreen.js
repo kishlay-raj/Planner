@@ -56,25 +56,24 @@ function PlannerScreen() {
   };
 
   const handleTaskUpdate = (updatedTasks) => {
-    if (!Array.isArray(updatedTasks)) {
-      console.error('Updated tasks is not an array:', updatedTasks);
-      return;
-    }
-    // If it's a new task being added
-    if (updatedTasks.length > allTasks.length) {
-      const newTask = updatedTasks[updatedTasks.length - 1];
-      setAllTasks(prevTasks => [...prevTasks, newTask]);
-    } else {
-      // If it's an update to existing tasks
-      setAllTasks(updatedTasks);
-    }
+    // Convert single task to array if needed
+    const tasksToUpdate = Array.isArray(updatedTasks) ? updatedTasks : [updatedTasks];
 
-    // Update scheduled tasks if any of the updated tasks are scheduled
-    const updatedScheduled = scheduledTasks.map(scheduledTask => {
-      const updatedTask = updatedTasks.find(t => t.id === scheduledTask.id);
-      return updatedTask ? { ...scheduledTask, ...updatedTask } : scheduledTask;
+    // Update allTasks
+    setAllTasks(prevTasks => {
+      return prevTasks.map(task => {
+        const updatedTask = tasksToUpdate.find(t => t.id === task.id);
+        return updatedTask || task;
+      });
     });
-    setScheduledTasks(updatedScheduled);
+
+    // Update scheduledTasks
+    setScheduledTasks(prevScheduled => {
+      return prevScheduled.map(task => {
+        const updatedTask = tasksToUpdate.find(t => t.id === task.id);
+        return updatedTask || task;
+      });
+    });
   };
 
   const handleTaskSchedule = (taskId, timeSlot, newDuration) => {
@@ -139,6 +138,7 @@ function PlannerScreen() {
               scheduledTasks={scheduledTasks}
               onTaskSchedule={handleTaskSchedule}
               onTaskCreate={handleTaskCreate}
+              onTaskUpdate={handleTaskUpdate}
             />
           </Paper>
         </Grid>

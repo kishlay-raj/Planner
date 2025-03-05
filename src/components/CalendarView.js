@@ -10,6 +10,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import './CalendarView.css';
 import QuickTaskDialog from './QuickTaskDialog';
+import TaskEditDialog from './TaskEditDialog';
 
 const locales = {
   'en-US': require('date-fns/locale/en-US')
@@ -25,11 +26,15 @@ const localizer = dateFnsLocalizer({
 
 const DnDCalendar = withDragAndDrop(Calendar);
 
-function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate }) {
+function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpdate }) {
   const [draggedEvent, setDraggedEvent] = useState(null);
   const [quickTaskDialog, setQuickTaskDialog] = useState({
     open: false,
     selectedTime: null
+  });
+  const [editDialog, setEditDialog] = useState({
+    open: false,
+    task: null
   });
 
   // Get current time for initial scroll
@@ -157,6 +162,18 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate }) {
     setQuickTaskDialog({ open: false, selectedTime: null });
   };
 
+  const handleEventDoubleClick = (event) => {
+    setEditDialog({
+      open: true,
+      task: event.resource
+    });
+  };
+
+  const handleTaskSave = (editedTask) => {
+    onTaskUpdate(editedTask);
+    setEditDialog({ open: false, task: null });
+  };
+
   return (
     <div 
       className="calendar-view"
@@ -179,6 +196,7 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate }) {
         components={components}
         onEventDrop={handleEventDrop}
         onEventResize={handleEventResize}
+        onDoubleClickEvent={handleEventDoubleClick}
         eventPropGetter={(event) => ({
           className: 'calendar-event',
           style: {
@@ -193,6 +211,12 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate }) {
         selectedTime={quickTaskDialog.selectedTime}
         onClose={() => setQuickTaskDialog({ open: false, selectedTime: null })}
         onSave={handleQuickTaskCreate}
+      />
+      <TaskEditDialog
+        open={editDialog.open}
+        task={editDialog.task}
+        onClose={() => setEditDialog({ open: false, task: null })}
+        onSave={handleTaskSave}
       />
     </div>
   );
