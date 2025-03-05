@@ -15,11 +15,31 @@ import {
 } from '@mui/material';
 
 function TaskEditDialog({ open, onClose, onSave, task }) {
-  const [editedTask, setEditedTask] = useState(null);
+  const [editedTask, setEditedTask] = useState({
+    name: '',
+    priority: 'P4',
+    duration: 30,
+    important: false,
+    urgent: false,
+    isToday: true,
+    taskDetails: '',
+    tag: ''
+  });
 
   useEffect(() => {
     if (task) {
       setEditedTask(task);
+    } else {
+      setEditedTask({
+        name: '',
+        priority: 'P4',
+        duration: 30,
+        important: false,
+        urgent: false,
+        isToday: true,
+        taskDetails: '',
+        tag: ''
+      });
     }
   }, [task]);
 
@@ -34,7 +54,7 @@ function TaskEditDialog({ open, onClose, onSave, task }) {
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Edit Task</DialogTitle>
+      <DialogTitle>{task ? 'Edit Task' : 'New Task'}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
@@ -97,6 +117,16 @@ function TaskEditDialog({ open, onClose, onSave, task }) {
             />
           }
           label={editedTask.isToday ? "Today" : "Dump"}
+        />
+        <TextField
+          margin="dense"
+          label="Task Details"
+          fullWidth
+          multiline
+          rows={3}
+          value={editedTask.taskDetails || ''}
+          onChange={(e) => setEditedTask({ ...editedTask, taskDetails: e.target.value })}
+          placeholder="Add additional details about this task..."
         />
       </DialogContent>
       <DialogActions>

@@ -37,6 +37,7 @@
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid #f0f0f0;
+  user-select: none;
 }
 
 .task-item::after {
@@ -309,4 +310,23 @@
 .task-section .section-count {
   font-size: 0.75rem;
   color: rgba(0, 0, 0, 0.6);
+}
+
+.task-details-text {
+  margin-top: 8px;
+  padding-left: 8px;
+  border-left: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.task-drag-image {
+  position: fixed;
+  top: -100%;
+  left: -100%;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 9999;
 } 

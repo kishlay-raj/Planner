@@ -120,8 +120,26 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   };
 
   const handleDragStart = (event, task) => {
+    // Only allow drag if not using the drag handle
+    if (event.target.closest('.drag-handle')) {
+      return;
+    }
+    
     event.dataTransfer.setData('task', JSON.stringify(task));
     event.dataTransfer.effectAllowed = 'move';
+    
+    // Create a custom drag image
+    const dragImage = document.createElement('div');
+    dragImage.className = 'task-drag-image';
+    dragImage.textContent = task.name;
+    document.body.appendChild(dragImage);
+    
+    event.dataTransfer.setDragImage(dragImage, 0, 0);
+    
+    // Clean up the drag image after dragging
+    requestAnimationFrame(() => {
+      dragImage.remove();
+    });
   };
 
   const theme = useTheme();
@@ -172,6 +190,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         completed: false,
         important: false,
         urgent: false,
+        taskDetails: '',
         tag: ''
       };
       const updatedTasks = [...taskList, newTask];
@@ -191,6 +210,13 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
           ref={provided.innerRef}
           {...provided.droppableProps}
           className="task-list-items"
+          draggable="true"
+          onDragStart={(e) => {
+            if (e.target === e.currentTarget) {
+              e.preventDefault();
+              return;
+            }
+          }}
         >
           {items.map((task, index) => (
             <Draggable
@@ -202,25 +228,22 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                 <ListItem
                   ref={provided.innerRef}
                   {...provided.draggableProps}
-                  {...provided.dragHandleProps}
                   className={`task-item ${snapshot.isDragging ? 'dragging' : ''}`}
-                  sx={{
-                    '& .MuiListItemText-primary': {
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      color: task.important ? theme.palette.priority.p1 : 'rgba(0, 0, 0, 0.87)'
-                    },
-                    '& .MuiListItemText-secondary': {
-                      marginTop: 0.5
-                    },
-                    borderLeft: task.important ? `4px solid ${theme.palette.priority.p1}` : 'none',
-                    paddingLeft: 0,
-                    '&:hover .MuiIconButton-root': {
-                      color: theme.palette.primary.main
-                    }
+                  draggable="true"
+                  onDragStart={(e) => {
+                    e.stopPropagation();
+                    handleDragStart(e, task);
                   }}
                 >
-                  <div className="drag-handle">
+                  <div 
+                    {...provided.dragHandleProps} 
+                    className="drag-handle"
+                    onMouseDown={(e) => {
+                      if (e.target === e.currentTarget) {
+                        e.stopPropagation();
+                      }
+                    }}
+                  >
                     <DragIndicatorIcon sx={{ fontSize: '1.2rem' }} />
                   </div>
                   <Checkbox
@@ -251,50 +274,70 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                       opacity: task.completed ? 0.7 : 1
                     }}
                     secondary={
-                      <div className="task-details">
-                        <Chip 
-                          label={`${task.duration}min`} 
-                          size="small" 
-                          variant="outlined"
-                          sx={{ 
-                            backgroundColor: 'rgba(33, 150, 243, 0.08)',
-                            color: theme.palette.primary.main,
-                            fontWeight: 500
-                          }}
-                        />
-                        <Chip 
-                          label={task.priority} 
-                          size="small"
-                          sx={{ 
-                            backgroundColor: `${getPriorityColor(task.priority)}15`,
-                            color: getPriorityColor(task.priority),
-                            fontWeight: 500,
-                            borderColor: getPriorityColor(task.priority)
-                          }}
-                        />
-                        {task.tag && (
+                      <div>
+                        <div className="task-details">
                           <Chip 
-                            label={task.tag} 
+                            label={`${task.duration}min`} 
                             size="small" 
                             variant="outlined"
                             sx={{ 
-                              backgroundColor: `${getTagColor(task.tag)}15`,
-                              color: getTagColor(task.tag),
-                              fontWeight: 500,
-                              borderColor: getTagColor(task.tag)
-                            }}
-                          />
-                        )}
-                        {task.urgent && (
-                          <Chip 
-                            label="Urgent"
-                            size="small"
-                            sx={{ 
-                              backgroundColor: `${theme.palette.error.main}15`,
-                              color: theme.palette.error.main,
+                              backgroundColor: 'rgba(33, 150, 243, 0.08)',
+                              color: theme.palette.primary.main,
                               fontWeight: 500
                             }}
                           />
+                          <Chip 
+                            label={task.priority} 
+                            size="small"
+                            sx={{ 
+                              backgroundColor: `${getPriorityColor(task.priority)}15`,
+                              color: getPriorityColor(task.priority),
+                              fontWeight: 500,
+                              borderColor: getPriorityColor(task.priority)
+                            }}
+                          />
+                          {task.tag && (
+                            <Chip 
+                              label={task.tag} 
+                              size="small" 
+                              variant="outlined"
+                              sx={{ 
+                                backgroundColor: `${getTagColor(task.tag)}15`,
+                                color: getTagColor(task.tag),
+                                fontWeight: 500,
+                                borderColor: getTagColor(task.tag)
+                              }}
+                            />
+                          )}
+                          {task.urgent && (
+                            <Chip 
+                              label="Urgent"
+                              size="small"
+                              sx={{ 
+                                backgroundColor: `${theme.palette.error.main}15`,
+                                color: theme.palette.error.main,
+                                fontWeight: 500
+                              }}
+                            />
+                          )}
+                        </div>
+                        {task.taskDetails && (
+                          <Typography
+                            variant="body2"
+                            className="task-details-text"
+                            sx={{
+                              mt: 1,
+                              color: 'text.secondary',
+                              fontSize: '0.75rem',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                              fontStyle: 'italic'
+                            }}
+                          >
+                            {task.taskDetails}
+                          </Typography>
                         )}
                       </div>
                     }
