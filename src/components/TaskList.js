@@ -82,22 +82,20 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
-    // Get source and destination lists
-    let sourceList;
-    let destinationList;
+    // Get the task being moved
+    let taskToMove;
     let updatedTask;
 
+    // Get source and destination lists
     if (result.source.droppableId.startsWith('P')) {
-      sourceList = priorityTasksByLevel[result.source.droppableId.split('-')[0]];
+      const priority = result.source.droppableId.split('-')[0];
+      taskToMove = priorityTasksByLevel[priority][result.source.index];
     } else if (result.source.droppableId === 'today-list') {
-      sourceList = todayTasks;
+      taskToMove = todayTasks[result.source.index];
     } else {
-      sourceList = dumpTasks;
+      taskToMove = dumpTasks[result.source.index];
     }
 
-    // Get the task being moved
-    const taskToMove = sourceList[result.source.index];
-    
     // Update task's isToday status based on destination
     if (result.destination.droppableId === 'today-list') {
       updatedTask = { ...taskToMove, isToday: true };
@@ -200,13 +198,12 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
               draggableId={String(task.id)}
               index={index}
             >
-              {(provided) => (
+              {(provided, snapshot) => (
                 <ListItem
                   ref={provided.innerRef}
                   {...provided.draggableProps}
-                  className="task-item"
-                  draggable="true"
-                  onDragStart={(e) => handleDragStart(e, task)}
+                  {...provided.dragHandleProps}
+                  className={`task-item ${snapshot.isDragging ? 'dragging' : ''}`}
                   sx={{
                     '& .MuiListItemText-primary': {
                       fontWeight: 500,
@@ -223,7 +220,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
                     }
                   }}
                 >
-                  <div {...provided.dragHandleProps} className="drag-handle">
+                  <div className="drag-handle">
                     <DragIndicatorIcon sx={{ fontSize: '1.2rem' }} />
                   </div>
                   <Checkbox
