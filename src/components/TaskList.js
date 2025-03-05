@@ -176,7 +176,8 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         urgent: false,
         tag: ''
       };
-      onTaskUpdate([...taskList, newTask]);
+      const updatedTasks = [...taskList, newTask];
+      onTaskUpdate(updatedTasks);
       setNewTaskTexts(prev => ({
         ...prev,
         [section]: '',

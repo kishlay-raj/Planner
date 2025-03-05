@@ -59,6 +59,12 @@ function PlannerScreen() {
     // Convert single task to array if needed
     const tasksToUpdate = Array.isArray(updatedTasks) ? updatedTasks : [updatedTasks];
 
+    // Check if this is a new task being added
+    if (tasksToUpdate.length > allTasks.length) {
+      setAllTasks(tasksToUpdate);
+      return;
+    }
+
     // Update allTasks
     setAllTasks(prevTasks => {
       return prevTasks.map(task => {
