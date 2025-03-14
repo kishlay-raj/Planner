@@ -6,6 +6,10 @@
   flex-direction: column;
 }
 
+.MuiGrid-container {
+  flex-wrap: nowrap !important;
+}
+
 .calendar-container {
   padding: 0;
   height: calc(100vh - 80px);

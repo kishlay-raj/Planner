@@ -1,0 +1,164 @@
+.notes-panel {
+  .ProseMirror {
+    outline: none;
+    min-height: 100%;
+    text-align: left;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #2c3e50;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  }
+
+  .ProseMirror > * + * {
+    margin-top: 0.75em;
+  }
+
+  .ProseMirror p.is-editor-empty:first-child::before {
+    color: #adb5bd;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .ProseMirror h1 {
+    font-size: 2em;
+    font-weight: 600;
+    margin-bottom: 0.5em;
+    color: #1a1a1a;
+    line-height: 1.2;
+  }
+
+  .ProseMirror h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-bottom: 0.5em;
+    color: #1a1a1a;
+    line-height: 1.2;
+  }
+
+  .ProseMirror h3 {
+    font-size: 1.17em;
+    font-weight: 600;
+    margin-bottom: 0.5em;
+    color: #1a1a1a;
+    line-height: 1.2;
+  }
+
+  .ProseMirror ul,
+  .ProseMirror ol {
+    padding-left: 1.5em;
+    margin: 0.5em 0;
+    line-height: 1.5;
+  }
+
+  .ProseMirror li {
+    margin: 0.2em 0;
+  }
+
+  .ProseMirror li p {
+    margin: 0;
+  }
+
+  .ProseMirror blockquote {
+    border-left: 3px solid #b4b4b4;
+    padding-left: 1em;
+    margin: 1em 0;
+    color: #666;
+    font-style: italic;
+    background-color: #f8f9fa;
+    padding: 0.5em 1em;
+  }
+
+  .ProseMirror code {
+    background-color: #f5f5f5;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.9em;
+    color: #e83e8c;
+  }
+
+  .ProseMirror pre {
+    background: #0d0d0d;
+    color: #fff;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin: 1em 0;
+    overflow-x: auto;
+
+    code {
+      background: none;
+      color: inherit;
+      padding: 0;
+      font-size: 0.9em;
+    }
+  }
+
+  .ProseMirror .note-link {
+    color: #2196f3;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    &:hover {
+      text-decoration: underline;
+      color: #1976d2;
+    }
+  }
+
+  .ProseMirror mark {
+    background-color: #fff176;
+    border-radius: 2px;
+    padding: 0 2px;
+    color: #000;
+  }
+
+  .ProseMirror ul[data-type="taskList"] {
+    list-style: none;
+    padding: 0;
+
+    li {
+      display: flex;
+      align-items: center;
+      margin: 0.5em 0;
+      gap: 0.5em;
+
+      > label {
+        user-select: none;
+        cursor: pointer;
+        line-height: 1;
+        margin-top: 2px;
+      }
+
+      > div {
+        flex: 1;
+        padding: 1px 0;
+        > p {
+          margin: 0;
+          line-height: 1.6;
+        }
+      }
+
+      input[type="checkbox"] {
+        margin: 0;
+        cursor: pointer;
+      }
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  /* Proper spacing for nested lists */
+  .ProseMirror ul ul,
+  .ProseMirror ol ol,
+  .ProseMirror ul ol,
+  .ProseMirror ol ul {
+    margin: 0.2em 0 0.2em 1.5em;
+  }
+}
+
+.is-active {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+} 

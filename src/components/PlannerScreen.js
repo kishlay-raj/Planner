@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid } from '@mui/material';
+import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
 import TaskCreationButton from './TaskCreationButton';
+import NotesPanel from './NotesPanel';
 import './PlannerScreen.css';
 
 function PlannerScreen() {
@@ -137,8 +138,8 @@ function PlannerScreen() {
         </div>
       </div>
 
-      <Grid container spacing={0}>
-        <Grid item xs={12} md={9}>
+      <Grid container spacing={0} sx={{ display: 'flex', height: 'calc(100vh - 80px)' }}>
+        <Grid item xs={12} md={6}>
           <Paper className="calendar-container">
             <CalendarView 
               scheduledTasks={scheduledTasks}
@@ -156,6 +157,13 @@ function PlannerScreen() {
               onTaskSchedule={handleTaskSchedule}
             />
           </Paper>
+        </Grid>
+        <Divider orientation="vertical" flexItem sx={{ 
+          height: '100%',
+          backgroundColor: '#e5e5e5'
+        }} />
+        <Grid item xs={12} md={3}>
+          <NotesPanel />
         </Grid>
       </Grid>
 
