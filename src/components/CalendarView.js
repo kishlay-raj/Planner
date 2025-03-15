@@ -26,7 +26,7 @@ const localizer = dateFnsLocalizer({
 
 const DnDCalendar = withDragAndDrop(Calendar);
 
-function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpdate }) {
+function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpdate, selectedDate, onDateChange }) {
   const [draggedEvent, setDraggedEvent] = useState(null);
   const [quickTaskDialog, setQuickTaskDialog] = useState({
     open: false,
@@ -189,6 +189,8 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
         max={new Date(0, 0, 0, 23, 59, 59)} // 11:59 PM
         step={15}
         timeslots={4}
+        date={selectedDate}
+        onNavigate={date => onDateChange(date)}
         scrollToTime={scrollTime}
         onSelectSlot={handleSelectSlot}
         selectable

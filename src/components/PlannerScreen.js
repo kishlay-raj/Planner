@@ -25,6 +25,7 @@ function PlannerScreen() {
   });
 
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Save tasks to localStorage whenever they change
   useEffect(() => {
@@ -146,6 +147,8 @@ function PlannerScreen() {
               onTaskSchedule={handleTaskSchedule}
               onTaskCreate={handleTaskCreate}
               onTaskUpdate={handleTaskUpdate}
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
             />
           </Paper>
         </Grid>
@@ -163,7 +166,7 @@ function PlannerScreen() {
           backgroundColor: '#e5e5e5'
         }} />
         <Grid item xs={12} md={3}>
-          <NotesPanel />
+          <NotesPanel selectedDate={selectedDate} />
         </Grid>
       </Grid>
 

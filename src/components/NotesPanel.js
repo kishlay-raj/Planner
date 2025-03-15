@@ -22,13 +22,13 @@ import {
 } from '@mui/icons-material';
 import './NotesPanel.css';
 
-function NotesPanel() {
+function NotesPanel({ selectedDate }) {
   const [notes, setNotes] = useState(() => {
     const savedNotes = localStorage.getItem('dailyNotes');
     return savedNotes ? JSON.parse(savedNotes) : {};
   });
 
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const currentDate = format(selectedDate, 'yyyy-MM-dd');
   
   const editor = useEditor({
     extensions: [
@@ -48,14 +48,20 @@ function NotesPanel() {
         nested: true,
       }),
     ],
-    content: notes[today] || '',
+    content: notes[currentDate] || '',
     onUpdate: ({ editor }) => {
       const content = editor.getHTML();
-      const updatedNotes = { ...notes, [today]: content };
+      const updatedNotes = { ...notes, [currentDate]: content };
       setNotes(updatedNotes);
       localStorage.setItem('dailyNotes', JSON.stringify(updatedNotes));
     },
   });
+
+  useEffect(() => {
+    if (editor) {
+      editor.commands.setContent(notes[currentDate] || '');
+    }
+  }, [currentDate, editor, notes]);
 
   const MenuBar = () => {
     if (!editor) return null;
@@ -174,7 +180,7 @@ function NotesPanel() {
         backgroundColor: 'white',
       }}>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          Notes for {format(new Date(), 'MMMM d, yyyy')}
+          Notes for {format(selectedDate, 'MMMM d, yyyy')}
         </Typography>
       </Box>
       <MenuBar />
