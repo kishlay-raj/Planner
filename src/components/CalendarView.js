@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { format, parse, startOfWeek, getDay, addMinutes } from 'date-fns';
-import { Paper, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Paper, IconButton, Popover, TextField } from '@mui/material';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import TodayIcon from '@mui/icons-material/Today';
@@ -11,6 +11,9 @@ import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import './CalendarView.css';
 import QuickTaskDialog from './QuickTaskDialog';
 import TaskEditDialog from './TaskEditDialog';
+import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 const locales = {
   'en-US': require('date-fns/locale/en-US')
@@ -36,6 +39,7 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
     open: false,
     task: null
   });
+  const [datePickerAnchor, setDatePickerAnchor] = useState(null);
 
   // Get current time for initial scroll
   const now = new Date();
@@ -122,7 +126,10 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
           <button type='button' onClick={() => props.onNavigate('PREV')}>
             <NavigateBeforeIcon fontSize="small" />
           </button>
-          <button type='button' onClick={() => props.onNavigate('TODAY')}>
+          <button 
+            type='button' 
+            onClick={(e) => setDatePickerAnchor(e.currentTarget)}
+          >
             <TodayIcon fontSize="small" />
           </button>
           <button type='button' onClick={() => props.onNavigate('NEXT')}>
@@ -155,6 +162,11 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
   const handleTaskSave = (editedTask) => {
     onTaskUpdate(editedTask);
     setEditDialog({ open: false, task: null });
+  };
+
+  const handleDateSelect = (newDate) => {
+    onDateChange(newDate);
+    setDatePickerAnchor(null);
   };
 
   return (
@@ -191,6 +203,79 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
           }
         })}
       />
+      <Popover
+        open={Boolean(datePickerAnchor)}
+        anchorEl={datePickerAnchor}
+        onClose={() => setDatePickerAnchor(null)}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+          }
+        }}
+      >
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DateCalendar 
+            value={selectedDate}
+            onChange={handleDateSelect}
+            sx={{
+              width: 320,
+              '& .MuiDayCalendar-header': {
+                backgroundColor: 'background.paper',
+              },
+              '& .MuiPickersDay-root': {
+                fontSize: '0.875rem',
+                width: 36,
+                height: 36,
+                borderRadius: 1,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.main',
+                  color: 'primary.contrastText',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  }
+                },
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                }
+              },
+              '& .MuiPickersCalendarHeader-root': {
+                padding: '8px 16px',
+                '& .MuiPickersArrowSwitcher-button': {
+                  width: 28,
+                  height: 28,
+                  color: 'text.primary',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  padding: '4px',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                  '& svg': {
+                    width: 20,
+                    height: 20,
+                  }
+                }
+              },
+              '& .MuiDayCalendar-weekContainer': {
+                margin: '2px 0',
+              }
+            }}
+          />
+        </LocalizationProvider>
+      </Popover>
       <QuickTaskDialog
         open={quickTaskDialog.open}
         selectedTime={quickTaskDialog.selectedTime}
