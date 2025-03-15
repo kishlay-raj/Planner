@@ -116,38 +116,21 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
   }, [onTaskSchedule]);
 
   const components = {
-    toolbar: (props) => (
-      <div className="rbc-toolbar">
-        <div className="toolbar-left">
-          <Tooltip title="Previous">
-            <IconButton 
-              onClick={() => props.onNavigate('PREV')}
-              size="small"
-              sx={{ color: 'text.secondary' }}
-            >
-              <NavigateBeforeIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Today">
-            <IconButton 
-              onClick={() => props.onNavigate('TODAY')}
-              size="small"
-              sx={{ color: 'text.secondary' }}
-            >
-              <TodayIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Next">
-            <IconButton 
-              onClick={() => props.onNavigate('NEXT')}
-              size="small"
-              sx={{ color: 'text.secondary' }}
-            >
-              <NavigateNextIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-        </div>
-        <span className="rbc-toolbar-label">{props.label}</span>
+    toolbar: props => (
+      <div className='rbc-toolbar'>
+        <span className='rbc-btn-group'>
+          <button type='button' onClick={() => props.onNavigate('PREV')}>
+            <NavigateBeforeIcon fontSize="small" />
+          </button>
+          <button type='button' onClick={() => props.onNavigate('TODAY')}>
+            <TodayIcon fontSize="small" />
+          </button>
+          <button type='button' onClick={() => props.onNavigate('NEXT')}>
+            <NavigateNextIcon fontSize="small" />
+          </button>
+        </span>
+        <span className='rbc-toolbar-label'>{props.label}</span>
+        <span className='rbc-btn-group'></span>
       </div>
     )
   };
@@ -185,8 +168,8 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
         events={events}
         defaultView="day"
         views={['day']}
-        min={new Date(0, 0, 0, 0, 0, 0)} // 12:00 AM
-        max={new Date(0, 0, 0, 23, 59, 59)} // 11:59 PM
+        min={new Date(0, 0, 0, 0, 0, 0)}
+        max={new Date(0, 0, 0, 23, 59, 59)}
         step={15}
         timeslots={4}
         date={selectedDate}
