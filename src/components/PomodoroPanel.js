@@ -71,16 +71,26 @@ function PomodoroPanel() {
           Pomodoro Timer
         </Typography>
         
-        <Card sx={{ mb: 3, bgcolor: isBreak ? 'success.light' : 'primary.light' }}>
+        <Card sx={{ 
+          mb: 3, 
+          bgcolor: isBreak ? 'success.light' : 'primary.light',
+          maxWidth: 400,
+          mx: 'auto'
+        }}>
           <CardContent>
             <Typography variant="h6" align="center" gutterBottom>
               {isBreak ? 'Break Time!' : 'Focus Time'}
             </Typography>
-            <Box sx={{ position: 'relative', display: 'inline-flex', width: '100%', justifyContent: 'center' }}>
+            <Box sx={{ 
+              position: 'relative', 
+              display: 'inline-flex', 
+              width: '100%', 
+              justifyContent: 'center' 
+            }}>
               <CircularProgress
                 variant="determinate"
                 value={progress}
-                size={200}
+                size={160}
                 thickness={2}
               />
               <Box
@@ -95,7 +105,15 @@ function PomodoroPanel() {
                   justifyContent: 'center',
                 }}
               >
-                <Typography variant="h2" component="div">
+                <Typography 
+                  variant="h3" 
+                  component="div"
+                  sx={{ 
+                    fontWeight: 'medium',
+                    fontFamily: 'monospace',
+                    letterSpacing: 2
+                  }}
+                >
                   {`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
                 </Typography>
               </Box>
@@ -103,12 +121,22 @@ function PomodoroPanel() {
           </CardContent>
         </Card>
 
-        <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 4 }}>
+        <Stack 
+          direction="row" 
+          spacing={2} 
+          justifyContent="center" 
+          sx={{ 
+            mb: 4,
+            maxWidth: 400,
+            mx: 'auto'
+          }}
+        >
           <Button
             variant="contained"
             size="large"
             startIcon={isActive ? <Pause /> : <PlayArrow />}
             onClick={toggleTimer}
+            fullWidth
           >
             {isActive ? 'Pause' : 'Start'}
           </Button>
@@ -117,16 +145,26 @@ function PomodoroPanel() {
             size="large"
             startIcon={<Stop />}
             onClick={resetTimer}
+            fullWidth
           >
             Reset
           </Button>
         </Stack>
 
-        <Box sx={{ textAlign: 'center' }}>
+        <Box 
+          sx={{ 
+            textAlign: 'center',
+            maxWidth: 400,
+            mx: 'auto'
+          }}>
           <Chip 
             label={`Completed Cycles: ${cycles}`}
             color="primary"
-            sx={{ fontSize: '1.1rem', py: 1 }}
+            sx={{ 
+              fontSize: '1.1rem', 
+              py: 1,
+              width: '100%'
+            }}
           />
         </Box>
       </Box>

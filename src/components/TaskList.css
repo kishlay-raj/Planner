@@ -38,6 +38,7 @@
   overflow: hidden;
   border-bottom: 1px solid #f0f0f0;
   user-select: none;
+  font-size: 0.875rem;
 }
 
 .task-item::after {
@@ -329,4 +330,19 @@
   font-size: 14px;
   pointer-events: none;
   z-index: 9999;
+}
+
+/* Decrease font size for task text */
+.task-item .MuiListItemText-primary {
+  font-size: 0.875rem;
+}
+
+/* Adjust secondary text size */
+.task-item .MuiListItemText-secondary {
+  font-size: 0.75rem;
+}
+
+/* Adjust chip text size */
+.task-item .MuiChip-label {
+  font-size: 0.75rem;
 } 
