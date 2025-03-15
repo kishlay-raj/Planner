@@ -132,7 +132,7 @@ function PomodoroPanel({ onModeChange }) {
         justifyContent: 'space-between',
         alignItems: 'center',
         pl: 3,
-        pr: 6,
+        pr: 8,
         py: 2,
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
@@ -152,7 +152,7 @@ function PomodoroPanel({ onModeChange }) {
             padding: 2,
             border: '1px solid rgba(255, 255, 255, 0.2)',
             position: 'relative',
-            right: 20,
+            right: 32,
             '&:hover': { 
               bgcolor: 'rgba(255, 255, 255, 0.2)',
               border: '1px solid rgba(255, 255, 255, 0.3)'
