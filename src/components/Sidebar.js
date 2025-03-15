@@ -25,9 +25,15 @@ import {
 
 function Sidebar({ onNavigate }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
+  const [activePanel, setActivePanel] = React.useState('planner');
 
   const toggleDrawer = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const handleNavigate = (panel) => {
+    setActivePanel(panel);
+    onNavigate(panel);
   };
 
   return (
@@ -39,10 +45,13 @@ function Sidebar({ onNavigate }) {
         '& .MuiDrawer-paper': {
           width: isExpanded ? 240 : 60,
           boxSizing: 'border-box',
-          bgcolor: 'background.paper',
+          bgcolor: activePanel === 'pomodoro' ? '#b74b4b' : 'background.paper',
+          color: activePanel === 'pomodoro' ? 'white' : 'inherit',
           overflowX: 'hidden',
-          transition: 'width 0.2s ease-in-out',
-          borderRight: '1px solid rgba(0, 0, 0, 0.12)'
+          transition: 'width 0.2s ease-in-out, background-color 0.3s ease',
+          borderRight: activePanel === 'pomodoro' 
+            ? '1px solid rgba(255, 255, 255, 0.12)' 
+            : '1px solid rgba(0, 0, 0, 0.12)'
         },
       }}
     >
@@ -53,32 +62,79 @@ function Sidebar({ onNavigate }) {
         p: 1,
         minHeight: 56
       }}>
-        <IconButton onClick={toggleDrawer}>
+        <IconButton 
+          onClick={toggleDrawer}
+          sx={{ 
+            color: activePanel === 'pomodoro' ? 'white' : 'inherit',
+            '&:hover': {
+              bgcolor: activePanel === 'pomodoro' 
+                ? 'rgba(255, 255, 255, 0.1)' 
+                : 'rgba(0, 0, 0, 0.04)'
+            }
+          }}
+        >
           {isExpanded ? <ChevronLeft /> : <Menu />}
         </IconButton>
       </Box>
-      <Divider />
+      <Divider 
+        sx={{
+          borderColor: activePanel === 'pomodoro' 
+            ? 'rgba(255, 255, 255, 0.12)' 
+            : 'rgba(0, 0, 0, 0.12)'
+        }}
+      />
 
       <List component="nav">
         <Tooltip title="Planner" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton onClick={() => onNavigate('planner')}>
+          <ListItemButton 
+            onClick={() => handleNavigate('planner')}
+            sx={{
+              '&:hover': {
+                bgcolor: activePanel === 'pomodoro' 
+                  ? 'rgba(255, 255, 255, 0.1)' 
+                  : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
             <ListItemIcon>
-              <Dashboard />
+              <Dashboard sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
             </ListItemIcon>
-            {isExpanded && <ListItemText primary="Planner" />}
+            {isExpanded && <ListItemText 
+              primary="Planner" 
+              sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
+            />}
           </ListItemButton>
         </Tooltip>
 
         <Tooltip title="Pomodoro" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton onClick={() => onNavigate('pomodoro')}>
+          <ListItemButton 
+            onClick={() => handleNavigate('pomodoro')}
+            sx={{
+              '&:hover': {
+                bgcolor: activePanel === 'pomodoro' 
+                  ? 'rgba(255, 255, 255, 0.1)' 
+                  : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
             <ListItemIcon>
-              <Timer />
+              <Timer sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
             </ListItemIcon>
-            {isExpanded && <ListItemText primary="Pomodoro" />}
+            {isExpanded && <ListItemText 
+              primary="Pomodoro"
+              sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
+            />}
           </ListItemButton>
         </Tooltip>
 
-        <Divider sx={{ my: 1 }} />
+        <Divider 
+          sx={{ 
+            my: 1,
+            borderColor: activePanel === 'pomodoro' 
+              ? 'rgba(255, 255, 255, 0.12)' 
+              : 'rgba(0, 0, 0, 0.12)'
+          }} 
+        />
       </List>
       <Box sx={{ 
         position: 'absolute', 
