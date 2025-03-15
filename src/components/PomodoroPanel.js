@@ -5,24 +5,40 @@ import {
   Box,
   Button,
   IconButton,
-  CircularProgress,
-  Card,
-  CardContent,
-  Stack,
-  Chip
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 import {
   PlayArrow,
   Pause,
-  Stop,
-  Refresh
+  SkipNext,
+  Settings,
+  Assessment
 } from '@mui/icons-material';
 
 function PomodoroPanel() {
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(35 * 60);
   const [isActive, setIsActive] = useState(false);
-  const [isBreak, setIsBreak] = useState(false);
+  const [mode, setMode] = useState('pomodoro'); // 'pomodoro', 'shortBreak', 'longBreak'
   const [cycles, setCycles] = useState(0);
+
+  const handleModeChange = (event, newMode) => {
+    if (newMode !== null) {
+      setMode(newMode);
+      setIsActive(false);
+      switch (newMode) {
+        case 'pomodoro':
+          setTimeLeft(25 * 60);
+          break;
+        case 'shortBreak':
+          setTimeLeft(5 * 60);
+          break;
+        case 'longBreak':
+          setTimeLeft(15 * 60);
+          break;
+      }
+    }
+  };
 
   useEffect(() => {
     let interval = null;
@@ -35,20 +51,12 @@ function PomodoroPanel() {
       const audio = new Audio('/notification.mp3');
       audio.play();
       
-      if (isBreak) {
-        // End of break
-        setTimeLeft(25 * 60);
-        setIsBreak(false);
-      } else {
-        // End of work session
-        setCycles(c => c + 1);
-        setTimeLeft(5 * 60);
-        setIsBreak(true);
-      }
+      setCycles(c => c + 1);
+      setTimeLeft(5 * 60);
       setIsActive(false);
     }
     return () => clearInterval(interval);
-  }, [isActive, timeLeft, isBreak]);
+  }, [isActive, timeLeft]);
 
   const toggleTimer = () => {
     setIsActive(!isActive);
@@ -56,119 +64,122 @@ function PomodoroPanel() {
 
   const resetTimer = () => {
     setIsActive(false);
-    setIsBreak(false);
-    setTimeLeft(25 * 60);
+    setTimeLeft(35 * 60);
   };
 
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
-  const progress = (timeLeft / (isBreak ? 5 * 60 : 25 * 60)) * 100;
-
   return (
-    <Paper sx={{ height: 'calc(100vh - 80px)', p: 3 }}>
-      <Box sx={{ maxWidth: 600, mx: 'auto' }}>
-        <Typography variant="h5" gutterBottom align="center">
-          Pomodoro Timer
+    <Box 
+      sx={{ 
+        height: '100vh',
+        bgcolor: '#b74b4b',
+        color: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      <Box sx={{ 
+        width: '100%', 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        p: 2
+      }}>
+        <Typography variant="h6" sx={{ fontWeight: 500 }}>
+          Pomodoro
         </Typography>
-        
-        <Card sx={{ 
-          mb: 3, 
-          bgcolor: isBreak ? 'success.light' : 'primary.light',
-          maxWidth: 400,
-          mx: 'auto'
-        }}>
-          <CardContent>
-            <Typography variant="h6" align="center" gutterBottom>
-              {isBreak ? 'Break Time!' : 'Focus Time'}
-            </Typography>
-            <Box sx={{ 
-              position: 'relative', 
-              display: 'inline-flex', 
-              width: '100%', 
-              justifyContent: 'center' 
-            }}>
-              <CircularProgress
-                variant="determinate"
-                value={progress}
-                size={160}
-                thickness={2}
-              />
-              <Box
-                sx={{
-                  top: 0,
-                  left: 0,
-                  bottom: 0,
-                  right: 0,
-                  position: 'absolute',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Typography 
-                  variant="h3" 
-                  component="div"
-                  sx={{ 
-                    fontWeight: 'medium',
-                    fontFamily: 'monospace',
-                    letterSpacing: 2
-                  }}
-                >
-                  {`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
-                </Typography>
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-
-        <Stack 
-          direction="row" 
-          spacing={2} 
-          justifyContent="center" 
-          sx={{ 
-            mb: 4,
-            maxWidth: 400,
-            mx: 'auto'
-          }}
-        >
-          <Button
-            variant="contained"
-            size="large"
-            startIcon={isActive ? <Pause /> : <PlayArrow />}
-            onClick={toggleTimer}
-            fullWidth
-          >
-            {isActive ? 'Pause' : 'Start'}
-          </Button>
-          <Button
-            variant="outlined"
-            size="large"
-            startIcon={<Stop />}
-            onClick={resetTimer}
-            fullWidth
-          >
-            Reset
-          </Button>
-        </Stack>
-
-        <Box 
-          sx={{ 
-            textAlign: 'center',
-            maxWidth: 400,
-            mx: 'auto'
-          }}>
-          <Chip 
-            label={`Completed Cycles: ${cycles}`}
-            color="primary"
-            sx={{ 
-              fontSize: '1.1rem', 
-              py: 1,
-              width: '100%'
-            }}
-          />
+        <Box>
+          <IconButton color="inherit" size="small">
+            <Assessment />
+          </IconButton>
+          <IconButton color="inherit" size="small">
+            <Settings />
+          </IconButton>
         </Box>
       </Box>
-    </Paper>
+
+      <Box sx={{ mt: 4 }}>
+        <ToggleButtonGroup
+          value={mode}
+          exclusive
+          onChange={handleModeChange}
+          sx={{
+            bgcolor: 'rgba(255, 255, 255, 0.1)',
+            '& .MuiToggleButton-root': {
+              color: 'white',
+              border: 'none',
+              px: 3,
+              py: 1,
+              '&.Mui-selected': {
+                bgcolor: 'rgba(255, 255, 255, 0.2)',
+                color: 'white',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 0.25)',
+                }
+              }
+            }
+          }}
+        >
+          <ToggleButton value="pomodoro">
+            Pomodoro
+          </ToggleButton>
+          <ToggleButton value="shortBreak">
+            Short Break
+          </ToggleButton>
+          <ToggleButton value="longBreak">
+            Long Break
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      <Typography 
+        variant="h1" 
+        sx={{ 
+          fontSize: '120px', 
+          fontWeight: 'bold',
+          my: 4,
+          fontFamily: 'monospace'
+        }}
+      >
+        {`${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`}
+      </Typography>
+
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <Button
+          variant="contained"
+          size="large"
+          onClick={toggleTimer}
+          sx={{
+            bgcolor: 'white',
+            color: '#b74b4b',
+            px: 6,
+            py: 2,
+            fontSize: '1.25rem',
+            fontWeight: 'bold',
+            '&:hover': {
+              bgcolor: 'rgba(255, 255, 255, 0.9)',
+            }
+          }}
+        >
+          {isActive ? 'PAUSE' : 'START'}
+        </Button>
+        <IconButton 
+          color="inherit"
+          sx={{ 
+            bgcolor: 'rgba(255, 255, 255, 0.1)',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' }
+          }}
+        >
+          <SkipNext />
+        </IconButton>
+      </Box>
+
+      <Typography sx={{ mt: 4, opacity: 0.9 }}>
+        #{cycles + 1}
+      </Typography>
+      <Typography sx={{ opacity: 0.9 }}>
+        Time to focus!
+      </Typography>
+    </Box>
   );
 }
 
