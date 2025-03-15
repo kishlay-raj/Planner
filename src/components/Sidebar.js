@@ -16,28 +16,15 @@ import {
   Timer,
   CalendarToday,
   Assignment,
-  ExpandLess,
-  ExpandMore,
   Dashboard,
   Schedule,
   Assessment,
-  Settings,
   ChevronLeft,
   Menu
 } from '@mui/icons-material';
 
 function Sidebar({ onNavigate }) {
-  const [plannerOpen, setPlannerOpen] = React.useState(true);
-  const [toolsOpen, setToolsOpen] = React.useState(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
-
-  const handlePlannerClick = () => {
-    setPlannerOpen(!plannerOpen);
-  };
-
-  const handleToolsClick = () => {
-    setToolsOpen(!toolsOpen);
-  };
 
   const toggleDrawer = () => {
     setIsExpanded(!isExpanded);
@@ -82,30 +69,16 @@ function Sidebar({ onNavigate }) {
           </ListItemButton>
         </Tooltip>
 
-        <Divider sx={{ my: 1 }} />
-
-        <Tooltip title="Tools" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton onClick={handleToolsClick}>
+        <Tooltip title="Pomodoro" placement="right" arrow disableHoverListener={isExpanded}>
+          <ListItemButton onClick={() => onNavigate('pomodoro')}>
             <ListItemIcon>
-              <Settings />
+              <Timer />
             </ListItemIcon>
-            {isExpanded && <ListItemText primary="Tools" />}
-            {isExpanded && (toolsOpen ? <ExpandLess /> : <ExpandMore />)}
+            {isExpanded && <ListItemText primary="Pomodoro" />}
           </ListItemButton>
         </Tooltip>
 
-        <Collapse in={toolsOpen && isExpanded} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <Tooltip title="Pomodoro" placement="right" arrow disableHoverListener={isExpanded}>
-              <ListItemButton sx={{ pl: 4 }} onClick={() => onNavigate('pomodoro')}>
-                <ListItemIcon>
-                  <Timer />
-                </ListItemIcon>
-                {isExpanded && <ListItemText primary="Pomodoro" />}
-              </ListItemButton>
-            </Tooltip>
-          </List>
-        </Collapse>
+        <Divider sx={{ my: 1 }} />
       </List>
       <Box sx={{ 
         position: 'absolute', 
