@@ -7,6 +7,9 @@
     line-height: 1.6;
     color: #2c3e50;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
   }
 
   .ProseMirror > * + * {
@@ -157,8 +160,151 @@
   .ProseMirror ol ul {
     margin: 0.2em 0 0.2em 1.5em;
   }
+
+  .ProseMirror p {
+    margin: 0;
+    padding: 0.2em 0;
+  }
+
+  .ProseMirror * {
+    box-sizing: border-box;
+  }
 }
 
 .is-active {
   background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.notes-panel .notes-editor {
+  height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-panel .ql-container {
+  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.notes-panel .ql-editor {
+  min-height: 100%;
+  line-height: 1.6;
+}
+
+.notes-panel .ql-toolbar {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  padding: 6px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  min-height: 42px;
+}
+
+.notes-panel .ql-editor.ql-blank::before {
+  font-style: italic;
+  color: #aaa;
+}
+
+/* Improve button styling */
+.notes-panel .ql-toolbar button {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  margin: 0 1px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.notes-panel .ql-toolbar button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.notes-panel .ql-toolbar button.ql-active {
+  background-color: rgba(25, 118, 210, 0.08);
+  border-color: rgba(25, 118, 210, 0.2);
+  color: #1976d2;
+}
+
+/* Style heading buttons */
+.notes-panel .ql-toolbar button.ql-header[value="1"],
+.notes-panel .ql-toolbar button.ql-header[value="2"] {
+  width: auto;
+  min-width: 28px;
+  padding: 0 6px;
+  font-family: serif;
+}
+
+.notes-panel .ql-toolbar button.ql-header[value="1"] {
+  font-size: 15px;
+}
+
+.notes-panel .ql-toolbar button.ql-header[value="2"] {
+  font-size: 14px;
+}
+
+/* Improve dropdown styling */
+.notes-panel .ql-toolbar .ql-picker {
+  height: 28px;
+  margin: 0 2px;
+}
+
+.notes-panel .ql-toolbar .ql-picker-label {
+  border-radius: 4px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  height: 28px;
+  font-size: 13px;
+}
+
+/* Add separator styling */
+.notes-panel .ql-toolbar .ql-formats {
+  display: flex;
+  align-items: center;
+  margin-right: 6px;
+  position: relative;
+}
+
+.notes-panel .ql-toolbar .ql-formats:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 4px;
+  height: 20px;
+  width: 1px;
+  background-color: #e0e0e0;
+}
+
+/* Adjust editor height to account for compact toolbar */
+.notes-panel .notes-editor {
+  height: calc(100vh - 130px);
+}
+
+/* Add markdown hint */
+.notes-panel .markdown-hint {
+  font-size: 12px;
+  color: #888;
+  padding: 4px 12px;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.notes-panel .markdown-hint code {
+  background-color: #eee;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  margin: 0 2px;
 } 
