@@ -20,6 +20,7 @@
     "@tiptap/react": "^2.11.5",
     "@tiptap/starter-kit": "^2.11.5",
     "date-fns": "^2.30.0",
+    "quill-markdown-shortcuts": "^0.0.10",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-big-calendar": "^1.8.5",
