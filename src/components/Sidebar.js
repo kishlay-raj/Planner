@@ -23,17 +23,28 @@ import {
   Menu
 } from '@mui/icons-material';
 
-function Sidebar({ onNavigate }) {
+function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const [activePanel, setActivePanel] = React.useState('planner');
+
+  const modeColors = {
+    pomodoro: '#b74b4b',
+    shortBreak: '#4c9195',
+    longBreak: '#457ca3'
+  };
 
   const toggleDrawer = () => {
     setIsExpanded(!isExpanded);
   };
 
   const handleNavigate = (panel) => {
-    setActivePanel(panel);
     onNavigate(panel);
+  };
+
+  const getSidebarColor = () => {
+    if (activePanel === 'pomodoro') {
+      return modeColors[pomodoroMode];
+    }
+    return 'background.paper';
   };
 
   return (
@@ -45,7 +56,7 @@ function Sidebar({ onNavigate }) {
         '& .MuiDrawer-paper': {
           width: isExpanded ? 240 : 60,
           boxSizing: 'border-box',
-          bgcolor: activePanel === 'pomodoro' ? '#b74b4b' : 'background.paper',
+          bgcolor: getSidebarColor(),
           color: activePanel === 'pomodoro' ? 'white' : 'inherit',
           overflowX: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

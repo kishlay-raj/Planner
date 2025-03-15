@@ -18,15 +18,22 @@ import {
   Assessment
 } from '@mui/icons-material';
 
-function PomodoroPanel() {
+function PomodoroPanel({ onModeChange }) {
   const [timeLeft, setTimeLeft] = useState(35 * 60);
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState('pomodoro'); // 'pomodoro', 'shortBreak', 'longBreak'
   const [cycles, setCycles] = useState(0);
 
+  const modeColors = {
+    pomodoro: '#b74b4b',
+    shortBreak: '#4c9195',
+    longBreak: '#457ca3'
+  };
+
   const handleModeChange = (event, newMode) => {
     if (newMode !== null) {
       setMode(newMode);
+      onModeChange(newMode);
       setIsActive(false);
       switch (newMode) {
         case 'pomodoro':
@@ -73,14 +80,14 @@ function PomodoroPanel() {
     <Box 
       sx={{ 
         height: '100vh',
-        bgcolor: '#b74b4b',
+        bgcolor: modeColors[mode],
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
         animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '@keyframes fadeIn': {
           from: { opacity: 0, bgcolor: 'background.paper' },
-          to: { opacity: 1, bgcolor: '#b74b4b' }
+          to: { opacity: 1, bgcolor: modeColors[mode] }
         }
       }}
     >
@@ -184,7 +191,7 @@ function PomodoroPanel() {
             onClick={toggleTimer}
             sx={{
               bgcolor: 'white',
-              color: '#b74b4b',
+              color: modeColors[mode],
               px: 6,
               py: 2,
               fontSize: '1.25rem',
@@ -243,7 +250,7 @@ function PomodoroPanel() {
                 letterSpacing: 0.5
               }}
             >
-              Time to focus!
+              {mode === 'pomodoro' ? 'Time to focus!' : 'Time for a break!'}
             </Typography>
           </Box>
         </Fade>

@@ -112,6 +112,7 @@ function App() {
     return savedTasks ? JSON.parse(savedTasks) : [];
   });
   const [activePanel, setActivePanel] = useState('planner');
+  const [pomodoroMode, setPomodoroMode] = useState('pomodoro');
 
   const handleTaskCreate = (taskData) => {
     const newTask = {
@@ -130,12 +131,16 @@ function App() {
     localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
   };
 
+  const handlePomodoroModeChange = (mode) => {
+    setPomodoroMode(mode);
+  };
+
   const renderPanel = () => {
     switch (activePanel) {
       case 'planner':
         return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
       case 'pomodoro':
-        return <PomodoroPanel />;
+        return <PomodoroPanel onModeChange={handlePomodoroModeChange} />;
       default:
         return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
     }
@@ -148,7 +153,11 @@ function App() {
         minHeight: '100vh',
         transition: 'margin 0.2s ease-in-out'
       }}>
-        <Sidebar onNavigate={setActivePanel} />
+        <Sidebar 
+          onNavigate={setActivePanel} 
+          activePanel={activePanel}
+          pomodoroMode={pomodoroMode} 
+        />
         <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
           {renderPanel()}
         </Box>
