@@ -1,8 +1,11 @@
 import React from 'react';
 import { useState } from 'react';
 import PlannerScreen from './components/PlannerScreen';
+import Sidebar from './components/Sidebar';
 import { ThemeProvider, createTheme } from '@mui/material';
+import { Box } from '@mui/material';
 import './App.css';
+import PomodoroPanel from './components/PomodoroPanel';
 
 const theme = createTheme({
   palette: {
@@ -108,6 +111,7 @@ function App() {
     const savedTasks = localStorage.getItem('allTasks');
     return savedTasks ? JSON.parse(savedTasks) : [];
   });
+  const [activePanel, setActivePanel] = useState('planner');
 
   const handleTaskCreate = (taskData) => {
     const newTask = {
@@ -126,11 +130,29 @@ function App() {
     localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
   };
 
+  const renderPanel = () => {
+    switch (activePanel) {
+      case 'planner':
+        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
+      case 'pomodoro':
+        return <PomodoroPanel />;
+      default:
+        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
-      <div className="App">
-        <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />
-      </div>
+      <Box sx={{ 
+        display: 'flex', 
+        minHeight: '100vh',
+        transition: 'margin 0.2s ease-in-out'
+      }}>
+        <Sidebar onNavigate={setActivePanel} />
+        <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+          {renderPanel()}
+        </Box>
+      </Box>
     </ThemeProvider>
   );
 }
