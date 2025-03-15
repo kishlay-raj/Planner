@@ -14,8 +14,6 @@ import {
   PlayArrow,
   Pause,
   SkipNext,
-  Settings,
-  Assessment
 } from '@mui/icons-material';
 
 function PomodoroPanel({ onModeChange }) {
@@ -84,6 +82,7 @@ function PomodoroPanel({ onModeChange }) {
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
+        overflow: 'hidden',
         animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '@keyframes fadeIn': {
           from: { opacity: 0, bgcolor: 'background.paper' },
@@ -106,35 +105,14 @@ function PomodoroPanel({ onModeChange }) {
         }}>
           Pomodoro
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <IconButton 
-            color="inherit" 
-            size="small"
-            sx={{
-              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' },
-              transition: 'background-color 0.2s'
-            }}
-          >
-            <Assessment />
-          </IconButton>
-          <IconButton 
-            color="inherit" 
-            size="small"
-            sx={{
-              '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.1)' },
-              transition: 'background-color 0.2s'
-            }}
-          >
-            <Settings />
-          </IconButton>
-        </Box>
       </Box>
 
       <Container maxWidth="sm" sx={{ 
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center',
-        pt: 6 
+        pt: 6,
+        overflow: 'hidden'
       }}>
         <ToggleButtonGroup
           value={mode}
