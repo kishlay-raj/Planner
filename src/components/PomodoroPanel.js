@@ -28,28 +28,56 @@ import {
 } from '@mui/icons-material';
 
 function PomodoroPanel({ onModeChange }) {
-  const [timeLeft, setTimeLeft] = useState(35 * 60);
+  const [timeLeft, setTimeLeft] = useState(30 * 60); // Default 30 minutes
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState('pomodoro'); // 'pomodoro', 'shortBreak', 'longBreak'
   const [cycles, setCycles] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [settings, setSettings] = useState({
-    pomodoro: 30,
-    shortBreak: 5,
-    longBreak: 15,
-    autoStartBreaks: false,
-    autoStartPomodoros: false,
-    longBreakInterval: 4,
-    autoCheckTasks: false,
-    autoSwitchTasks: true,
-    alarmSound: 'Kitchen',
-    alarmVolume: 50,
-    alarmRepeat: 1,
-    tickingSound: 'Ticking Slow',
-    tickingVolume: 50,
-    darkMode: false,
-    hourFormat: '24-hour',
+  const [audio, setAudio] = useState(null);
+  const [tickingAudio, setTickingAudio] = useState(null);
+
+  const [settings, setSettings] = useState(() => {
+    const savedSettings = localStorage.getItem('pomodoroSettings');
+    return savedSettings ? JSON.parse(savedSettings) : {
+      pomodoro: 30,
+      shortBreak: 5,
+      longBreak: 15,
+      autoStartBreaks: false,
+      autoStartPomodoros: false,
+      longBreakInterval: 4,
+      autoCheckTasks: false,
+      autoSwitchTasks: true,
+      alarmSound: 'Kitchen',
+      alarmVolume: 50,
+      alarmRepeat: 1,
+      tickingSound: 'Ticking Slow',
+      tickingVolume: 50,
+      darkMode: false,
+      hourFormat: '24-hour',
+    };
   });
+
+  // Save settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
+  }, [settings]);
+
+  // Initialize audio
+  useEffect(() => {
+    const alarm = new Audio(`/sounds/${settings.alarmSound.toLowerCase()}.mp3`);
+    alarm.volume = settings.alarmVolume / 100;
+    setAudio(alarm);
+
+    const ticking = new Audio(`/sounds/${settings.tickingSound.toLowerCase()}.mp3`);
+    ticking.volume = settings.tickingVolume / 100;
+    ticking.loop = true;
+    setTickingAudio(ticking);
+
+    return () => {
+      ticking.pause();
+      alarm.pause();
+    };
+  }, [settings.alarmSound, settings.tickingSound, settings.alarmVolume, settings.tickingVolume]);
 
   const modeColors = {
     pomodoro: '#b74b4b',
@@ -62,15 +90,16 @@ function PomodoroPanel({ onModeChange }) {
       setMode(newMode);
       onModeChange(newMode);
       setIsActive(false);
+      tickingAudio?.pause();
       switch (newMode) {
         case 'pomodoro':
-          setTimeLeft(25 * 60);
+          setTimeLeft(settings.pomodoro * 60);
           break;
         case 'shortBreak':
-          setTimeLeft(5 * 60);
+          setTimeLeft(settings.shortBreak * 60);
           break;
         case 'longBreak':
-          setTimeLeft(15 * 60);
+          setTimeLeft(settings.longBreak * 60);
           break;
       }
     }
@@ -79,28 +108,81 @@ function PomodoroPanel({ onModeChange }) {
   useEffect(() => {
     let interval = null;
     if (isActive && timeLeft > 0) {
+      // Start ticking sound when timer is active
+      if (settings.tickingVolume > 0) {
+        tickingAudio?.play();
+      }
+
       interval = setInterval(() => {
         setTimeLeft(timeLeft => timeLeft - 1);
       }, 1000);
     } else if (timeLeft === 0) {
-      // Play sound
-      const audio = new Audio('/notification.mp3');
-      audio.play();
-      
+      // Stop ticking sound
+      tickingAudio?.pause();
+
+      // Play alarm sound
+      if (settings.alarmVolume > 0) {
+        for (let i = 0; i < settings.alarmRepeat; i++) {
+          setTimeout(() => {
+            audio?.play();
+          }, i * 1500); // Play every 1.5 seconds
+        }
+      }
+
       setCycles(c => c + 1);
-      setTimeLeft(5 * 60);
-      setIsActive(false);
+      
+      // Handle auto-start features
+      if (mode === 'pomodoro') {
+        if (cycles + 1 >= settings.longBreakInterval) {
+          setMode('longBreak');
+          setTimeLeft(settings.longBreak * 60);
+          setCycles(0);
+        } else {
+          setMode('shortBreak');
+          setTimeLeft(settings.shortBreak * 60);
+        }
+        if (settings.autoStartBreaks) {
+          setIsActive(true);
+        } else {
+          setIsActive(false);
+        }
+      } else {
+        setMode('pomodoro');
+        setTimeLeft(settings.pomodoro * 60);
+        if (settings.autoStartPomodoros) {
+          setIsActive(true);
+        } else {
+          setIsActive(false);
+        }
+      }
     }
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
+    return () => {
+      clearInterval(interval);
+      tickingAudio?.pause();
+    };
+  }, [isActive, timeLeft, settings, mode, cycles, audio, tickingAudio]);
 
   const toggleTimer = () => {
     setIsActive(!isActive);
+    if (isActive) {
+      tickingAudio?.pause();
+    }
   };
 
   const resetTimer = () => {
     setIsActive(false);
-    setTimeLeft(35 * 60);
+    tickingAudio?.pause();
+    switch (mode) {
+      case 'pomodoro':
+        setTimeLeft(settings.pomodoro * 60);
+        break;
+      case 'shortBreak':
+        setTimeLeft(settings.shortBreak * 60);
+        break;
+      case 'longBreak':
+        setTimeLeft(settings.longBreak * 60);
+        break;
+    }
   };
 
   const handleSettingChange = (key, value) => {
@@ -108,6 +190,15 @@ function PomodoroPanel({ onModeChange }) {
       ...prev,
       [key]: value
     }));
+    
+    // Apply immediate changes where necessary
+    if (key === 'pomodoro' && mode === 'pomodoro') {
+      setTimeLeft(value * 60);
+    } else if (key === 'shortBreak' && mode === 'shortBreak') {
+      setTimeLeft(value * 60);
+    } else if (key === 'longBreak' && mode === 'longBreak') {
+      setTimeLeft(value * 60);
+    }
   };
 
   return (
@@ -119,7 +210,9 @@ function PomodoroPanel({ onModeChange }) {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        filter: settings.darkMode && isActive ? 'brightness(0.85)' : 'none',
         animation: 'fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'filter 0.3s ease-in-out',
         '@keyframes fadeIn': {
           from: { opacity: 0, bgcolor: 'background.paper' },
           to: { opacity: 1, bgcolor: modeColors[mode] }
