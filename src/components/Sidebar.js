@@ -48,11 +48,20 @@ function Sidebar({ onNavigate }) {
           bgcolor: activePanel === 'pomodoro' ? '#b74b4b' : 'background.paper',
           color: activePanel === 'pomodoro' ? 'white' : 'inherit',
           overflowX: 'hidden',
-          transition: 'width 0.2s ease-in-out, background-color 0.3s ease',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           borderRight: activePanel === 'pomodoro' 
             ? '1px solid rgba(255, 255, 255, 0.12)' 
             : '1px solid rgba(0, 0, 0, 0.12)'
         },
+        '& .MuiListItemIcon-root, & .MuiListItemText-primary, & .MuiIconButton-root': {
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        },
+        '& .MuiDivider-root': {
+          transition: 'border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        },
+        '& .MuiListItemButton-root': {
+          transition: 'background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+        }
       }}
     >
       <Box sx={{ 
