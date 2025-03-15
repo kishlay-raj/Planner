@@ -8,12 +8,23 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   Container,
-  Fade
+  Fade,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  Switch,
+  FormControlLabel,
+  Select,
+  MenuItem,
+  Slider,
+  Divider
 } from '@mui/material';
 import {
   PlayArrow,
   Pause,
   SkipNext,
+  Settings
 } from '@mui/icons-material';
 
 function PomodoroPanel({ onModeChange }) {
@@ -21,6 +32,24 @@ function PomodoroPanel({ onModeChange }) {
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState('pomodoro'); // 'pomodoro', 'shortBreak', 'longBreak'
   const [cycles, setCycles] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState({
+    pomodoro: 30,
+    shortBreak: 5,
+    longBreak: 15,
+    autoStartBreaks: false,
+    autoStartPomodoros: false,
+    longBreakInterval: 4,
+    autoCheckTasks: false,
+    autoSwitchTasks: true,
+    alarmSound: 'Kitchen',
+    alarmVolume: 50,
+    alarmRepeat: 1,
+    tickingSound: 'Ticking Slow',
+    tickingVolume: 50,
+    darkMode: false,
+    hourFormat: '24-hour',
+  });
 
   const modeColors = {
     pomodoro: '#b74b4b',
@@ -74,6 +103,13 @@ function PomodoroPanel({ onModeChange }) {
     setTimeLeft(35 * 60);
   };
 
+  const handleSettingChange = (key, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
   return (
     <Box 
       sx={{ 
@@ -95,7 +131,8 @@ function PomodoroPanel({ onModeChange }) {
         display: 'flex', 
         justifyContent: 'space-between',
         alignItems: 'center',
-        px: 3,
+        pl: 3,
+        pr: 6,
         py: 2,
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
@@ -105,6 +142,30 @@ function PomodoroPanel({ onModeChange }) {
         }}>
           Pomodoro
         </Typography>
+        <IconButton 
+          color="inherit"
+          onClick={() => setSettingsOpen(true)}
+          sx={{
+            bgcolor: 'rgba(255, 255, 255, 0.1)',
+            width: 36,
+            height: 36,
+            padding: 2,
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            position: 'relative',
+            right: 20,
+            '&:hover': { 
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            },
+            transition: 'all 0.2s',
+            '& svg': { 
+              fontSize: 22,
+              color: 'rgba(255, 255, 255, 0.9)'
+            }
+          }}
+        >
+          <Settings />
+        </IconButton>
       </Box>
 
       <Container maxWidth="sm" sx={{ 
@@ -233,6 +294,154 @@ function PomodoroPanel({ onModeChange }) {
           </Box>
         </Fade>
       </Container>
+
+      <Dialog 
+        open={settingsOpen} 
+        onClose={() => setSettingsOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          Timer Settings
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
+            Time (minutes)
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+            <TextField
+              label="Pomodoro"
+              type="number"
+              value={settings.pomodoro}
+              onChange={(e) => handleSettingChange('pomodoro', e.target.value)}
+              size="small"
+            />
+            <TextField
+              label="Short Break"
+              type="number"
+              value={settings.shortBreak}
+              onChange={(e) => handleSettingChange('shortBreak', e.target.value)}
+              size="small"
+            />
+            <TextField
+              label="Long Break"
+              type="number"
+              value={settings.longBreak}
+              onChange={(e) => handleSettingChange('longBreak', e.target.value)}
+              size="small"
+            />
+          </Box>
+          
+          <FormControlLabel
+            control={
+              <Switch
+                checked={settings.autoStartBreaks}
+                onChange={(e) => handleSettingChange('autoStartBreaks', e.target.checked)}
+              />
+            }
+            label="Auto Start Breaks"
+          />
+          
+          <FormControlLabel
+            control={
+              <Switch
+                checked={settings.autoStartPomodoros}
+                onChange={(e) => handleSettingChange('autoStartPomodoros', e.target.checked)}
+              />
+            }
+            label="Auto Start Pomodoros"
+          />
+          
+          <TextField
+            label="Long Break interval"
+            type="number"
+            value={settings.longBreakInterval}
+            onChange={(e) => handleSettingChange('longBreakInterval', e.target.value)}
+            size="small"
+            sx={{ mt: 2, mb: 3 }}
+          />
+          
+          <Divider sx={{ my: 2 }} />
+          
+          <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
+            SOUND
+          </Typography>
+          
+          <Box sx={{ mb: 2 }}>
+            <Select
+              value={settings.alarmSound}
+              onChange={(e) => handleSettingChange('alarmSound', e.target.value)}
+              size="small"
+              fullWidth
+            >
+              <MenuItem value="Kitchen">Kitchen</MenuItem>
+              <MenuItem value="Bell">Bell</MenuItem>
+              <MenuItem value="Birds">Birds</MenuItem>
+            </Select>
+            <Box sx={{ mt: 1 }}>
+              <Slider
+                value={settings.alarmVolume}
+                onChange={(e, value) => handleSettingChange('alarmVolume', value)}
+                valueLabelDisplay="auto"
+              />
+            </Box>
+            <TextField
+              label="Repeat"
+              type="number"
+              value={settings.alarmRepeat}
+              onChange={(e) => handleSettingChange('alarmRepeat', e.target.value)}
+              size="small"
+            />
+          </Box>
+          
+          <Box sx={{ mb: 3 }}>
+            <Select
+              value={settings.tickingSound}
+              onChange={(e) => handleSettingChange('tickingSound', e.target.value)}
+              size="small"
+              fullWidth
+            >
+              <MenuItem value="Ticking Slow">Ticking Slow</MenuItem>
+              <MenuItem value="Ticking Fast">Ticking Fast</MenuItem>
+            </Select>
+            <Box sx={{ mt: 1 }}>
+              <Slider
+                value={settings.tickingVolume}
+                onChange={(e, value) => handleSettingChange('tickingVolume', value)}
+                valueLabelDisplay="auto"
+              />
+            </Box>
+          </Box>
+          
+          <Divider sx={{ my: 2 }} />
+          
+          <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
+            THEME
+          </Typography>
+          
+          <Box sx={{ mb: 2 }}>
+            <Select
+              value={settings.hourFormat}
+              onChange={(e) => handleSettingChange('hourFormat', e.target.value)}
+              size="small"
+              fullWidth
+            >
+              <MenuItem value="24-hour">24-hour</MenuItem>
+              <MenuItem value="12-hour">12-hour</MenuItem>
+            </Select>
+          </Box>
+          
+          <FormControlLabel
+            control={
+              <Switch
+                checked={settings.darkMode}
+                onChange={(e) => handleSettingChange('darkMode', e.target.checked)}
+              />
+            }
+            label="Dark Mode when running"
+          />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
