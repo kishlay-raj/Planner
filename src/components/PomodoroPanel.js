@@ -172,16 +172,19 @@ function PomodoroPanel({ onModeChange }) {
   const resetTimer = () => {
     setIsActive(false);
     tickingAudio?.pause();
-    switch (mode) {
-      case 'pomodoro':
-        setTimeLeft(settings.pomodoro * 60);
-        break;
-      case 'shortBreak':
-        setTimeLeft(settings.shortBreak * 60);
-        break;
-      case 'longBreak':
-        setTimeLeft(settings.longBreak * 60);
-        break;
+    // Cycle through modes: pomodoro -> shortBreak -> longBreak -> pomodoro
+    if (mode === 'pomodoro') {
+      setMode('shortBreak');
+      onModeChange('shortBreak');
+      setTimeLeft(settings.shortBreak * 60);
+    } else if (mode === 'shortBreak') {
+      setMode('longBreak');
+      onModeChange('longBreak');
+      setTimeLeft(settings.longBreak * 60);
+    } else {
+      setMode('pomodoro');
+      onModeChange('pomodoro');
+      setTimeLeft(settings.pomodoro * 60);
     }
   };
 
@@ -341,23 +344,28 @@ function PomodoroPanel({ onModeChange }) {
           >
             {isActive ? 'PAUSE' : 'START'}
           </Button>
-          <IconButton 
+          <Button
+            variant="contained"
             color="inherit"
             onClick={resetTimer}
             sx={{ 
-              bgcolor: 'rgba(255, 255, 255, 0.1)',
-              width: 48,
-              height: 48,
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              px: 3,
+              py: 2,
               borderRadius: 2,
+              minWidth: 'auto',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
               transition: 'all 0.2s',
               '&:hover': { 
-                bgcolor: 'rgba(255, 255, 255, 0.2)',
+                bgcolor: 'rgba(255, 255, 255, 0.3)',
                 transform: 'translateY(-1px)'
               }
             }}
           >
-            <SkipNext />
-          </IconButton>
+            SKIP
+          </Button>
         </Box>
 
         <Fade in={true}>
