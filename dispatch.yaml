@@ -1,0 +1,16 @@
+dispatch:
+  - url: "*/*"
+    service: pomodoro-app
+    secure: always
+
+headers:
+  - url: "/*"
+    headers:
+      - name: X-Frame-Options
+        value: DENY
+      - name: X-XSS-Protection
+        value: "1; mode=block"
+      - name: X-Content-Type-Options
+        value: nosniff
+      - name: Strict-Transport-Security
+        value: "max-age=31536000; includeSubDomains" 

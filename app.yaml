@@ -1,0 +1,31 @@
+runtime: nodejs18
+env: standard
+instance_class: F1
+
+handlers:
+  # Serve static files
+  - url: /(.*\.(json|ico|js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot))$
+    static_files: build/\1
+    upload: build/.*\.(json|ico|js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$
+    secure: always
+
+  # Serve static files from static directory
+  - url: /static/(.*)
+    static_files: build/static/\1
+    upload: build/static/.*
+    secure: always
+
+  # All other routes to index.html
+  - url: /.*
+    static_files: build/index.html
+    upload: build/index.html
+    secure: always
+
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  min_instances: 1
+  max_instances: 1
+  min_idle_instances: 1
+  max_idle_instances: 1
+  min_pending_latency: 30ms
+  max_pending_latency: automatic

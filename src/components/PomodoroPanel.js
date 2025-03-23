@@ -33,8 +33,19 @@ function PomodoroPanel({ onModeChange }) {
   const [mode, setMode] = useState('pomodoro'); // 'pomodoro', 'shortBreak', 'longBreak'
   const [cycles, setCycles] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [audio, setAudio] = useState(null);
-  const [tickingAudio, setTickingAudio] = useState(null);
+
+  // Create audio contexts only once
+  const [audioContext] = useState(() => {
+    try {
+      return new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      console.warn('Web Audio API is not supported in this browser');
+      return null;
+    }
+  });
+
+  // Keep track of active sound intervals
+  const [tickInterval, setTickInterval] = useState(null);
 
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem('pomodoroSettings');
@@ -62,22 +73,61 @@ function PomodoroPanel({ onModeChange }) {
     localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
   }, [settings]);
 
-  // Initialize audio
-  useEffect(() => {
-    const alarm = new Audio(`/sounds/${settings.alarmSound.toLowerCase()}.mp3`);
-    alarm.volume = settings.alarmVolume / 100;
-    setAudio(alarm);
+  // Simple beep sound function
+  const playBeep = () => {
+    if (!audioContext) return;
+    
+    try {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      
+      gainNode.gain.setValueAtTime(settings.alarmVolume / 100, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (e) {
+      console.warn('Error playing sound:', e);
+    }
+  };
 
-    const ticking = new Audio(`/sounds/${settings.tickingSound.toLowerCase()}.mp3`);
-    ticking.volume = settings.tickingVolume / 100;
-    ticking.loop = true;
-    setTickingAudio(ticking);
+  // Ticking sound function
+  const playTick = () => {
+    if (!audioContext) return;
+    
+    try {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+      
+      gainNode.gain.setValueAtTime(settings.tickingVolume / 400, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (e) {
+      console.warn('Error playing tick:', e);
+    }
+  };
 
-    return () => {
-      ticking.pause();
-      alarm.pause();
-    };
-  }, [settings.alarmSound, settings.tickingSound, settings.alarmVolume, settings.tickingVolume]);
+  // Clean up function for tick interval
+  const cleanupTick = () => {
+    if (tickInterval) {
+      clearInterval(tickInterval);
+      setTickInterval(null);
+    }
+  };
 
   const modeColors = {
     pomodoro: '#b74b4b',
@@ -90,7 +140,7 @@ function PomodoroPanel({ onModeChange }) {
       setMode(newMode);
       onModeChange(newMode);
       setIsActive(false);
-      tickingAudio?.pause();
+      cleanupTick();
       switch (newMode) {
         case 'pomodoro':
           setTimeLeft(settings.pomodoro * 60);
@@ -110,23 +160,29 @@ function PomodoroPanel({ onModeChange }) {
     if (isActive && timeLeft > 0) {
       // Start ticking sound when timer is active
       if (settings.tickingVolume > 0) {
-        tickingAudio?.play();
+        if (!tickInterval) {
+          const newTickInterval = setInterval(playTick, 1000);
+          setTickInterval(newTickInterval);
+        }
       }
 
       interval = setInterval(() => {
         setTimeLeft(timeLeft => timeLeft - 1);
       }, 1000);
     } else if (timeLeft === 0) {
-      // Stop ticking sound
-      tickingAudio?.pause();
+      cleanupTick();
 
       // Play alarm sound
       if (settings.alarmVolume > 0) {
-        for (let i = 0; i < settings.alarmRepeat; i++) {
-          setTimeout(() => {
-            audio?.play();
-          }, i * 1500); // Play every 1.5 seconds
-        }
+        let alarmCount = 0;
+        const alarmInterval = setInterval(() => {
+          if (alarmCount < settings.alarmRepeat) {
+            playBeep();
+            alarmCount++;
+          } else {
+            clearInterval(alarmInterval);
+          }
+        }, 1500);
       }
 
       setCycles(c => c + 1);
@@ -158,20 +214,20 @@ function PomodoroPanel({ onModeChange }) {
     }
     return () => {
       clearInterval(interval);
-      tickingAudio?.pause();
+      cleanupTick();
     };
-  }, [isActive, timeLeft, settings, mode, cycles, audio, tickingAudio]);
+  }, [isActive, timeLeft, settings, mode, cycles, onModeChange]);
 
   const toggleTimer = () => {
-    setIsActive(!isActive);
     if (isActive) {
-      tickingAudio?.pause();
+      cleanupTick();
     }
+    setIsActive(!isActive);
   };
 
   const resetTimer = () => {
     setIsActive(false);
-    tickingAudio?.pause();
+    cleanupTick();
     // Cycle through modes: pomodoro -> shortBreak -> longBreak -> pomodoro
     if (mode === 'pomodoro') {
       setMode('shortBreak');
