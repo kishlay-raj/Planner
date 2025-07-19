@@ -24,8 +24,9 @@ import AddIcon from '@mui/icons-material/Add';
 import './TaskList.css';
 import TaskEditDialog from './TaskEditDialog';
 import { useTheme } from '@mui/material/styles';
+import { format } from 'date-fns';
 
-function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
+function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
   const taskList = Array.isArray(tasks) ? tasks : [];
   const [editDialog, setEditDialog] = useState({ open: false, task: null });
   const [newTaskTexts, setNewTaskTexts] = useState({
@@ -35,11 +36,19 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
     P4: '',
   });
 
+  // Filter tasks to only show those created for the selected date
+  const filteredTasks = taskList.filter(task => {
+    if (!task.date) return false;
+    const taskDate = new Date(task.date).toDateString();
+    const selectedDateString = selectedDate.toDateString();
+    return taskDate === selectedDateString;
+  });
+
   const priorityTasksByLevel = {
-    P1: taskList.filter(task => task.priority === 'P1' && !task.completed),
-    P2: taskList.filter(task => task.priority === 'P2' && !task.completed),
-    P3: taskList.filter(task => task.priority === 'P3' && !task.completed),
-    P4: taskList.filter(task => task.priority === 'P4' && !task.completed)
+    P1: filteredTasks.filter(task => task.priority === 'P1' && !task.completed),
+    P2: filteredTasks.filter(task => task.priority === 'P2' && !task.completed),
+    P3: filteredTasks.filter(task => task.priority === 'P3' && !task.completed),
+    P4: filteredTasks.filter(task => task.priority === 'P4' && !task.completed)
   };
 
   const handleDragEnd = (result) => {
@@ -129,7 +138,9 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule }) {
         priority,
         duration: 30,
         completed: false,
-        todoLater: section === 'todoLater'
+        todoLater: section === 'todoLater',
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        createdAt: new Date().toISOString()
       };
       
       const updatedTasks = [...taskList, newTask];

@@ -28,7 +28,11 @@ function TaskEditDialog({ open, onClose, onSave, task }) {
 
   useEffect(() => {
     if (task) {
-      setEditedTask(task);
+      setEditedTask({
+        ...task,
+        // Preserve the original date if it exists
+        date: task.date || new Date().toISOString().split('T')[0]
+      });
     } else {
       setEditedTask({
         name: '',
@@ -38,7 +42,8 @@ function TaskEditDialog({ open, onClose, onSave, task }) {
         urgent: false,
         isToday: true,
         taskDetails: '',
-        tag: ''
+        tag: '',
+        date: new Date().toISOString().split('T')[0]
       });
     }
   }, [task]);

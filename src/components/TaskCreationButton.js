@@ -14,8 +14,9 @@ import {
   FormControlLabel
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { format } from 'date-fns';
 
-function TaskCreationButton({ onTaskCreate }) {
+function TaskCreationButton({ onTaskCreate, selectedDate }) {
   const [open, setOpen] = useState(false);
   const [task, setTask] = useState({
     name: '',
@@ -29,7 +30,13 @@ function TaskCreationButton({ onTaskCreate }) {
 
   const handleSubmit = () => {
     if (task.name.trim()) {
-      onTaskCreate(task);
+      // Create task with the selected date
+      const taskWithDate = {
+        ...task,
+        date: format(selectedDate, 'yyyy-MM-dd'),
+        createdAt: new Date().toISOString()
+      };
+      onTaskCreate(taskWithDate);
       setTask({
         name: '',
         duration: 30,

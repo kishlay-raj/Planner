@@ -119,7 +119,7 @@ function PlannerScreen() {
           <span className="planner-title">Planner</span>
         </div>
         <div className="planner-actions">
-          <TaskCreationButton onTaskCreate={handleTaskCreate} />
+          <TaskCreationButton onTaskCreate={handleTaskCreate} selectedDate={selectedDate} />
           <Tooltip title="Reset All Tasks">
             <IconButton 
               onClick={() => setResetDialogOpen(true)}
@@ -158,6 +158,7 @@ function PlannerScreen() {
               tasks={allTasks}
               onTaskUpdate={handleTaskUpdate}
               onTaskSchedule={handleTaskSchedule}
+              selectedDate={selectedDate}
             />
           </Paper>
         </Grid>

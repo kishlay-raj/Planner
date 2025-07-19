@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { format } from 'date-fns';
 
-function QuickTaskDialog({ open, selectedTime, onClose, onSave }) {
+function QuickTaskDialog({ open, selectedTime, onClose, onSave, selectedDate }) {
   const [taskData, setTaskData] = useState({
     name: '',
     duration: 30,
@@ -30,7 +30,9 @@ function QuickTaskDialog({ open, selectedTime, onClose, onSave }) {
       ...taskData,
       id: Date.now(),
       completed: false,
-      isToday: true
+      isToday: true,
+      date: format(selectedDate, 'yyyy-MM-dd'),
+      createdAt: new Date().toISOString()
     });
     setTaskData({
       name: '',
