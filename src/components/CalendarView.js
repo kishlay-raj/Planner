@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
-import { format, parse, startOfWeek, getDay, addMinutes } from 'date-fns';
+import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { Paper, IconButton, Popover, TextField } from '@mui/material';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -14,6 +14,7 @@ import TaskEditDialog from './TaskEditDialog';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { format as formatDate } from 'date-fns';
 
 const locales = {
   'en-US': require('date-fns/locale/en-US')
@@ -114,11 +115,6 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
     onTaskSchedule(event.id, start, duration);
   }, [onTaskSchedule]);
 
-  const handleEventResize = useCallback(({ event, start, end }) => {
-    const duration = (end - start) / (1000 * 60); // Convert to minutes
-    onTaskSchedule(event.id, start, duration);
-  }, [onTaskSchedule]);
-
   const components = {
     toolbar: props => (
       <div className='rbc-toolbar'>
@@ -146,7 +142,9 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
     // Create and schedule the task immediately
     const task = {
       ...taskData,
-      scheduledTime: quickTaskDialog.selectedTime
+      scheduledTime: quickTaskDialog.selectedTime,
+      date: format(selectedDate, 'yyyy-MM-dd'),
+      createdAt: new Date().toISOString()
     };
     onTaskCreate(task);
     setQuickTaskDialog({ open: false, selectedTime: null });
@@ -189,10 +187,8 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
         scrollToTime={scrollTime}
         onSelectSlot={handleSelectSlot}
         selectable
-        resizable
         components={components}
         onEventDrop={handleEventDrop}
-        onEventResize={handleEventResize}
         onDoubleClickEvent={handleEventDoubleClick}
         eventPropGetter={(event) => ({
           className: 'calendar-event',
@@ -281,6 +277,7 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
         selectedTime={quickTaskDialog.selectedTime}
         onClose={() => setQuickTaskDialog({ open: false, selectedTime: null })}
         onSave={handleQuickTaskCreate}
+        selectedDate={selectedDate}
       />
       <TaskEditDialog
         open={editDialog.open}
