@@ -58,13 +58,13 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
     if (!taskToMove) return;
 
     let updatedTask = { ...taskToMove };
-    
+
     if (result.destination.droppableId.includes('priority')) {
       const newPriority = result.destination.droppableId.split('-')[0];
       updatedTask.priority = newPriority;
     }
 
-    const updatedTasks = taskList.map(task => 
+    const updatedTasks = taskList.map(task =>
       task.id === updatedTask.id ? updatedTask : task
     );
 
@@ -76,18 +76,18 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
     if (event.target.closest('.drag-handle')) {
       return;
     }
-    
+
     event.dataTransfer.setData('task', JSON.stringify(task));
     event.dataTransfer.effectAllowed = 'move';
-    
+
     // Create a custom drag image
     const dragImage = document.createElement('div');
     dragImage.className = 'task-drag-image';
     dragImage.textContent = task.name;
     document.body.appendChild(dragImage);
-    
+
     event.dataTransfer.setDragImage(dragImage, 0, 0);
-    
+
     // Clean up the drag image after dragging
     requestAnimationFrame(() => {
       dragImage.remove();
@@ -124,7 +124,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
   };
 
   const handleTaskSave = (task) => {
-    const updatedTasks = taskList.map(t => 
+    const updatedTasks = taskList.map(t =>
       t.id === task.id ? task : t
     );
     onTaskUpdate(updatedTasks);
@@ -142,7 +142,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
         date: format(selectedDate, 'yyyy-MM-dd'),
         createdAt: new Date().toISOString()
       };
-      
+
       const updatedTasks = [...taskList, newTask];
       onTaskUpdate(updatedTasks);
       setNewTaskTexts(prev => ({
@@ -167,6 +167,13 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
             }
           }}
         >
+          {items.length === 0 && (
+            <ListItem className="priority-empty" sx={{ justifyContent: 'center', py: 2 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                No tasks
+              </Typography>
+            </ListItem>
+          )}
           {items.map((task, index) => (
             <Draggable
               key={task.id}
@@ -184,8 +191,8 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                     handleDragStart(e, task);
                   }}
                 >
-                  <div 
-                    {...provided.dragHandleProps} 
+                  <div
+                    {...provided.dragHandleProps}
                     className="drag-handle"
                     onMouseDown={(e) => {
                       if (e.target === e.currentTarget) {
@@ -225,20 +232,20 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                     secondary={
                       <div>
                         <div className="task-details">
-                          <Chip 
-                            label={`${task.duration}min`} 
-                            size="small" 
+                          <Chip
+                            label={`${task.duration}min`}
+                            size="small"
                             variant="outlined"
-                            sx={{ 
+                            sx={{
                               backgroundColor: 'rgba(33, 150, 243, 0.08)',
                               color: theme.palette.primary.main,
                               fontWeight: 500
                             }}
                           />
-                          <Chip 
-                            label={task.priority} 
+                          <Chip
+                            label={task.priority}
                             size="small"
-                            sx={{ 
+                            sx={{
                               backgroundColor: `${getPriorityColor(task.priority)}15`,
                               color: getPriorityColor(task.priority),
                               fontWeight: 500,
@@ -246,11 +253,11 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                             }}
                           />
                           {task.tag && (
-                            <Chip 
-                              label={task.tag} 
-                              size="small" 
+                            <Chip
+                              label={task.tag}
+                              size="small"
                               variant="outlined"
-                              sx={{ 
+                              sx={{
                                 backgroundColor: `${getTagColor(task.tag)}15`,
                                 color: getTagColor(task.tag),
                                 fontWeight: 500,
@@ -259,10 +266,10 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                             />
                           )}
                           {task.urgent && (
-                            <Chip 
+                            <Chip
                               label="Urgent"
                               size="small"
-                              sx={{ 
+                              sx={{
                                 backgroundColor: `${theme.palette.error.main}15`,
                                 color: theme.palette.error.main,
                                 fontWeight: 500
@@ -297,7 +304,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                   >
                     <EditIcon />
                   </IconButton>
-                  <IconButton 
+                  <IconButton
                     onClick={() => onTaskSchedule(task.id, new Date())}
                     className="schedule-button"
                   >
@@ -341,7 +348,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
             }}
             fullWidth
           />
-          <IconButton 
+          <IconButton
             size="small"
             onClick={() => handleQuickAdd(sectionId.split('-')[0], sectionId.includes('dump') ? 'dump' : 'today')}
           >
@@ -355,9 +362,9 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
 
   return (
     <Paper className="task-list">
-      <Box sx={{ 
-        p: 2, 
-        borderBottom: 1, 
+      <Box sx={{
+        p: 2,
+        borderBottom: 1,
         borderColor: 'divider',
         bgcolor: 'background.paper'
       }}>
@@ -369,9 +376,9 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
       <div className="task-list-content">
         <DragDropContext onDragEnd={handleDragEnd}>
           {Object.keys(priorityTasksByLevel).map(priority => (
-            <Accordion 
-              key={priority} 
-              defaultExpanded 
+            <Accordion
+              key={priority}
+              defaultExpanded
               className="priority-section"
             >
               <AccordionSummary
@@ -390,9 +397,9 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                     <div className={`priority-indicator priority-${priority.toLowerCase()}`} />
                     <Typography className="priority-title">
                       {priority === 'P1' ? 'P1 - Critical' :
-                       priority === 'P2' ? 'P2 - High' :
-                       priority === 'P3' ? 'P3 - Medium' :
-                       'P4 - Low (To-Do Later)'}
+                        priority === 'P2' ? 'P2 - High' :
+                          priority === 'P3' ? 'P3 - Medium' :
+                            'P4 - Low (To-Do Later)'}
                     </Typography>
                     <Typography className="priority-count">
                       {priorityTasksByLevel[priority].length} tasks
@@ -416,30 +423,17 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                     }}
                     fullWidth
                   />
-                  <IconButton 
+                  <IconButton
                     size="small"
                     onClick={() => handleQuickAdd(priority, priority)}
                   >
                     <AddIcon fontSize="small" />
                   </IconButton>
                 </Box>
-                {priorityTasksByLevel[priority].length === 0 ? (
-                  <Typography 
-                    className="priority-empty"
-                    sx={{ 
-                      padding: '12px 24px',
-                      color: 'text.secondary',
-                      fontSize: '0.875rem'
-                    }}
-                  >
-                    No tasks
-                  </Typography>
-                ) : (
-                  <TaskListContent 
-                    listId={`${priority}-priority-list`} 
-                    items={priorityTasksByLevel[priority]} 
-                  />
-                )}
+                <TaskListContent
+                  listId={`${priority}-priority-list`}
+                  items={priorityTasksByLevel[priority]}
+                />
               </AccordionDetails>
             </Accordion>
           ))}
