@@ -392,3 +392,23 @@
 .task-item.scheduled:hover {
   background-color: #e3f2fd;
 }
+
+/* Priority Header Backgrounds */
+.priority-header-p1 {
+  background-color: #ffebee !important; /* Light Red */
+}
+.priority-header-p2 {
+  background-color: #fff3e0 !important; /* Light Orange */
+}
+.priority-header-p3 {
+  background-color: #e3f2fd !important; /* Light Blue */
+}
+.priority-header-p4 {
+  background-color: #e8f5e9 !important; /* Light Green */
+}
+
+/* Ensure text contrasts well */
+.priority-header-p1 .priority-title, .priority-header-p1 .priority-count { color: #b71c1c !important; }
+.priority-header-p2 .priority-title, .priority-header-p2 .priority-count { color: #e65100 !important; }
+.priority-header-p3 .priority-title, .priority-header-p3 .priority-count { color: #0d47a1 !important; }
+.priority-header-p4 .priority-title, .priority-header-p4 .priority-count { color: #1b5e20 !important; }

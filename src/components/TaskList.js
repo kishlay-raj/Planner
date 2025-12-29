@@ -411,13 +411,13 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
             <Accordion
               key={priority}
               defaultExpanded
-              className="priority-section"
+              className={`priority-section`}
             >
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
+                className={`priority-header-${priority.toLowerCase()}`}
                 sx={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                  borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
                   minHeight: '40px !important',
                   '& .MuiAccordionSummary-content': {
                     margin: '4px 0 !important'
@@ -426,7 +426,8 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
               >
                 <div className="priority-header">
                   <div className="priority-header-text">
-                    <div className={`priority-indicator priority-${priority.toLowerCase()}`} />
+                    {/* Indicator removed as background now serves this purpose, but can keep if desired. Keeping for now for extra clarity */}
+                    <div className={`priority-indicator priority-${priority.toLowerCase()}`} style={{ display: 'none' }} />
                     <Typography className="priority-title">
                       {priority === 'P1' ? 'P1 - Critical' :
                         priority === 'P2' ? 'P2 - High' :
