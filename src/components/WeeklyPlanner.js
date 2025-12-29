@@ -31,7 +31,7 @@ import {
 
 function WeeklyPlanner() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
   const [plannerData, setPlannerData] = useState(() => {
     try {
       const saved = localStorage.getItem('weeklyPlannerData');
