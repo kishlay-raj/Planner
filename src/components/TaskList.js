@@ -187,8 +187,8 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
           }}
         >
           {items.length === 0 && (
-            <ListItem className="priority-empty" sx={{ justifyContent: 'center', py: 2 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            <ListItem className="priority-empty" sx={{ justifyContent: 'center', py: 0.5 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.8rem' }}>
                 No tasks
               </Typography>
             </ListItem>

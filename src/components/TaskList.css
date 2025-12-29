@@ -14,12 +14,12 @@
   padding-bottom: 16px;
 }
 
-.task-list-content > :last-child {
+.task-list-content> :last-child {
   margin-bottom: 0;
 }
 
 .task-list-items {
-  min-height: 100px;
+  min-height: 24px;
   padding: 0;
   background: transparent;
 }
@@ -96,7 +96,8 @@
   flex-wrap: wrap;
 }
 
-.schedule-button, .edit-button {
+.schedule-button,
+.edit-button {
   opacity: 0;
   transition: opacity 0.2s;
   padding: 6px !important;
@@ -167,7 +168,7 @@
 /* Checkbox styles */
 .MuiCheckbox-root {
   &.Mui-checked {
-    & + .MuiFormControlLabel-label {
+    &+.MuiFormControlLabel-label {
       color: rgba(0, 0, 0, 0.87);
     }
   }
@@ -203,8 +204,8 @@
 
 .priority-empty {
   color: #999999;
-  font-size: 0.875rem;
-  padding: 8px 12px;
+  font-size: 0.8rem;
+  padding: 4px 8px;
 }
 
 /* Tab styles */
@@ -283,10 +284,21 @@
   margin-right: 8px;
 }
 
-.priority-p1 { background-color: #f44336; }
-.priority-p2 { background-color: #ff9800; }
-.priority-p3 { background-color: #2196f3; }
-.priority-p4 { background-color: #4caf50; }
+.priority-p1 {
+  background-color: #f44336;
+}
+
+.priority-p2 {
+  background-color: #ff9800;
+}
+
+.priority-p3 {
+  background-color: #2196f3;
+}
+
+.priority-p4 {
+  background-color: #4caf50;
+}
 
 /* Task subsection styling */
 .task-section .MuiAccordionSummary-root {
@@ -349,7 +361,8 @@
   font-size: 0.7rem;
   padding-left: 8px !important;
   padding-right: 8px !important;
-} 
+}
+
 /* Inline task layout */
 .task-header-row {
   display: flex !important;
