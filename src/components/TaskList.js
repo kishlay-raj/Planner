@@ -44,12 +44,25 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
     return taskDate === selectedDateString;
   });
 
+  /*
   const priorityTasksByLevel = {
     P1: filteredTasks.filter(task => task.priority === 'P1' && !task.completed),
     P2: filteredTasks.filter(task => task.priority === 'P2' && !task.completed),
     P3: filteredTasks.filter(task => task.priority === 'P3' && !task.completed),
     P4: filteredTasks.filter(task => task.priority === 'P4' && !task.completed)
   };
+  */
+
+  // Tasks for priority sections (active only)
+  const priorityTasksByLevel = {
+    P1: filteredTasks.filter(task => task.priority === 'P1' && !task.completed),
+    P2: filteredTasks.filter(task => task.priority === 'P2' && !task.completed),
+    P3: filteredTasks.filter(task => task.priority === 'P3' && !task.completed),
+    P4: filteredTasks.filter(task => task.priority === 'P4' && !task.completed)
+  };
+
+  // Tasks for completed section
+  const completedSectionTasks = filteredTasks.filter(task => task.completed);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -59,9 +72,15 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
 
     let updatedTask = { ...taskToMove };
 
-    if (result.destination.droppableId.includes('priority')) {
+    if (result.destination.droppableId === 'completed-list') {
+      updatedTask.completed = true;
+    } else if (result.destination.droppableId.includes('priority')) {
       const newPriority = result.destination.droppableId.split('-')[0];
       updatedTask.priority = newPriority;
+      // If moving back from completed, ensure it's marked active
+      if (updatedTask.completed) {
+        updatedTask.completed = false;
+      }
     }
 
     const updatedTasks = taskList.map(task =>
@@ -437,6 +456,47 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
               </AccordionDetails>
             </Accordion>
           ))}
+
+          {/* Completed Tasks Section */}
+          <Accordion
+            defaultExpanded={false}
+            className="priority-section completed-section"
+            sx={{
+              mt: 2,
+              opacity: 0.8,
+              '&:before': { display: 'none' }
+            }}
+          >
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              sx={{
+                backgroundColor: 'rgba(0, 0, 0, 0.03)',
+                borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                minHeight: '40px !important',
+                '& .MuiAccordionSummary-content': {
+                  margin: '4px 0 !important'
+                }
+              }}
+            >
+              <div className="priority-header">
+                <div className="priority-header-text">
+                  <div className="priority-indicator" style={{ backgroundColor: theme.palette.text.disabled }} />
+                  <Typography className="priority-title" sx={{ color: 'text.secondary' }}>
+                    Completed
+                  </Typography>
+                  <Typography className="priority-count">
+                    {completedSectionTasks.length} tasks
+                  </Typography>
+                </div>
+              </div>
+            </AccordionSummary>
+            <AccordionDetails sx={{ padding: 0 }}>
+              <TaskListContent
+                listId="completed-list"
+                items={completedSectionTasks}
+              />
+            </AccordionDetails>
+          </Accordion>
         </DragDropContext>
       </div>
       <TaskEditDialog
