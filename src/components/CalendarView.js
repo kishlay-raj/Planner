@@ -115,6 +115,12 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
     onTaskSchedule(event.id, start, duration);
   }, [onTaskSchedule]);
 
+  const handleEventResize = useCallback(({ event, start, end }) => {
+    // Calculate new duration based on the resize
+    const duration = (end - start) / (1000 * 60); // Convert to minutes
+    onTaskSchedule(event.id, start, duration);
+  }, [onTaskSchedule]);
+
   const components = {
     toolbar: props => (
       <div className='rbc-toolbar'>
@@ -187,8 +193,10 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
         scrollToTime={scrollTime}
         onSelectSlot={handleSelectSlot}
         selectable
+        resizable
         components={components}
         onEventDrop={handleEventDrop}
+        onEventResize={handleEventResize}
         onDoubleClickEvent={handleEventDoubleClick}
         eventPropGetter={(event) => ({
           className: 'calendar-event',
