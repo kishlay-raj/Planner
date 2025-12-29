@@ -382,3 +382,13 @@
 .task-content .MuiTypography-root {
   display: inline-block;
 }
+/* Scheduled task highlight */
+.task-item.scheduled {
+  background-color: #f0f7ff; /* Light blue tint */
+  border-left: 3px solid #2196f3; /* Blue accent border */
+}
+
+/* Ensure hover state is slightly darker but responsive */
+.task-item.scheduled:hover {
+  background-color: #e3f2fd;
+}

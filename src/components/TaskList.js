@@ -203,7 +203,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                 <ListItem
                   ref={provided.innerRef}
                   {...provided.draggableProps}
-                  className={`task-item ${snapshot.isDragging ? 'dragging' : ''}`}
+                  className={`task-item ${snapshot.isDragging ? 'dragging' : ''} ${task.scheduledTime ? 'scheduled' : ''}`}
                   draggable="true"
                   onDragStart={(e) => {
                     e.stopPropagation();
