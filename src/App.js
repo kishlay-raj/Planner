@@ -1,11 +1,11 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
 import PlannerScreen from './components/PlannerScreen';
-import Sidebar from './components/Sidebar';
-import { ThemeProvider, createTheme } from '@mui/material';
-import { Box } from '@mui/material';
-import './App.css';
 import PomodoroPanel from './components/PomodoroPanel';
+import WeeklyPlanner from './components/WeeklyPlanner';
+import MonthlyPlanner from './components/MonthlyPlanner';
+import Sidebar from './components/Sidebar';
+import './App.css';
 
 const theme = createTheme({
   palette: {
@@ -14,6 +14,7 @@ const theme = createTheme({
       light: '#42a5f5',
       dark: '#1565c0'
     },
+    // ... (rest of palette is same, keeping it concise for replace)
     secondary: {
       main: '#7c4dff',
       light: '#b47cff',
@@ -139,6 +140,10 @@ function App() {
     switch (activePanel) {
       case 'planner':
         return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
+      case 'planner-week':
+        return <WeeklyPlanner />;
+      case 'planner-month':
+        return <MonthlyPlanner />;
       case 'pomodoro':
         return <PomodoroPanel onModeChange={handlePomodoroModeChange} />;
       default:
@@ -148,15 +153,15 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ 
-        display: 'flex', 
+      <Box sx={{
+        display: 'flex',
         minHeight: '100vh',
         transition: 'margin 0.2s ease-in-out'
       }}>
-        <Sidebar 
-          onNavigate={setActivePanel} 
+        <Sidebar
+          onNavigate={setActivePanel}
           activePanel={activePanel}
-          pomodoroMode={pomodoroMode} 
+          pomodoroMode={pomodoroMode}
         />
         <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
           {renderPanel()}

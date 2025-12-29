@@ -1,10 +1,10 @@
 import React from 'react';
-import { 
-  Drawer, 
-  List, 
-  ListItem, 
-  ListItemIcon, 
-  ListItemText, 
+import {
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
   Divider,
   Collapse,
   ListItemButton,
@@ -14,13 +14,11 @@ import {
 } from '@mui/material';
 import {
   Timer,
-  CalendarToday,
-  Assignment,
   Dashboard,
-  Schedule,
-  Assessment,
   ChevronLeft,
-  Menu
+  Menu,
+  ViewWeek,
+  CalendarMonth
 } from '@mui/icons-material';
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
@@ -60,8 +58,8 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
           color: activePanel === 'pomodoro' ? 'white' : 'inherit',
           overflowX: 'hidden',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          borderRight: activePanel === 'pomodoro' 
-            ? '1px solid rgba(255, 255, 255, 0.12)' 
+          borderRight: activePanel === 'pomodoro'
+            ? '1px solid rgba(255, 255, 255, 0.12)'
             : '1px solid rgba(0, 0, 0, 0.12)'
         },
         '& .MuiListItemIcon-root, & .MuiListItemText-primary, & .MuiIconButton-root': {
@@ -75,20 +73,20 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
         }
       }}
     >
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: isExpanded ? 'flex-end' : 'center',
         p: 1,
         minHeight: 56
       }}>
-        <IconButton 
+        <IconButton
           onClick={toggleDrawer}
-          sx={{ 
+          sx={{
             color: activePanel === 'pomodoro' ? 'white' : 'inherit',
             '&:hover': {
-              bgcolor: activePanel === 'pomodoro' 
-                ? 'rgba(255, 255, 255, 0.1)' 
+              bgcolor: activePanel === 'pomodoro'
+                ? 'rgba(255, 255, 255, 0.1)'
                 : 'rgba(0, 0, 0, 0.04)'
             }
           }}
@@ -96,22 +94,22 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
           {isExpanded ? <ChevronLeft /> : <Menu />}
         </IconButton>
       </Box>
-      <Divider 
+      <Divider
         sx={{
-          borderColor: activePanel === 'pomodoro' 
-            ? 'rgba(255, 255, 255, 0.12)' 
+          borderColor: activePanel === 'pomodoro'
+            ? 'rgba(255, 255, 255, 0.12)'
             : 'rgba(0, 0, 0, 0.12)'
         }}
       />
 
       <List component="nav">
         <Tooltip title="Planner" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton 
+          <ListItemButton
             onClick={() => handleNavigate('planner')}
             sx={{
               '&:hover': {
-                bgcolor: activePanel === 'pomodoro' 
-                  ? 'rgba(255, 255, 255, 0.1)' 
+                bgcolor: activePanel === 'pomodoro'
+                  ? 'rgba(255, 255, 255, 0.1)'
                   : 'rgba(0, 0, 0, 0.04)'
               }
             }}
@@ -119,20 +117,62 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
             <ListItemIcon>
               <Dashboard sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
             </ListItemIcon>
-            {isExpanded && <ListItemText 
-              primary="Planner" 
+            {isExpanded && <ListItemText
+              primary="Planner"
+              sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
+            />}
+          </ListItemButton>
+        </Tooltip>
+
+        <Tooltip title="Weekly Planner" placement="right" arrow disableHoverListener={isExpanded}>
+          <ListItemButton
+            onClick={() => handleNavigate('planner-week')}
+            sx={{
+              '&:hover': {
+                bgcolor: activePanel === 'pomodoro'
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
+            <ListItemIcon>
+              <ViewWeek sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
+            </ListItemIcon>
+            {isExpanded && <ListItemText
+              primary="Weekly"
+              sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
+            />}
+          </ListItemButton>
+        </Tooltip>
+
+        <Tooltip title="Monthly Planner" placement="right" arrow disableHoverListener={isExpanded}>
+          <ListItemButton
+            onClick={() => handleNavigate('planner-month')}
+            sx={{
+              '&:hover': {
+                bgcolor: activePanel === 'pomodoro'
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
+            <ListItemIcon>
+              <CalendarMonth sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
+            </ListItemIcon>
+            {isExpanded && <ListItemText
+              primary="Monthly"
               sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
             />}
           </ListItemButton>
         </Tooltip>
 
         <Tooltip title="Pomodoro" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton 
+          <ListItemButton
             onClick={() => handleNavigate('pomodoro')}
             sx={{
               '&:hover': {
-                bgcolor: activePanel === 'pomodoro' 
-                  ? 'rgba(255, 255, 255, 0.1)' 
+                bgcolor: activePanel === 'pomodoro'
+                  ? 'rgba(255, 255, 255, 0.1)'
                   : 'rgba(0, 0, 0, 0.04)'
               }
             }}
@@ -140,25 +180,25 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
             <ListItemIcon>
               <Timer sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
             </ListItemIcon>
-            {isExpanded && <ListItemText 
+            {isExpanded && <ListItemText
               primary="Pomodoro"
               sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
             />}
           </ListItemButton>
         </Tooltip>
 
-        <Divider 
-          sx={{ 
+        <Divider
+          sx={{
             my: 1,
-            borderColor: activePanel === 'pomodoro' 
-              ? 'rgba(255, 255, 255, 0.12)' 
+            borderColor: activePanel === 'pomodoro'
+              ? 'rgba(255, 255, 255, 0.12)'
               : 'rgba(0, 0, 0, 0.12)'
-          }} 
+          }}
         />
       </List>
-      <Box sx={{ 
-        position: 'absolute', 
-        bottom: 0, 
+      <Box sx={{
+        position: 'absolute',
+        bottom: 0,
         width: '100%',
         p: 1,
         display: 'flex',
