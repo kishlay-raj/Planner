@@ -6,13 +6,16 @@ import {
   IconButton,
   Grid,
   TextField,
-  Checkbox
+  Checkbox,
+  Tooltip
 } from '@mui/material';
 import {
   NavigateBefore,
   NavigateNext,
   Add as AddIcon,
-  Delete as DeleteIcon
+  Delete as DeleteIcon,
+  Brightness4,
+  Brightness7
 } from '@mui/icons-material';
 import {
   format,
@@ -28,6 +31,7 @@ import {
 
 function WeeklyPlanner() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isDark, setIsDark] = useState(true);
   const [plannerData, setPlannerData] = useState(() => {
     try {
       const saved = localStorage.getItem('weeklyPlannerData');
@@ -38,7 +42,7 @@ function WeeklyPlanner() {
     }
   });
 
-  const weekId = `${getYear(currentDate)} -${getISOWeek(currentDate)} `;
+  const weekId = `${getYear(currentDate)}-${getISOWeek(currentDate)}`;
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday start
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
   const daysOfWeek = eachDayOfInterval({ start: weekStart, end: weekEnd });
@@ -68,6 +72,31 @@ function WeeklyPlanner() {
 
   const handleNavigate = (direction) => {
     setCurrentDate(prev => direction === 'prev' ? subWeeks(prev, 1) : addWeeks(prev, 1));
+  };
+
+  // --- Theme ---
+  const theme = {
+    // Base Colors
+    bg: isDark ? '#121212' : '#f0f2f5',
+    paper: isDark ? '#1e1e1e' : '#ffffff',
+    text: isDark ? '#e0e0e0' : '#2d3748',
+    textSecondary: isDark ? '#a0a0a0' : '#718096',
+
+    // UI Elements
+    inputBg: isDark ? 'rgba(255,255,255,0.05)' : '#f7fafc',
+    divider: isDark ? '#333333' : '#e2e8f0',
+    checkbox: isDark ? '#e0e0e0' : '#4a5568',
+    icon: isDark ? '#e0e0e0' : '#4a5568',
+
+    // Accents (Enhanced for better contrast and harmony)
+    primary: isDark ? '#90caf9' : '#3182ce', // Blue
+    accent1: isDark ? '#ce93d8' : '#9f7aea', // Purple
+    accent2: isDark ? '#a5d6a7' : '#38a169', // Green
+    accent3: isDark ? '#ffcc80' : '#dd6b20', // Orange
+
+    // Borders & shadows
+    border: isDark ? '1px solid #333' : '1px solid #e2e8f0',
+    shadow: isDark ? '0 4px 6px -1px rgba(0, 0, 0, 0.5)' : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
   };
 
   // --- Handlers ---
@@ -114,18 +143,26 @@ function WeeklyPlanner() {
   };
 
   return (
-    <Box sx={{ p: 3, height: '100vh', overflow: 'auto', bgcolor: '#121212', color: 'white' }}>
+    <Box sx={{ p: 3, height: '100vh', overflow: 'auto', bgcolor: theme.bg, color: theme.text, transition: 'all 0.3s ease' }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 4 }}>
-        <IconButton onClick={() => handleNavigate('prev')} sx={{ color: 'white' }}>
-          <NavigateBefore />
-        </IconButton>
-        <Typography variant="h5" sx={{ mx: 2, fontWeight: 'bold' }}>
-          Week of {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
-        </Typography>
-        <IconButton onClick={() => handleNavigate('next')} sx={{ color: 'white' }}>
-          <NavigateNext />
-        </IconButton>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+        <Box sx={{ width: 40 }} /> {/* Spacer for balance */}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton onClick={() => handleNavigate('prev')} sx={{ color: theme.icon }}>
+            <NavigateBefore />
+          </IconButton>
+          <Typography variant="h5" sx={{ mx: 2, fontWeight: 'bold' }}>
+            Week of {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
+          </Typography>
+          <IconButton onClick={() => handleNavigate('next')} sx={{ color: theme.icon }}>
+            <NavigateNext />
+          </IconButton>
+        </Box>
+        <Tooltip title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+          <IconButton onClick={() => setIsDark(!isDark)} sx={{ color: theme.text }}>
+            {isDark ? <Brightness7 /> : <Brightness4 />}
+          </IconButton>
+        </Tooltip>
       </Box>
 
       <Grid container spacing={4}>
@@ -133,8 +170,17 @@ function WeeklyPlanner() {
         <Grid item xs={12} md={5}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Weekly Focus */}
-            <Paper sx={{ p: 2, bgcolor: '#1e1e1e', color: 'white' }}>
-              <Typography variant="h6" sx={{ mb: 1, color: '#90caf9' }}>Weekly Focus</Typography>
+            <Paper sx={{
+              p: 3,
+              bgcolor: theme.paper,
+              color: theme.text,
+              borderRadius: 3,
+              boxShadow: theme.shadow,
+              border: theme.border
+            }}>
+              <Typography variant="h6" sx={{ mb: 2, color: theme.primary, fontWeight: 700, letterSpacing: '0.5px' }}>
+                WEEKLY FOCUS
+              </Typography>
               <TextField
                 fullWidth
                 placeholder="What is your main focus this week?"
@@ -142,32 +188,45 @@ function WeeklyPlanner() {
                 onChange={handleFocusChange}
                 variant="standard"
                 InputProps={{
-                  style: { color: 'white' },
+                  style: { color: theme.text, fontSize: '1.1rem' },
                   disableUnderline: true
                 }}
                 sx={{
-                  bgcolor: 'rgba(255,255,255,0.05)',
-                  p: 1,
-                  borderRadius: 1
+                  bgcolor: theme.inputBg,
+                  p: 2,
+                  borderRadius: 2
                 }}
               />
             </Paper>
 
             {/* Weekly Goals */}
-            <Paper sx={{ p: 2, bgcolor: '#1e1e1e', color: 'white' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                <Typography variant="h6" sx={{ color: '#ce93d8' }}>Weekly Goals</Typography>
-                <IconButton size="small" onClick={handleGoalAdd} sx={{ color: '#ce93d8' }}>
+            <Paper sx={{
+              p: 3,
+              bgcolor: theme.paper,
+              color: theme.text,
+              borderRadius: 3,
+              boxShadow: theme.shadow,
+              border: theme.border
+            }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ color: theme.accent1, fontWeight: 700, letterSpacing: '0.5px' }}>
+                  GOALS
+                </Typography>
+                <IconButton size="small" onClick={handleGoalAdd} sx={{ color: theme.accent1, bgcolor: theme.inputBg, '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' } }}>
                   <AddIcon />
                 </IconButton>
               </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {currentWeekData.goals.map((goal) => (
-                  <Box key={goal.id} sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box key={goal.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Checkbox
                       checked={goal.completed}
                       onChange={(e) => handleGoalChange(goal.id, 'completed', e.target.checked)}
-                      sx={{ color: 'white', '&.Mui-checked': { color: '#ce93d8' } }}
+                      sx={{
+                        color: theme.checkbox,
+                        p: 0.5,
+                        '&.Mui-checked': { color: theme.accent1 }
+                      }}
                     />
                     <TextField
                       fullWidth
@@ -176,17 +235,17 @@ function WeeklyPlanner() {
                       placeholder="Add a goal..."
                       variant="standard"
                       InputProps={{
-                        style: { color: goal.completed ? 'gray' : 'white', textDecoration: goal.completed ? 'line-through' : 'none' },
+                        style: { color: goal.completed ? theme.textSecondary : theme.text, textDecoration: goal.completed ? 'line-through' : 'none' },
                         disableUnderline: true
                       }}
                     />
-                    <IconButton size="small" onClick={() => handleGoalDelete(goal.id)} sx={{ color: 'gray' }}>
+                    <IconButton size="small" onClick={() => handleGoalDelete(goal.id)} sx={{ color: theme.textSecondary, opacity: 0.6, '&:hover': { opacity: 1, color: '#ef5350' } }}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Box>
                 ))}
                 {currentWeekData.goals.length === 0 && (
-                  <Typography variant="body2" sx={{ color: 'gray', fontStyle: 'italic', ml: 1 }}>
+                  <Typography variant="body2" sx={{ color: theme.textSecondary, fontStyle: 'italic', ml: 1 }}>
                     No goals set (Click + to add)
                   </Typography>
                 )}
@@ -194,8 +253,17 @@ function WeeklyPlanner() {
             </Paper>
 
             {/* One Habit Tracker */}
-            <Paper sx={{ p: 2, bgcolor: '#1e1e1e', color: 'white' }}>
-              <Typography variant="h6" sx={{ mb: 1, color: '#a5d6a7' }}>Habit Tracker</Typography>
+            <Paper sx={{
+              p: 3,
+              bgcolor: theme.paper,
+              color: theme.text,
+              borderRadius: 3,
+              boxShadow: theme.shadow,
+              border: theme.border
+            }}>
+              <Typography variant="h6" sx={{ mb: 2, color: theme.accent2, fontWeight: 700, letterSpacing: '0.5px' }}>
+                HABIT TRACKER
+              </Typography>
               <TextField
                 fullWidth
                 placeholder="Enter one habit to track..."
@@ -203,22 +271,23 @@ function WeeklyPlanner() {
                 onChange={handleHabitNameChange}
                 variant="standard"
                 InputProps={{
-                  style: { color: 'white', fontSize: '1.1rem' },
+                  style: { color: theme.text, fontSize: '1.1rem', fontWeight: 500 },
                   disableUnderline: true
                 }}
-                sx={{ mb: 2, borderBottom: '1px solid #444' }}
+                sx={{ mb: 3, borderBottom: `2px solid ${theme.divider}`, pb: 1 }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 1 }}>
                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, idx) => (
-                  <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <Typography variant="caption" sx={{ color: 'gray', mb: 0.5 }}>{day}</Typography>
+                  <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="caption" sx={{ color: theme.textSecondary, fontWeight: 600 }}>{day}</Typography>
                     <Checkbox
                       checked={currentWeekData.habit.days[idx]}
                       onChange={() => handleHabitToggle(idx)}
                       sx={{
-                        color: 'white',
-                        '&.Mui-checked': { color: '#a5d6a7' },
-                        padding: 0
+                        color: theme.checkbox,
+                        '&.Mui-checked': { color: theme.accent2 },
+                        padding: 0,
+                        transform: 'scale(1.2)'
                       }}
                     />
                   </Box>
@@ -227,17 +296,26 @@ function WeeklyPlanner() {
             </Paper>
 
             {/* Journal */}
-            <Paper sx={{ p: 2, bgcolor: '#1e1e1e', color: 'white' }}>
-              <Typography variant="h6" sx={{ mb: 2, color: '#ffcc80' }}>Weekly Journal</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Paper sx={{
+              p: 3,
+              bgcolor: theme.paper,
+              color: theme.text,
+              borderRadius: 3,
+              boxShadow: theme.shadow,
+              border: theme.border
+            }}>
+              <Typography variant="h6" sx={{ mb: 3, color: theme.accent3, fontWeight: 700, letterSpacing: '0.5px' }}>
+                REFLECTION
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {[
                   { label: "Start: What is something new I want to try next week?", key: 'start' },
-                  { label: "Stop: What distracted me from my aim or wasted my time this week?", key: 'stop' },
+                  { label: "Stop: What distracted me from my aim or wasted my time?", key: 'stop' },
                   { label: "Continue: What workflow worked really well this week?", key: 'continue' },
                   { label: "Grateful: What am I grateful for?", key: 'grateful' }
                 ].map((item) => (
                   <Box key={item.key}>
-                    <Typography variant="caption" sx={{ color: '#ffcc80', opacity: 0.8, display: 'block', mb: 0.5 }}>
+                    <Typography variant="caption" sx={{ color: theme.accent3, opacity: 0.9, display: 'block', mb: 1, fontWeight: 600, fontSize: '0.75rem', textTransform: 'uppercase' }}>
                       {item.label}
                     </Typography>
                     <TextField
@@ -247,12 +325,19 @@ function WeeklyPlanner() {
                       value={currentWeekData.journal[item.key]}
                       onChange={(e) => handleJournalChange(item.key, e.target.value)}
                       variant="outlined"
+                      placeholder="Write here..."
                       sx={{
-                        bgcolor: 'rgba(255,255,255,0.05)',
+                        bgcolor: theme.inputBg,
+                        borderRadius: 1,
                         '& .MuiOutlinedInput-root': {
-                          color: 'white',
-                          '& fieldset': { borderColor: '#444' },
-                          '&:hover fieldset': { borderColor: '#666' },
+                          color: theme.text,
+                          '& fieldset': { borderColor: 'transparent' },
+                          '&:hover fieldset': { borderColor: theme.divider },
+                          '&.Mui-focused fieldset': { borderColor: theme.accent3 },
+                        },
+                        '& .MuiInputBase-input::placeholder': {
+                          color: theme.textSecondary,
+                          opacity: 0.5
                         }
                       }}
                     />
@@ -269,35 +354,50 @@ function WeeklyPlanner() {
             {daysOfWeek.map((day) => {
               const dateKey = format(day, 'yyyy-MM-dd');
               const isToday = isSameDay(day, new Date());
+              // Note: date-fns isSameDay(dateLeft, dateRight)
+              // We'll trust the import is correct from context
+
               return (
                 <Paper key={dateKey} sx={{
-                  p: 2,
-                  bgcolor: '#1e1e1e',
-                  color: 'white',
-                  borderLeft: isToday ? '4px solid #90caf9' : '4px solid transparent'
+                  p: 2.5,
+                  bgcolor: theme.paper,
+                  color: theme.text,
+                  borderLeft: isToday ? `6px solid ${theme.primary}` : '6px solid transparent',
+                  borderRadius: 3,
+                  boxShadow: theme.shadow,
+                  border: theme.border,
+                  transition: 'transform 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: isDark ? '0 6px 12px rgba(0,0,0,0.5)' : '0 4px 6px rgba(0,0,0,0.05)'
+                  }
                 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 1, gap: 1 }}>
-                    <Typography variant="h6" sx={{ color: isToday ? '#90caf9' : 'white' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 1.5, gap: 1.5, borderBottom: `1px solid ${theme.divider}`, pb: 1 }}>
+                    <Typography variant="h6" sx={{ color: isToday ? theme.primary : theme.text, fontWeight: 700 }}>
                       {format(day, 'EEEE')}
                     </Typography>
-                    <Typography variant="body2" sx={{ color: 'gray' }}>
-                      {format(day, 'MMM d')}
+                    <Typography variant="body2" sx={{ color: theme.textSecondary, fontWeight: 500 }}>
+                      {format(day, 'MMMM d')}
                     </Typography>
                   </Box>
                   <TextField
                     fullWidth
                     multiline
-                    placeholder="Tasks, events, or notes..."
+                    placeholder={`Plan for ${format(day, 'EEEE')}...`}
                     value={currentWeekData.days[dateKey] || ''}
                     onChange={(e) => handleDayNoteChange(dateKey, e.target.value)}
                     variant="standard"
                     InputProps={{
                       disableUnderline: true,
-                      style: { color: 'white', fontSize: '0.95rem', lineHeight: 1.5 }
+                      style: { color: theme.text, fontSize: '1rem', lineHeight: 1.6 }
                     }}
                     sx={{
-                      minHeight: '60px',
-                      '& .MuiInputBase-root': { alignItems: 'flex-start' }
+                      minHeight: '80px',
+                      '& .MuiInputBase-root': { alignItems: 'flex-start' },
+                      '& .MuiInputBase-input::placeholder': {
+                        color: theme.textSecondary,
+                        opacity: 0.5
+                      }
                     }}
                   />
                 </Paper>
