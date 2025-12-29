@@ -5,6 +5,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import {
   FormatBold,
   FormatItalic,
+  FormatStrikethrough,
   FormatListBulleted,
   FormatListNumbered,
   FormatQuote,
@@ -32,9 +33,9 @@ function TaskNotes({ content, onChange }) {
 
   const MenuBar = () => {
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        gap: 0.5, 
+      <Box sx={{
+        display: 'flex',
+        gap: 0.5,
         p: 1,
         borderBottom: '1px solid',
         borderColor: 'divider'
@@ -52,6 +53,13 @@ function TaskNotes({ content, onChange }) {
           className={editor.isActive('italic') ? 'is-active' : ''}
         >
           <FormatItalic fontSize="small" />
+        </IconButton>
+        <IconButton
+          size="small"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          className={editor.isActive('strike') ? 'is-active' : ''}
+        >
+          <FormatStrikethrough fontSize="small" />
         </IconButton>
         <Divider orientation="vertical" flexItem />
         <IconButton
@@ -90,7 +98,7 @@ function TaskNotes({ content, onChange }) {
   return (
     <Paper variant="outlined" sx={{ mt: 2 }}>
       <MenuBar />
-      <Box sx={{ 
+      <Box sx={{
         p: 2,
         minHeight: 200,
         '& .ProseMirror': {

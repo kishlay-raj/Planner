@@ -20,6 +20,8 @@
     "@tiptap/react": "^2.11.5",
     "@tiptap/starter-kit": "^2.11.5",
     "date-fns": "^2.30.0",
+    "electron-is-dev": "^3.0.1",
+    "express": "^4.18.2",
     "quill-markdown-shortcuts": "^0.0.10",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
@@ -27,8 +29,7 @@
     "react-dom": "^18.2.0",
     "react-quill": "^2.0.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4",
-    "express": "^4.18.2"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -37,7 +38,22 @@
     "test:watch": "react-scripts test --coverage",
     "eject": "react-scripts eject",
     "deploy": "npm run build && gcloud app deploy --quiet",
-    "start-prod": "node server.js"
+    "start-prod": "node server.js",
+    "electron-dev": "concurrently \"BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "preelectron-pack": "npm run build",
+    "electron-pack": "electron-builder -m"
+  },
+  "build": {
+    "appId": "com.todoproj2.app",
+    "mac": {
+      "category": "public.app-category.productivity"
+    },
+    "files": [
+      "build/**/*",
+      "node_modules/**/*",
+      "electron.js",
+      "package.json"
+    ]
   },
   "eslintConfig": {
     "extends": [
@@ -72,5 +88,12 @@
       }
     }
   },
-  "main": "server.js"
+  "main": "electron.js",
+  "homepage": "./",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12",
+    "wait-on": "^9.0.3"
+  }
 }

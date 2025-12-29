@@ -30,7 +30,7 @@ function NotesPanel({ selectedDate }) {
   // Save notes when they change
   const handleNoteChange = (content) => {
     setCurrentNote(content);
-    
+
     const updatedNotes = { ...notes, [currentDate]: content };
     setNotes(updatedNotes);
     localStorage.setItem('dailyNotes', JSON.stringify(updatedNotes));
@@ -40,16 +40,16 @@ function NotesPanel({ selectedDate }) {
   const modules = {
     toolbar: [
       // Direct heading buttons instead of dropdown
-      ['bold', 'italic', 'clean'],
+      ['bold', 'italic', 'strike', 'clean'],
       ['h1', 'h2'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       ['link'],
     ],
   };
-  
+
   const formats = [
     'header',
-    'bold', 'italic',
+    'bold', 'italic', 'strike',
     'list', 'bullet',
     'link'
   ];
@@ -60,24 +60,24 @@ function NotesPanel({ selectedDate }) {
       // First, check if buttons already exist to avoid duplicates
       const existingH1 = toolbar.container.querySelector('button.ql-header[value="1"]');
       const existingH2 = toolbar.container.querySelector('button.ql-header[value="2"]');
-      
+
       // Only create buttons if they don't already exist
       if (existingH1 || existingH2) return;
-      
+
       // Add H1 button
       const h1Button = document.createElement('button');
       h1Button.innerHTML = 'H1';
       h1Button.className = 'ql-header';
       h1Button.value = '1';
       h1Button.title = 'Heading 1';
-      
+
       // Add H2 button
       const h2Button = document.createElement('button');
       h2Button.innerHTML = 'H2';
       h2Button.className = 'ql-header';
       h2Button.value = '2';
       h2Button.title = 'Heading 2';
-      
+
       // Find the container for heading buttons
       const headingContainer = toolbar.container.querySelector('.ql-formats:nth-child(2)');
       if (headingContainer) {
@@ -92,9 +92,9 @@ function NotesPanel({ selectedDate }) {
   };
 
   return (
-    <Paper 
+    <Paper
       className="notes-panel"
-      sx={{ 
+      sx={{
         height: 'calc(100vh - 80px)',
         display: 'flex',
         flexDirection: 'column',
@@ -103,8 +103,8 @@ function NotesPanel({ selectedDate }) {
         boxShadow: 'none',
       }}
     >
-      <Box sx={{ 
-        p: 2, 
+      <Box sx={{
+        p: 2,
         borderBottom: '1px solid',
         borderColor: 'divider',
         backgroundColor: 'white',
@@ -113,8 +113,8 @@ function NotesPanel({ selectedDate }) {
           Notes for {format(selectedDate, 'MMMM d, yyyy')}
         </Typography>
       </Box>
-      
-      <Box sx={{ 
+
+      <Box sx={{
         flex: 1,
         overflow: 'hidden',
         backgroundColor: '#ffffff',
