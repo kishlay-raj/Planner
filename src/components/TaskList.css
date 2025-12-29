@@ -32,7 +32,7 @@
   cursor: grab;
   transition: all 0.2s ease;
   box-shadow: none;
-  padding: 12px 24px;
+  padding: 8px 12px;
   margin: 0;
   position: relative;
   overflow: hidden;
@@ -90,8 +90,8 @@
 
 .task-details {
   display: flex;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 4px;
+  margin-top: 4px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -135,10 +135,10 @@
 
 /* Style chips */
 .MuiChip-root {
-  height: 24px !important;
-  font-size: 0.75rem !important;
+  height: 20px !important;
+  font-size: 0.7rem !important;
   background-color: rgba(0, 0, 0, 0.04) !important;
-  border-radius: 12px !important;
+  border-radius: 6px !important;
 }
 
 .MuiChip-outlined {
@@ -334,15 +334,38 @@
 
 /* Decrease font size for task text */
 .task-item .MuiListItemText-primary {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 /* Adjust secondary text size */
 .task-item .MuiListItemText-secondary {
   font-size: 0.75rem;
+  line-height: 1.2;
 }
 
 /* Adjust chip text size */
 .task-item .MuiChip-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 } 
+/* Inline task layout */
+.task-header-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  row-gap: 4px !important;
+}
+
+.task-chips {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+/* Ensure typography doesn't force block */
+.task-content .MuiTypography-root {
+  display: inline-block;
+}

@@ -243,72 +243,85 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                     }}
                   />
                   <ListItemText
-                    primary={task.name}
-                    sx={{
-                      textDecoration: task.completed ? 'line-through' : 'none',
-                      opacity: task.completed ? 0.7 : 1
-                    }}
-                    secondary={
-                      <div>
-                        <div className="task-details">
-                          <Chip
-                            label={`${task.duration}min`}
-                            size="small"
-                            variant="outlined"
+                    disableTypography
+                    primary={
+                      <div className="task-content">
+                        <div className="task-header-row">
+                          <Typography
+                            variant="body1"
                             sx={{
-                              backgroundColor: 'rgba(33, 150, 243, 0.08)',
-                              color: theme.palette.primary.main,
-                              fontWeight: 500
-                            }}
-                          />
-                          <Chip
-                            label={task.priority}
-                            size="small"
-                            sx={{
-                              backgroundColor: `${getPriorityColor(task.priority)}15`,
-                              color: getPriorityColor(task.priority),
+                              textDecoration: task.completed ? 'line-through' : 'none',
+                              opacity: task.completed ? 0.7 : 1,
                               fontWeight: 500,
-                              borderColor: getPriorityColor(task.priority)
+                              fontSize: '0.85rem',
+                              marginRight: '8px'
                             }}
-                          />
-                          {task.tag && (
+                          >
+                            {task.name}
+                          </Typography>
+                          <div className="task-chips">
                             <Chip
-                              label={task.tag}
+                              label={`${task.duration}min`}
                               size="small"
                               variant="outlined"
                               sx={{
-                                backgroundColor: `${getTagColor(task.tag)}15`,
-                                color: getTagColor(task.tag),
-                                fontWeight: 500,
-                                borderColor: getTagColor(task.tag)
-                              }}
-                            />
-                          )}
-                          {task.urgent && (
-                            <Chip
-                              label="Urgent"
-                              size="small"
-                              sx={{
-                                backgroundColor: `${theme.palette.error.main}15`,
-                                color: theme.palette.error.main,
+                                backgroundColor: 'rgba(33, 150, 243, 0.08)',
+                                color: theme.palette.primary.main,
                                 fontWeight: 500
                               }}
                             />
-                          )}
+                            <Chip
+                              label={task.priority}
+                              size="small"
+                              sx={{
+                                backgroundColor: `${getPriorityColor(task.priority)}15`,
+                                color: getPriorityColor(task.priority),
+                                fontWeight: 500,
+                                borderColor: getPriorityColor(task.priority)
+                              }}
+                            />
+                            {task.tag && (
+                              <Chip
+                                label={task.tag}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  backgroundColor: `${getTagColor(task.tag)}15`,
+                                  color: getTagColor(task.tag),
+                                  fontWeight: 500,
+                                  borderColor: getTagColor(task.tag)
+                                }}
+                              />
+                            )}
+                            {task.urgent && (
+                              <Chip
+                                label="Urgent"
+                                size="small"
+                                sx={{
+                                  backgroundColor: `${theme.palette.error.main}15`,
+                                  color: theme.palette.error.main,
+                                  fontWeight: 500
+                                }}
+                              />
+                            )}
+                          </div>
                         </div>
                         {task.taskDetails && (
                           <Typography
                             variant="body2"
                             className="task-details-text"
                             sx={{
-                              mt: 1,
+                              mt: 0.5,
                               color: 'text.secondary',
                               fontSize: '0.75rem',
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
                               WebkitBoxOrient: 'vertical',
                               overflow: 'hidden',
-                              fontStyle: 'italic'
+                              fontStyle: 'italic',
+                              marginLeft: '0 !important',
+                              borderLeft: 'none !important',
+                              paddingLeft: '0 !important'
                             }}
                           >
                             {task.taskDetails}
