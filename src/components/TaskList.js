@@ -6,7 +6,6 @@ import {
   IconButton,
   Chip,
   Paper,
-  FormControlLabel,
   Checkbox,
   Box,
   Accordion,

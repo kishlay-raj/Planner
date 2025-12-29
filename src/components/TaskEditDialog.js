@@ -11,8 +11,14 @@ import {
   Select,
   MenuItem,
   FormControlLabel,
-  Switch
+  Switch,
+  IconButton,
+  InputAdornment
 } from '@mui/material';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import CloseIcon from '@mui/icons-material/Close';
 
 function TaskEditDialog({ open, onClose, onSave, task }) {
   const [editedTask, setEditedTask] = useState({
@@ -23,7 +29,8 @@ function TaskEditDialog({ open, onClose, onSave, task }) {
     urgent: false,
     isToday: true,
     taskDetails: '',
-    tag: ''
+    tag: '',
+    scheduledTime: null
   });
 
   useEffect(() => {
@@ -31,7 +38,8 @@ function TaskEditDialog({ open, onClose, onSave, task }) {
       setEditedTask({
         ...task,
         // Preserve the original date if it exists
-        date: task.date || new Date().toISOString().split('T')[0]
+        date: task.date || new Date().toISOString().split('T')[0],
+        scheduledTime: task.scheduledTime ? new Date(task.scheduledTime) : null
       });
     } else {
       setEditedTask({
@@ -43,7 +51,8 @@ function TaskEditDialog({ open, onClose, onSave, task }) {
         isToday: true,
         taskDetails: '',
         tag: '',
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        scheduledTime: null
       });
     }
   }, [task]);
@@ -69,6 +78,37 @@ function TaskEditDialog({ open, onClose, onSave, task }) {
           value={editedTask.name}
           onChange={(e) => setEditedTask({ ...editedTask, name: e.target.value })}
         />
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <div style={{ marginTop: 8, marginBottom: 4 }}>
+            <DateTimePicker
+              label="Scheduled Time"
+              value={editedTask.scheduledTime}
+              onChange={(newValue) => setEditedTask({ ...editedTask, scheduledTime: newValue })}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  margin: 'dense',
+                  InputProps: {
+                    endAdornment: editedTask.scheduledTime && (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditedTask({ ...editedTask, scheduledTime: null });
+                          }}
+                          edge="end"
+                          size="small"
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }
+                }
+              }}
+            />
+          </div>
+        </LocalizationProvider>
         <TextField
           type="number"
           margin="dense"
