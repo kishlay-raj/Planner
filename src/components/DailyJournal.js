@@ -172,43 +172,48 @@ function DailyJournal() {
         setPrompts(prompts.filter(p => p.id !== id));
     };
 
+    const getSectionConfig = (sectionName) => {
+        switch (sectionName) {
+            case 'Morning': return { icon: WbSunny, color: '#FFB74D', borderColor: '#FFB74D' }; // Warm Orange
+            case 'Evening': return { icon: NightsStay, color: '#5C6BC0', borderColor: '#5C6BC0' }; // Indigo
+            case 'Deep Work': return { icon: Psychology, color: '#29B6F6', borderColor: '#29B6F6' }; // Light Blue
+            case 'Digital Minimalism': return { icon: PhonelinkOff, color: '#26A69A', borderColor: '#26A69A' }; // Teal
+            case 'Behavioral Triggers': return { icon: TrackChanges, color: '#EF5350', borderColor: '#EF5350' }; // Red
+            default: return { icon: SelfImprovement, color: theme.palette.text.secondary, borderColor: theme.palette.divider };
+        }
+    };
+
     const renderSection = (sectionName) => {
         const sectionPrompts = prompts.filter(p => p.section === sectionName);
-        let Icon;
-        switch (sectionName) {
-            case 'Morning': Icon = WbSunny; break;
-            case 'Evening': Icon = NightsStay; break;
-            case 'Deep Work': Icon = Psychology; break;
-            case 'Digital Minimalism': Icon = PhonelinkOff; break;
-            case 'Behavioral Triggers': Icon = TrackChanges; break;
-            default: Icon = SelfImprovement;
-        }
+        const config = getSectionConfig(sectionName);
+        const Icon = config.icon;
 
         return (
             <Paper sx={{
                 p: 4,
                 mb: 4,
-                bgcolor: theme.paper,
+                bgcolor: theme.palette.background.paper,
                 borderRadius: 2,
                 boxShadow: 'none',
-                border: `1px solid ${theme.divider}`
+                border: `1px solid ${theme.palette.divider}`,
+                borderTop: `3px solid ${config.borderColor}`
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-                    <Icon sx={{ color: theme.textSecondary, mr: 2, fontSize: 24, opacity: 0.7 }} />
-                    <Typography variant="h6" sx={{ color: theme.text, fontWeight: 600, letterSpacing: '0.5px', textTransform: 'uppercase', fontSize: '0.875rem' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                    <Icon sx={{ color: config.color, mr: 2, fontSize: 24, opacity: 0.9 }} />
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '0.85rem' }}>
                         {sectionName} Reflection
                     </Typography>
                 </Box>
 
                 {sectionPrompts.length === 0 && (
-                    <Typography variant="body2" sx={{ color: theme.textSecondary, fontStyle: 'italic' }}>
+                    <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontStyle: 'italic', opacity: 0.7 }}>
                         No prompts configured for this section.
                     </Typography>
                 )}
 
                 {sectionPrompts.map(prompt => (
-                    <Box key={prompt.id} sx={{ mb: 5 }}>
-                        <Typography variant="body1" sx={{ color: theme.text, fontWeight: 500, mb: 1, fontSize: '1rem' }}>
+                    <Box key={prompt.id} sx={{ mb: 4 }}>
+                        <Typography variant="body1" sx={{ color: theme.palette.text.primary, fontWeight: 600, mb: 1.5, fontSize: '0.95rem' }}>
                             {prompt.text}
                         </Typography>
                         <TextField
@@ -225,14 +230,14 @@ function DailyJournal() {
                             sx={{
                                 bgcolor: 'transparent',
                                 '& .MuiInputBase-root': {
-                                    fontSize: '0.95rem',
-                                    color: theme.textSecondary,
+                                    fontSize: '1rem',
+                                    color: theme.palette.text.secondary,
                                     lineHeight: 1.6,
                                     padding: 0
                                 }
                             }}
                         />
-                        <Divider sx={{ mt: 1, borderColor: theme.divider, opacity: 0.5 }} />
+                        <Divider sx={{ mt: 1.5, borderColor: theme.palette.divider, opacity: 0.6 }} />
                     </Box>
                 ))}
             </Paper>
@@ -240,15 +245,15 @@ function DailyJournal() {
     };
 
     return (
-        <Box sx={{ p: 4, height: '100vh', overflow: 'auto', bgcolor: theme.bg }}>
+        <Box sx={{ p: 4, height: '100vh', overflow: 'auto', bgcolor: theme.palette.background.default }}>
 
             {/* Header */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
                 <Box>
-                    <Typography variant="h3" sx={{ color: theme.text, fontWeight: 800, letterSpacing: '-1px', mb: 0.5 }}>
+                    <Typography variant="h3" sx={{ color: theme.palette.text.primary, fontWeight: 800, letterSpacing: '-1px', mb: 0.5 }}>
                         Daily Journal
                     </Typography>
-                    <Typography variant="subtitle1" sx={{ color: theme.textSecondary, fontWeight: 500 }}>
+                    <Typography variant="subtitle1" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
                         Capture your day, shape your life.
                     </Typography>
                 </Box>
@@ -262,9 +267,9 @@ function DailyJournal() {
                         sx={{
                             borderRadius: 2,
                             textTransform: 'none',
-                            color: theme.textSecondary,
-                            borderColor: theme.divider,
-                            '&:hover': { borderColor: theme.textSecondary, bgcolor: 'transparent' }
+                            color: theme.palette.text.secondary,
+                            borderColor: theme.palette.divider,
+                            '&:hover': { borderColor: theme.palette.text.secondary, bgcolor: 'transparent' }
                         }}
                     >
                         Customize Prompts
@@ -273,26 +278,27 @@ function DailyJournal() {
                     <Paper sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 2,
-                        p: 1,
-                        borderRadius: 2,
+                        gap: 1,
+                        py: 0.5,
+                        px: 1,
+                        borderRadius: 8,
                         boxShadow: 'none',
-                        border: `1px solid ${theme.divider}`,
-                        bgcolor: 'transparent'
+                        border: `1px solid ${theme.palette.divider}`,
+                        bgcolor: theme.palette.background.paper
                     }}>
                         <IconButton onClick={() => setCurrentDate(subDays(currentDate, 1))} size="small">
-                            <NavigateBefore sx={{ color: theme.textSecondary }} />
+                            <NavigateBefore sx={{ color: theme.palette.text.secondary }} />
                         </IconButton>
                         <Box sx={{ textAlign: 'center', minWidth: 160 }}>
-                            <Typography variant="h6" sx={{ color: theme.text, fontWeight: 600, lineHeight: 1.2, fontSize: '1rem' }}>
+                            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 600, lineHeight: 1.2, fontSize: '1rem' }}>
                                 {format(currentDate, 'MMMM d, yyyy')}
                             </Typography>
-                            <Typography variant="caption" sx={{ color: theme.textSecondary, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.7rem' }}>
+                            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.7rem' }}>
                                 {format(currentDate, 'EEEE')}
                             </Typography>
                         </Box>
                         <IconButton onClick={() => setCurrentDate(addDays(currentDate, 1))} size="small">
-                            <NavigateNext sx={{ color: theme.textSecondary }} />
+                            <NavigateNext sx={{ color: theme.palette.text.secondary }} />
                         </IconButton>
                     </Paper>
                 </Box>
@@ -314,12 +320,13 @@ function DailyJournal() {
             <Paper sx={{
                 p: 4,
                 mb: 10,
-                bgcolor: theme.paper,
+                bgcolor: theme.palette.background.paper,
                 borderRadius: 2,
                 boxShadow: 'none',
-                border: `1px solid ${theme.divider}`
+                border: `1px solid ${theme.palette.divider}`,
+                borderTop: `3px solid ${theme.palette.primary.main}`
             }}>
-                <Typography variant="h6" sx={{ mb: 3, color: theme.text, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1, textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.5px' }}>
+                <Typography variant="h6" sx={{ mb: 3, color: theme.palette.text.primary, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1, textTransform: 'uppercase', fontSize: '0.875rem', letterSpacing: '0.5px' }}>
                     <EditIcon fontSize="small" sx={{ opacity: 0.7 }} /> notes & brain dump
                 </Typography>
                 <TextField
@@ -337,7 +344,7 @@ function DailyJournal() {
                         bgcolor: 'transparent',
                         '& .MuiInputBase-root': {
                             fontSize: '0.95rem',
-                            color: theme.textSecondary,
+                            color: theme.palette.text.secondary,
                             lineHeight: 1.6,
                             padding: 0
                         }
