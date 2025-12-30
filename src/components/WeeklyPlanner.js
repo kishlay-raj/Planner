@@ -294,12 +294,15 @@ function WeeklyPlanner() {
               boxShadow: theme.shadow,
               border: theme.border
             }}>
-              <Typography variant="h6" sx={{ mb: 2, color: theme.accent2, fontWeight: 700, letterSpacing: '0.5px' }}>
+              <Typography variant="h6" sx={{ color: theme.accent2, fontWeight: 700, letterSpacing: '0.5px' }}>
                 HABIT TRACKER
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block', mb: 2, color: theme.textSecondary, fontStyle: 'italic' }}>
+                Make it so easy you can't say no.
               </Typography>
               <TextField
                 fullWidth
-                placeholder="Enter one habit to track..."
+                placeholder="I will [BEHAVIOR] at [TIME] in [LOCATION]."
                 value={currentWeekData.habit.name}
                 onChange={handleHabitNameChange}
                 variant="standard"

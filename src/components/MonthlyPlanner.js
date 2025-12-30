@@ -314,9 +314,14 @@ function MonthlyPlanner() {
           {/* Habit Tracker */}
           <Grid item xs={12}>
             <Paper sx={{ p: 3, bgcolor: theme.paper, borderRadius: 2, boxShadow: theme.shadow, overflowX: 'auto' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6" sx={{ color: theme.accent2, fontWeight: 700 }}>Habit Tracker</Typography>
-                <IconButton size="small" onClick={addHabit}><AddIcon /></IconButton>
+              <Box sx={{ display: 'flex', flexDirection: 'column', mb: 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h6" sx={{ color: theme.accent2, fontWeight: 700 }}>Habit Tracker</Typography>
+                  <IconButton size="small" onClick={addHabit}><AddIcon /></IconButton>
+                </Box>
+                <Typography variant="caption" sx={{ color: theme.textSecondary, fontStyle: 'italic', mt: 0.5 }}>
+                  Every action you take is a vote for the person you wish to become
+                </Typography>
               </Box>
               <Box sx={{ minWidth: 600 }}>
                 <Box sx={{ display: 'flex', mb: 1 }}>
