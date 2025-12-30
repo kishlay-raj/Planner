@@ -53,7 +53,23 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
     end: new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000),
     resource: task,
     completed: task.completed
-  }));
+  })).sort((a, b) => {
+    // Sort by start time
+    if (a.start < b.start) return -1;
+    if (a.start > b.start) return 1;
+
+    // Then by duration (longer events first usually looks better)
+    const durationA = a.end - a.start;
+    const durationB = b.end - b.start;
+    if (durationA > durationB) return -1;
+    if (durationA < durationB) return 1;
+
+    // Finally by ID for deterministic stability
+    if (a.id < b.id) return -1;
+    if (a.id > b.id) return 1;
+
+    return 0;
+  });
 
   const handleSelectSlot = useCallback(({ start }) => {
     if (draggedEvent) {
