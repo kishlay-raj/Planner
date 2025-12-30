@@ -32,7 +32,8 @@ import {
     NightsStay,
     SelfImprovement,
     PhonelinkOff,
-    Psychology
+    Psychology,
+    TrackChanges
 } from '@mui/icons-material';
 import { format, addDays, subDays } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
@@ -50,9 +51,12 @@ const DEFAULT_PROMPTS = [
     { id: '9', section: 'Digital Minimalism', text: 'The Solitude Check: Did I spend any time today alone with my own thoughts, free from inputs (no podcasts, no music, no scrolling)?' },
     { id: '10', section: 'Digital Minimalism', text: 'The Tech Audit: Did I use technology as a tool to support my values today, or did I use it as a pacifier to avoid boredom?' },
     { id: '11', section: 'Digital Minimalism', text: 'The "Default" Test: Which apps or sites did I open unconsciously today? What feeling was I trying to numb?' },
-    { id: '12', section: 'Evening', text: 'Review: What is one system I can tweak to make tomorrow 1% easier?' },
-    { id: '13', section: 'Evening', text: '3 Amazing things that happened today.' },
-    { id: '14', section: 'Evening', text: 'How could I have made today even better?' }
+    { id: '12', section: 'Behavioral Triggers', text: 'The Numbing Agent: When I started wasting time today, what feeling was I trying to avoid? (Anxiety, boredom, fear of a hard task, loneliness?)' },
+    { id: '13', section: 'Behavioral Triggers', text: 'The Environmental Leak: What physical cue triggered my biggest distraction today? (e.g., "My phone was face up on the desk," "The TV remote was next to me").' },
+    { id: '14', section: 'Behavioral Triggers', text: 'The Transition Trap: Did I lose time during a task, or between tasks? (Most time is wasted in the "transition moments" just after finishing one thing and before starting the next).' },
+    { id: '15', section: 'Evening', text: 'Review: What is one system I can tweak to make tomorrow 1% easier?' },
+    { id: '16', section: 'Evening', text: '3 Amazing things that happened today.' },
+    { id: '17', section: 'Evening', text: 'How could I have made today even better?' }
 ];
 
 function DailyJournal() {
@@ -98,11 +102,13 @@ function DailyJournal() {
             // 1. Add missing sections/prompts
             const hasDeepWork = updatedPrompts.some(p => p.section === 'Deep Work');
             const hasDigitalMinimalism = updatedPrompts.some(p => p.section === 'Digital Minimalism');
+            const hasBehavioralTriggers = updatedPrompts.some(p => p.section === 'Behavioral Triggers');
 
-            if (!hasDeepWork || !hasDigitalMinimalism) {
+            if (!hasDeepWork || !hasDigitalMinimalism || !hasBehavioralTriggers) {
                 const newDefaults = DEFAULT_PROMPTS.filter(dp =>
                     (dp.section === 'Deep Work' && !hasDeepWork) ||
-                    (dp.section === 'Digital Minimalism' && !hasDigitalMinimalism)
+                    (dp.section === 'Digital Minimalism' && !hasDigitalMinimalism) ||
+                    (dp.section === 'Behavioral Triggers' && !hasBehavioralTriggers)
                 );
                 if (newDefaults.length > 0) {
                     updatedPrompts = [...updatedPrompts, ...newDefaults];
@@ -175,6 +181,7 @@ function DailyJournal() {
             case 'Evening': Icon = NightsStay; break;
             case 'Deep Work': Icon = Psychology; break;
             case 'Digital Minimalism': Icon = PhonelinkOff; break;
+            case 'Behavioral Triggers': Icon = TrackChanges; break;
             default: Icon = SelfImprovement;
         }
 
@@ -300,6 +307,7 @@ function DailyJournal() {
                 <Grid item xs={12} md={6}>
                     {renderSection('Evening')}
                     {renderSection('Digital Minimalism')}
+                    {renderSection('Behavioral Triggers')}
                 </Grid>
             </Grid>
 
@@ -368,6 +376,7 @@ function DailyJournal() {
                                         <MenuItem value="Morning">Morning</MenuItem>
                                         <MenuItem value="Deep Work">Deep Work</MenuItem>
                                         <MenuItem value="Digital Minimalism">Digital Minimalism</MenuItem>
+                                        <MenuItem value="Behavioral Triggers">Behavioral Triggers</MenuItem>
                                         <MenuItem value="Evening">Evening</MenuItem>
                                     </Select>
                                 </FormControl>
