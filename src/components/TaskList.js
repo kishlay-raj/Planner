@@ -303,6 +303,21 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                                 }}
                               />
                             )}
+                            {task.subtasks && task.subtasks.length > 0 && (
+                              <Chip
+                                label={`${task.subtasks.filter(st => st.completed).length}/${task.subtasks.length}`}
+                                size="small"
+                                variant="outlined"
+                                icon={<Box component="span" sx={{ fontSize: '10px', mr: 0.5 }}>✓</Box>}
+                                sx={{
+                                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                  color: 'text.secondary',
+                                  fontWeight: 500,
+                                  borderColor: 'transparent',
+                                  '& .MuiChip-label': { px: 1 }
+                                }}
+                              />
+                            )}
                           </div>
                         </div>
                         {task.taskDetails && (

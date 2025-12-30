@@ -19,6 +19,8 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
+import { Checkbox } from '@mui/material';
 
 function TaskEditDialog({ open, onClose, onSave, task }) {
   const [editedTask, setEditedTask] = useState({
@@ -173,6 +175,85 @@ function TaskEditDialog({ open, onClose, onSave, task }) {
           onChange={(e) => setEditedTask({ ...editedTask, taskDetails: e.target.value })}
           placeholder="Add additional details about this task..."
         />
+
+        {/* Subtasks Section */}
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+            <TextField
+              margin="dense"
+              label="Add Subtask"
+              fullWidth
+              size="small"
+              value={editedTask.newSubtaskText || ''}
+              onChange={(e) => setEditedTask({ ...editedTask, newSubtaskText: e.target.value })}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && editedTask.newSubtaskText?.trim()) {
+                  e.preventDefault();
+                  const newSubtask = {
+                    id: Date.now(),
+                    text: editedTask.newSubtaskText,
+                    completed: false
+                  };
+                  setEditedTask({
+                    ...editedTask,
+                    subtasks: [...(editedTask.subtasks || []), newSubtask],
+                    newSubtaskText: ''
+                  });
+                }
+              }}
+            />
+            <IconButton
+              onClick={() => {
+                if (editedTask.newSubtaskText?.trim()) {
+                  const newSubtask = {
+                    id: Date.now(),
+                    text: editedTask.newSubtaskText,
+                    completed: false
+                  };
+                  setEditedTask({
+                    ...editedTask,
+                    subtasks: [...(editedTask.subtasks || []), newSubtask],
+                    newSubtaskText: ''
+                  });
+                }
+              }}
+              sx={{ ml: 1 }}
+            >
+              <AddIcon />
+            </IconButton>
+          </div>
+
+          {(editedTask.subtasks || []).map((subtask, index) => (
+            <div key={subtask.id || index} style={{ display: 'flex', alignItems: 'center', marginLeft: 8 }}>
+              <Checkbox
+                checked={subtask.completed}
+                onChange={(e) => {
+                  const updatedSubtasks = [...(editedTask.subtasks || [])];
+                  updatedSubtasks[index] = { ...subtask, completed: e.target.checked };
+                  setEditedTask({ ...editedTask, subtasks: updatedSubtasks });
+                }}
+                size="small"
+              />
+              <span style={{
+                flexGrow: 1,
+                textDecoration: subtask.completed ? 'line-through' : 'none',
+                color: subtask.completed ? 'text.secondary' : 'text.primary',
+                fontSize: '0.9rem'
+              }}>
+                {subtask.text}
+              </span>
+              <IconButton
+                size="small"
+                onClick={() => {
+                  const updatedSubtasks = (editedTask.subtasks || []).filter((_, i) => i !== index);
+                  setEditedTask({ ...editedTask, subtasks: updatedSubtasks });
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </div>
+          ))}
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
