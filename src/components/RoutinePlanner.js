@@ -174,40 +174,36 @@ function RoutinePlanner({ onTaskCreate }) {
     const getSectionStyles = (sectionKey) => {
         const isDark = theme.palette.mode === 'dark';
 
+        const baseStyle = {
+            background: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            borderTopWidth: '3px',
+        };
+
         switch (sectionKey) {
             case 'morning':
                 return {
-                    background: isDark
-                        ? 'linear-gradient(135deg, #2c241b 0%, #1e1e1e 100%)'
-                        : 'linear-gradient(135deg, #FFF9E5 0%, #FFFFFF 100%)',
-                    border: isDark ? '1px solid #3e332a' : '1px solid #FFE082',
-                    iconColor: isDark ? '#FFB74D' : '#FF9800', // Orange
-                    accentColor: isDark ? '#FFB74D' : '#F57C00'
+                    ...baseStyle,
+                    borderTopColor: '#FFB74D', // Warm Orange
+                    iconColor: '#FFB74D',
                 };
             case 'evening':
                 return {
-                    background: isDark
-                        ? 'linear-gradient(135deg, #2a1c1c 0%, #1e1e1e 100%)'
-                        : 'linear-gradient(135deg, #FFEBEE 0%, #FFFFFF 100%)',
-                    border: isDark ? '1px solid #3e2a2a' : '1px solid #FFAB91',
-                    iconColor: isDark ? '#FF8A65' : '#FF5722', // Deep Orange
-                    accentColor: isDark ? '#FF8A65' : '#D84315'
+                    ...baseStyle,
+                    borderTopColor: '#FF7043', // Deep Orange
+                    iconColor: '#FF7043',
                 };
             case 'night':
                 return {
-                    background: isDark
-                        ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-                        : 'linear-gradient(135deg, #E8EAF6 0%, #FFFFFF 100%)',
-                    border: isDark ? '1px solid #2a2a4e' : '1px solid #9FA8DA',
-                    iconColor: isDark ? '#9FA8DA' : '#3F51B5', // Indigo
-                    accentColor: isDark ? '#9FA8DA' : '#283593'
+                    ...baseStyle,
+                    borderTopColor: '#5C6BC0', // Indigo
+                    iconColor: '#5C6BC0',
                 };
             default:
                 return {
-                    background: theme.paper,
-                    border: `1px solid ${theme.divider}`,
-                    iconColor: theme.textSecondary,
-                    accentColor: theme.text
+                    ...baseStyle,
+                    borderTopColor: theme.palette.text.secondary,
+                    iconColor: theme.palette.text.secondary,
                 };
         }
     };
@@ -219,27 +215,29 @@ function RoutinePlanner({ onTaskCreate }) {
         const styles = getSectionStyles(sectionKey);
 
         return (
+
             <Paper sx={{
                 p: 3,
                 height: '100%',
                 background: styles.background,
-                borderRadius: 4,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                borderRadius: 3,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                 border: styles.border,
+                borderTop: styles.borderTop,
+                borderTopColor: styles.borderTopColor,
                 display: 'flex',
                 flexDirection: 'column',
-                transition: 'transform 0.2s, box-shadow 0.2s',
+                transition: 'box-shadow 0.2s',
                 '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 25px rgba(0,0,0,0.1)'
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
                 }
             }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Icon sx={{ color: styles.iconColor, mr: 1.5, fontSize: 24 }} />
                         <Typography variant="h6" sx={{
-                            color: styles.accentColor,
-                            fontWeight: 700,
+                            color: theme.palette.text.primary,
+                            fontWeight: 600,
                             textTransform: 'uppercase',
                             fontSize: '0.85rem',
                             letterSpacing: '1px'
@@ -367,20 +365,19 @@ function RoutinePlanner({ onTaskCreate }) {
                     <Paper sx={{
                         p: 3,
                         height: '100%',
-                        bgcolor: isAddingSection ? theme.paper : 'transparent',
-                        borderRadius: 4,
-                        boxShadow: isAddingSection ? '0 8px 30px rgba(0,0,0,0.12)' : 'none',
-                        border: isAddingSection ? `2px solid ${theme.palette.primary.main}` : `2px dashed ${theme.divider}`,
+                        bgcolor: isAddingSection ? theme.palette.background.paper : 'transparent',
+                        borderRadius: 3,
+                        boxShadow: isAddingSection ? '0 4px 20px rgba(0,0,0,0.08)' : 'none',
+                        border: isAddingSection ? `1px solid ${theme.palette.primary.main}` : `1px dashed ${theme.palette.divider}`,
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'center',
                         alignItems: 'center',
                         cursor: isAddingSection ? 'default' : 'pointer',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        transition: 'all 0.2s ease-in-out',
                         '&:hover': {
-                            borderColor: isAddingSection ? theme.palette.primary.main : theme.palette.primary.main,
-                            bgcolor: isAddingSection ? theme.paper : `${theme.palette.primary.main}08`,
-                            transform: !isAddingSection && 'translateY(-4px)'
+                            borderColor: theme.palette.primary.main,
+                            bgcolor: isAddingSection ? theme.palette.background.paper : `${theme.palette.primary.main}05`,
                         }
                     }}
                         onClick={() => !isAddingSection && setIsAddingSection(true)}
