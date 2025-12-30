@@ -104,7 +104,7 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
       />
 
       <List component="nav">
-        <Tooltip title="Planner" placement="right" arrow disableHoverListener={isExpanded}>
+        <Tooltip title="Daily Planner" placement="right" arrow disableHoverListener={isExpanded}>
           <ListItemButton
             onClick={() => handleNavigate('planner')}
             sx={{
@@ -119,7 +119,7 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
               <Dashboard sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
             </ListItemIcon>
             {isExpanded && <ListItemText
-              primary="Planner"
+              primary="Daily"
               sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
             />}
           </ListItemButton>

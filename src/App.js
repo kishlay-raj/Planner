@@ -3,6 +3,7 @@ import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
 import PlannerScreen from './components/PlannerScreen';
 import PomodoroPanel from './components/PomodoroPanel';
 import WeeklyPlanner from './components/WeeklyPlanner';
+import MonthlyPlanner from './components/MonthlyPlanner';
 import YearlyPlanner from './components/YearlyPlanner';
 import Sidebar from './components/Sidebar';
 import './App.css';
@@ -142,6 +143,8 @@ function App() {
         return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
       case 'planner-week':
         return <WeeklyPlanner />;
+      case 'planner-month':
+        return <MonthlyPlanner />;
       case 'planner-year':
         return <YearlyPlanner />;
       case 'pomodoro':
