@@ -2,11 +2,9 @@ import React from 'react';
 import {
   Drawer,
   List,
-  ListItem,
   ListItemIcon,
   ListItemText,
   Divider,
-  Collapse,
   ListItemButton,
   IconButton,
   Box,
@@ -20,7 +18,8 @@ import {
   ViewWeek,
   CalendarMonth,
   EmojiEvents,
-  MenuBook
+  MenuBook,
+  SelfImprovement
 } from '@mui/icons-material';
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
@@ -201,6 +200,24 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
               <MenuBook sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
             </ListItemIcon>
             {isExpanded && <ListItemText primary="Journal" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
+          </ListItemButton>
+        </Tooltip>
+
+        <Tooltip title="Routines & Rituals" placement="right" arrow disableHoverListener={isExpanded}>
+          <ListItemButton
+            onClick={() => handleNavigate('routines')}
+            sx={{
+              '&:hover': {
+                bgcolor: activePanel === 'pomodoro'
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
+            <ListItemIcon>
+              <SelfImprovement sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
+            </ListItemIcon>
+            {isExpanded && <ListItemText primary="Routines" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
           </ListItemButton>
         </Tooltip>
 

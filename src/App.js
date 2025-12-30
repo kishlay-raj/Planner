@@ -6,6 +6,7 @@ import WeeklyPlanner from './components/WeeklyPlanner';
 import MonthlyPlanner from './components/MonthlyPlanner';
 import YearlyPlanner from './components/YearlyPlanner';
 import DailyJournal from './components/DailyJournal';
+import RoutinePlanner from './components/RoutinePlanner';
 import Sidebar from './components/Sidebar';
 import './App.css';
 
@@ -150,6 +151,8 @@ function App() {
         return <YearlyPlanner />;
       case 'daily-journal':
         return <DailyJournal />;
+      case 'routines':
+        return <RoutinePlanner onTaskCreate={handleTaskCreate} />;
       case 'pomodoro':
         return <PomodoroPanel onModeChange={handlePomodoroModeChange} />;
       default:

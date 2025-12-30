@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Paper,
   Typography,
   Box,
   Button,
@@ -21,9 +20,6 @@ import {
   Divider
 } from '@mui/material';
 import {
-  PlayArrow,
-  Pause,
-  SkipNext,
   Settings
 } from '@mui/icons-material';
 
@@ -76,20 +72,20 @@ function PomodoroPanel({ onModeChange }) {
   // Simple beep sound function
   const playBeep = () => {
     if (!audioContext) return;
-    
+
     try {
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      
+
       gainNode.gain.setValueAtTime(settings.alarmVolume / 100, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
-      
+
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
     } catch (e) {
@@ -100,20 +96,20 @@ function PomodoroPanel({ onModeChange }) {
   // Ticking sound function
   const playTick = () => {
     if (!audioContext) return;
-    
+
     try {
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-      
+
       gainNode.gain.setValueAtTime(settings.tickingVolume / 400, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-      
+
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.1);
     } catch (e) {
@@ -186,7 +182,7 @@ function PomodoroPanel({ onModeChange }) {
       }
 
       setCycles(c => c + 1);
-      
+
       // Handle auto-start features
       if (mode === 'pomodoro') {
         if (cycles + 1 >= settings.longBreakInterval) {
@@ -249,7 +245,7 @@ function PomodoroPanel({ onModeChange }) {
       ...prev,
       [key]: value
     }));
-    
+
     // Apply immediate changes where necessary
     if (key === 'pomodoro' && mode === 'pomodoro') {
       setTimeLeft(value * 60);
@@ -261,8 +257,8 @@ function PomodoroPanel({ onModeChange }) {
   };
 
   return (
-    <Box 
-      sx={{ 
+    <Box
+      sx={{
         height: '100vh',
         bgcolor: modeColors[mode],
         color: 'white',
@@ -278,9 +274,9 @@ function PomodoroPanel({ onModeChange }) {
         }
       }}
     >
-      <Box sx={{ 
-        width: '100%', 
-        display: 'flex', 
+      <Box sx={{
+        width: '100%',
+        display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         pl: 3,
@@ -288,13 +284,13 @@ function PomodoroPanel({ onModeChange }) {
         py: 2,
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
       }}>
-        <Typography variant="h6" sx={{ 
+        <Typography variant="h6" sx={{
           fontWeight: 500,
           letterSpacing: 0.5
         }}>
           Pomodoro
         </Typography>
-        <IconButton 
+        <IconButton
           color="inherit"
           onClick={() => setSettingsOpen(true)}
           sx={{
@@ -305,12 +301,12 @@ function PomodoroPanel({ onModeChange }) {
             border: '1px solid rgba(255, 255, 255, 0.2)',
             position: 'relative',
             right: 32,
-            '&:hover': { 
+            '&:hover': {
               bgcolor: 'rgba(255, 255, 255, 0.2)',
               border: '1px solid rgba(255, 255, 255, 0.3)'
             },
             transition: 'all 0.2s',
-            '& svg': { 
+            '& svg': {
               fontSize: 22,
               color: 'rgba(255, 255, 255, 0.9)'
             }
@@ -320,9 +316,9 @@ function PomodoroPanel({ onModeChange }) {
         </IconButton>
       </Box>
 
-      <Container maxWidth="sm" sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
+      <Container maxWidth="sm" sx={{
+        display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         pt: 6,
         overflow: 'hidden'
@@ -360,10 +356,10 @@ function PomodoroPanel({ onModeChange }) {
           <ToggleButton value="longBreak">Long Break</ToggleButton>
         </ToggleButtonGroup>
 
-        <Typography 
-          variant="h1" 
-          sx={{ 
-            fontSize: '120px', 
+        <Typography
+          variant="h1"
+          sx={{
+            fontSize: '120px',
             fontWeight: 'bold',
             mt: 8,
             mb: 6,
@@ -404,7 +400,7 @@ function PomodoroPanel({ onModeChange }) {
             variant="contained"
             color="inherit"
             onClick={resetTimer}
-            sx={{ 
+            sx={{
               bgcolor: 'rgba(255, 255, 255, 0.2)',
               color: 'white',
               px: 3,
@@ -414,7 +410,7 @@ function PomodoroPanel({ onModeChange }) {
               fontSize: '1.1rem',
               fontWeight: 'bold',
               transition: 'all 0.2s',
-              '&:hover': { 
+              '&:hover': {
                 bgcolor: 'rgba(255, 255, 255, 0.3)',
                 transform: 'translateY(-1px)'
               }
@@ -425,13 +421,13 @@ function PomodoroPanel({ onModeChange }) {
         </Box>
 
         <Fade in={true}>
-          <Box sx={{ 
-            mt: 6, 
+          <Box sx={{
+            mt: 6,
             textAlign: 'center',
             opacity: 0.9
           }}>
-            <Typography 
-              sx={{ 
+            <Typography
+              sx={{
                 fontSize: '1.1rem',
                 fontWeight: 500,
                 mb: 1
@@ -439,8 +435,8 @@ function PomodoroPanel({ onModeChange }) {
             >
               #{cycles + 1}
             </Typography>
-            <Typography 
-              sx={{ 
+            <Typography
+              sx={{
                 fontSize: '1rem',
                 opacity: 0.8,
                 letterSpacing: 0.5
@@ -452,8 +448,8 @@ function PomodoroPanel({ onModeChange }) {
         </Fade>
       </Container>
 
-      <Dialog 
-        open={settingsOpen} 
+      <Dialog
+        open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         maxWidth="sm"
         fullWidth
@@ -488,7 +484,7 @@ function PomodoroPanel({ onModeChange }) {
               size="small"
             />
           </Box>
-          
+
           <FormControlLabel
             control={
               <Switch
@@ -498,7 +494,7 @@ function PomodoroPanel({ onModeChange }) {
             }
             label="Auto Start Breaks"
           />
-          
+
           <FormControlLabel
             control={
               <Switch
@@ -508,7 +504,7 @@ function PomodoroPanel({ onModeChange }) {
             }
             label="Auto Start Pomodoros"
           />
-          
+
           <TextField
             label="Long Break interval"
             type="number"
@@ -517,13 +513,13 @@ function PomodoroPanel({ onModeChange }) {
             size="small"
             sx={{ mt: 2, mb: 3 }}
           />
-          
+
           <Divider sx={{ my: 2 }} />
-          
+
           <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
             SOUND
           </Typography>
-          
+
           <Box sx={{ mb: 2 }}>
             <Select
               value={settings.alarmSound}
@@ -550,7 +546,7 @@ function PomodoroPanel({ onModeChange }) {
               size="small"
             />
           </Box>
-          
+
           <Box sx={{ mb: 3 }}>
             <Select
               value={settings.tickingSound}
@@ -569,13 +565,13 @@ function PomodoroPanel({ onModeChange }) {
               />
             </Box>
           </Box>
-          
+
           <Divider sx={{ my: 2 }} />
-          
+
           <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
             THEME
           </Typography>
-          
+
           <Box sx={{ mb: 2 }}>
             <Select
               value={settings.hourFormat}
@@ -587,7 +583,7 @@ function PomodoroPanel({ onModeChange }) {
               <MenuItem value="12-hour">12-hour</MenuItem>
             </Select>
           </Box>
-          
+
           <FormControlLabel
             control={
               <Switch

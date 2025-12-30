@@ -208,6 +208,8 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                     e.stopPropagation();
                     handleDragStart(e, task);
                   }}
+                  onClick={() => handleTaskEdit(task)}
+                  sx={{ cursor: 'pointer' }}
                 >
                   <div
                     {...provided.dragHandleProps}
@@ -229,6 +231,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                       );
                       onTaskUpdate(updatedTasks);
                     }}
+                    onClick={(e) => e.stopPropagation()}
                     sx={{
                       padding: '4px',
                       marginRight: '8px',
@@ -345,13 +348,19 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                     }
                   />
                   <IconButton
-                    onClick={() => handleTaskEdit(task)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTaskEdit(task);
+                    }}
                     className="edit-button"
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
-                    onClick={() => onTaskSchedule(task.id, new Date())}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onTaskSchedule(task.id, new Date());
+                    }}
                     className="schedule-button"
                   >
                     <ScheduleIcon />
@@ -364,46 +373,6 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
         </List>
       )}
     </Droppable>
-  );
-
-  const renderTaskSection = (sectionTasks, sectionId, title) => (
-    <Accordion defaultExpanded className="task-section">
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
-      >
-        <Typography className="section-title">
-          {title}
-          <Typography component="span" className="section-count">
-            ({sectionTasks.length})
-          </Typography>
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails sx={{ padding: 0 }}>
-        <Box className="quick-add-task">
-          <InputBase
-            placeholder="Add a task..."
-            value={newTaskTexts[sectionId.split('-')[0]] || ''}
-            onChange={(e) => setNewTaskTexts(prev => ({
-              ...prev,
-              [sectionId.split('-')[0]]: e.target.value
-            }))}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                handleQuickAdd(sectionId.split('-')[0], sectionId.includes('dump') ? 'dump' : 'today');
-              }
-            }}
-            fullWidth
-          />
-          <IconButton
-            size="small"
-            onClick={() => handleQuickAdd(sectionId.split('-')[0], sectionId.includes('dump') ? 'dump' : 'today')}
-          >
-            <AddIcon fontSize="small" />
-          </IconButton>
-        </Box>
-        <TaskListContent listId={sectionId} items={sectionTasks} />
-      </AccordionDetails>
-    </Accordion>
   );
 
   return (

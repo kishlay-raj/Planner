@@ -6,6 +6,7 @@ import 'react-quill/dist/quill.snow.css';
 import './NotesPanel.css';
 
 // Import markdown shortcuts if available
+// eslint-disable-next-line no-unused-vars
 let MarkdownShortcuts;
 try {
   MarkdownShortcuts = require('quill-markdown-shortcuts');
