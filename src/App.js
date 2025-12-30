@@ -5,6 +5,7 @@ import PomodoroPanel from './components/PomodoroPanel';
 import WeeklyPlanner from './components/WeeklyPlanner';
 import MonthlyPlanner from './components/MonthlyPlanner';
 import YearlyPlanner from './components/YearlyPlanner';
+import DailyJournal from './components/DailyJournal';
 import Sidebar from './components/Sidebar';
 import './App.css';
 
@@ -147,6 +148,8 @@ function App() {
         return <MonthlyPlanner />;
       case 'planner-year':
         return <YearlyPlanner />;
+      case 'daily-journal':
+        return <DailyJournal />;
       case 'pomodoro':
         return <PomodoroPanel onModeChange={handlePomodoroModeChange} />;
       default:

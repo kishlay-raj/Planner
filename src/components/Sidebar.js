@@ -19,7 +19,8 @@ import {
   Menu,
   ViewWeek,
   CalendarMonth,
-  EmojiEvents
+  EmojiEvents,
+  MenuBook
 } from '@mui/icons-material';
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
@@ -182,6 +183,24 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
               <EmojiEvents sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
             </ListItemIcon>
             {isExpanded && <ListItemText primary="Yearly" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
+          </ListItemButton>
+        </Tooltip>
+
+        <Tooltip title="Daily Journal" placement="right" arrow disableHoverListener={isExpanded}>
+          <ListItemButton
+            onClick={() => handleNavigate('daily-journal')}
+            sx={{
+              '&:hover': {
+                bgcolor: activePanel === 'pomodoro'
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
+            <ListItemIcon>
+              <MenuBook sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
+            </ListItemIcon>
+            {isExpanded && <ListItemText primary="Journal" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
           </ListItemButton>
         </Tooltip>
 
