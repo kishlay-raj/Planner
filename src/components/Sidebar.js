@@ -18,7 +18,8 @@ import {
   ChevronLeft,
   Menu,
   ViewWeek,
-  CalendarMonth
+  CalendarMonth,
+  DateRange
 } from '@mui/icons-material';
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
@@ -163,6 +164,24 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
               primary="Monthly"
               sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
             />}
+          </ListItemButton>
+        </Tooltip>
+
+        <Tooltip title="Yearly Planner" placement="right" arrow disableHoverListener={isExpanded}>
+          <ListItemButton
+            onClick={() => handleNavigate('planner-year')}
+            sx={{
+              '&:hover': {
+                bgcolor: activePanel === 'pomodoro'
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
+            <ListItemIcon>
+              <DateRange sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
+            </ListItemIcon>
+            {isExpanded && <ListItemText primary="Yearly" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
           </ListItemButton>
         </Tooltip>
 
