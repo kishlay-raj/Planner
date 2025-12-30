@@ -71,7 +71,8 @@ function WeeklyPlanner() {
     goals: [], // { id, text, completed }
     habit: { name: '', days: [false, false, false, false, false, false, false] },
     journal: { start: '', stop: '', continue: '', grateful: '' },
-    days: {} // { 'yyyy-MM-dd': 'notes' }
+    days: {},
+    notes: ''
   };
 
   useEffect(() => {
@@ -159,6 +160,8 @@ function WeeklyPlanner() {
       days: { ...currentWeekData.days, [dateKey]: value }
     });
   };
+
+  const handleNotesChange = (val) => updateWeekData({ notes: val });
 
   return (
     <Box sx={{ p: 3, height: '100vh', overflow: 'auto', bgcolor: theme.bg, color: theme.text, transition: 'all 0.3s ease' }}>
@@ -374,6 +377,38 @@ function WeeklyPlanner() {
                   </Box>
                 ))}
               </Box>
+            </Paper>
+
+            {/* NOTES SECTION */}
+            <Paper sx={{
+              p: 3,
+              bgcolor: theme.paper,
+              color: theme.text,
+              borderRadius: 3,
+              boxShadow: theme.shadow,
+              border: theme.border
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: -0.5, color: theme.text }}>
+                  Weekly Notes
+                </Typography>
+              </Box>
+              <TextField
+                fullWidth multiline minRows={5}
+                placeholder="Brain dump, reminders, or extra notes..."
+                value={currentWeekData.notes}
+                onChange={(e) => handleNotesChange(e.target.value)}
+                sx={{
+                  bgcolor: theme.inputBg,
+                  borderRadius: 1,
+                  '& .MuiOutlinedInput-root': {
+                    color: theme.text,
+                    '& fieldset': { borderColor: 'transparent' },
+                    '&:hover fieldset': { borderColor: theme.divider },
+                    '&.Mui-focused fieldset': { borderColor: theme.accent3 },
+                  }
+                }}
+              />
             </Paper>
           </Box>
         </Grid>

@@ -60,7 +60,8 @@ function MonthlyPlanner() {
       inputs: '', outputs: '', rule8020: '',
       distractions: '', skillGap: '', goalCheck: '', oneThing: ''
     },
-    days: {}
+    days: {},
+    notes: ''
   };
 
   useEffect(() => {
@@ -79,6 +80,8 @@ function MonthlyPlanner() {
   };
 
   const handleMonthlyFocusChange = (val) => updateMonthData({ monthlyFocus: val });
+
+  const handleNotesChange = (val) => updateMonthData({ notes: val });
 
   const handleRulesChange = (val) => updateMonthData({ rules: val });
 
@@ -284,10 +287,24 @@ function MonthlyPlanner() {
                   />
                 </Box>
               ))}
+
+              <Divider sx={{ my: 3 }} />
+
+              <Typography variant="h6" sx={{ mb: 2, color: theme.text, fontWeight: 700 }}>Notes & Brain Dump</Typography>
+              <TextField
+                fullWidth multiline minRows={6}
+                placeholder="Capture thoughts, ideas, or reminders for this month..."
+                value={currentMonthData.notes}
+                onChange={(e) => handleNotesChange(e.target.value)}
+                sx={{ bgcolor: theme.inputBg, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: theme.divider } } }}
+              />
+
             </Paper>
           </Grid>
         </Grid>
       </Box>
+
+
 
       <Divider sx={{ my: 5, borderColor: theme.divider, borderWidth: 2 }} />
 
