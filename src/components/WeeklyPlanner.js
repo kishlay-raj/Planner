@@ -26,12 +26,30 @@ import {
   eachDayOfInterval,
   isSameDay,
   getISOWeek,
-  getYear
+  getYear,
+  getMonth
 } from 'date-fns';
 
 function WeeklyPlanner() {
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Retrieve Monthly Focus for Cascading View
+  const [monthlyFocus, setMonthlyFocus] = useState('');
+
+  useEffect(() => {
+    try {
+      const savedMonthly = localStorage.getItem('monthlyPlannerData');
+      const monthlyData = savedMonthly ? JSON.parse(savedMonthly) : {};
+      const currentMonthKey = `${getYear(currentDate)}-${getMonth(currentDate) + 1}`;
+      setMonthlyFocus(monthlyData[currentMonthKey]?.monthlyFocus || '');
+    } catch (e) {
+      console.error("Error loading monthly focus", e);
+    }
+  }, [currentDate]);
+
   const [isDark, setIsDark] = useState(false);
+  // ... (rest of state initialization)
+
   const [plannerData, setPlannerData] = useState(() => {
     try {
       const saved = localStorage.getItem('weeklyPlannerData');
@@ -164,6 +182,18 @@ function WeeklyPlanner() {
           </IconButton>
         </Tooltip>
       </Box>
+
+      {/* MONTHLY FOCUS (Cascading) */}
+      {monthlyFocus && (
+        <Paper sx={{ p: 1.5, mb: 2, bgcolor: 'rgba(56, 178, 172, 0.08)', borderRadius: 2, border: `1px solid ${theme.primary}` }}>
+          <Typography variant="caption" sx={{ color: theme.primary, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', mb: 0.5, fontSize: '0.75rem' }}>
+            MONTHLY FOCUS ({format(currentDate, 'MMMM')})
+          </Typography>
+          <Typography variant="body2" sx={{ color: theme.text, fontSize: '0.9rem' }}>
+            {monthlyFocus}
+          </Typography>
+        </Paper>
+      )}
 
       <Grid container spacing={4}>
         {/* Left Column */}

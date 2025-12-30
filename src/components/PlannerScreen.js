@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider } from '@mui/material';
+import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider, Box, Typography } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import { getYear, getISOWeek } from 'date-fns';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
 import TaskCreationButton from './TaskCreationButton';
@@ -27,6 +28,20 @@ function PlannerScreen() {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  // Retrieve Weekly Focus for Cascading View
+  const [weeklyFocus, setWeeklyFocus] = useState('');
+
+  useEffect(() => {
+    try {
+      const savedWeekly = localStorage.getItem('weeklyPlannerData');
+      const weeklyData = savedWeekly ? JSON.parse(savedWeekly) : {};
+      const weekId = `${getYear(selectedDate)}-${getISOWeek(selectedDate)}`;
+      setWeeklyFocus(weeklyData[weekId]?.focus || '');
+    } catch (e) {
+      console.error("Error loading weekly focus", e);
+    }
+  }, [selectedDate]);
+
   // Save tasks to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('allTasks', JSON.stringify(allTasks));
@@ -50,7 +65,7 @@ function PlannerScreen() {
       id: Date.now()
     };
     setAllTasks(prevTasks => Array.isArray(prevTasks) ? [...prevTasks, newTask] : [newTask]);
-    
+
     // If task has scheduledTime, add it to scheduledTasks
     if (newTask.scheduledTime) {
       setScheduledTasks(prevScheduled => [...prevScheduled, newTask]);
@@ -85,12 +100,12 @@ function PlannerScreen() {
   };
 
   const handleTaskSchedule = (taskId, timeSlot, newDuration) => {
-    const task = allTasks.find(t => t.id === taskId) || 
-                scheduledTasks.find(t => t.id === taskId);
-    
+    const task = allTasks.find(t => t.id === taskId) ||
+      scheduledTasks.find(t => t.id === taskId);
+
     if (task) {
-      const updatedTask = { 
-        ...task, 
+      const updatedTask = {
+        ...task,
         scheduledTime: timeSlot,
         duration: newDuration || task.duration
       };
@@ -104,7 +119,7 @@ function PlannerScreen() {
         const updatedScheduledTasks = [...scheduledTasks, updatedTask];
         setScheduledTasks(updatedScheduledTasks);
         // Update the task in allTasks to reflect its scheduled status
-        const updatedAllTasks = allTasks.map(t => 
+        const updatedAllTasks = allTasks.map(t =>
           t.id === taskId ? { ...t, scheduledTime: timeSlot } : t
         );
         setAllTasks(updatedAllTasks);
@@ -121,9 +136,9 @@ function PlannerScreen() {
         <div className="planner-actions">
           <TaskCreationButton onTaskCreate={handleTaskCreate} selectedDate={selectedDate} />
           <Tooltip title="Reset All Tasks">
-            <IconButton 
+            <IconButton
               onClick={() => setResetDialogOpen(true)}
-              sx={{ 
+              sx={{
                 color: 'text.secondary',
                 padding: '2px',
                 width: '28px',
@@ -139,10 +154,24 @@ function PlannerScreen() {
         </div>
       </div>
 
-      <Grid container spacing={0} sx={{ display: 'flex', height: 'calc(100vh - 80px)' }}>
+      {/* WEEKLY FOCUS (Cascading) */}
+      {weeklyFocus && (
+        <Box sx={{ px: 3, pt: 1, pb: 1 }}>
+          <Paper sx={{ p: 1.5, bgcolor: 'rgba(56, 178, 172, 0.08)', borderRadius: 2, border: '1px solid #38B2AC' }}>
+            <Typography variant="caption" sx={{ color: '#319795', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', mb: 0.5, fontSize: '0.75rem' }}>
+              WEEKLY FOCUS
+            </Typography>
+            <Typography variant="body2" sx={{ color: '#2C5282', fontSize: '0.9rem' }}>
+              {weeklyFocus}
+            </Typography>
+          </Paper>
+        </Box>
+      )}
+
+      <Grid container spacing={0} sx={{ display: 'flex', height: weeklyFocus ? 'calc(100vh - 200px)' : 'calc(100vh - 80px)' }}>
         <Grid item xs={12} md={6}>
           <Paper className="calendar-container">
-            <CalendarView 
+            <CalendarView
               scheduledTasks={scheduledTasks}
               onTaskSchedule={handleTaskSchedule}
               onTaskCreate={handleTaskCreate}
@@ -154,7 +183,7 @@ function PlannerScreen() {
         </Grid>
         <Grid item xs={12} md={3}>
           <Paper className="task-list-container">
-            <TaskList 
+            <TaskList
               tasks={allTasks}
               onTaskUpdate={handleTaskUpdate}
               onTaskSchedule={handleTaskSchedule}
@@ -162,7 +191,7 @@ function PlannerScreen() {
             />
           </Paper>
         </Grid>
-        <Divider orientation="vertical" flexItem sx={{ 
+        <Divider orientation="vertical" flexItem sx={{
           height: '100%',
           backgroundColor: '#e5e5e5'
         }} />
@@ -183,7 +212,7 @@ function PlannerScreen() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setResetDialogOpen(false)}>Cancel</Button>
-          <Button 
+          <Button
             onClick={handleReset}
             color="error"
             variant="contained"

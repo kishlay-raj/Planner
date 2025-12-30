@@ -152,6 +152,26 @@ function MonthlyPlanner() {
     { label: "The ONE Thing: Makes everything else easier?", key: 'oneThing' },
   ];
 
+  // Retrieve Year Focus from YearlyPlanner
+  const [yearFocus, setYearFocus] = useState('');
+
+  useEffect(() => {
+    try {
+      const savedYearly = localStorage.getItem('yearlyPlannerData');
+      if (savedYearly) {
+        const yearlyData = JSON.parse(savedYearly);
+        const currentYearKey = String(getYear(currentDate));
+        if (yearlyData[currentYearKey]) {
+          setYearFocus(yearlyData[currentYearKey].yearFocus || '');
+        } else {
+          setYearFocus('');
+        }
+      }
+    } catch (e) {
+      console.error("Error loading year focus", e);
+    }
+  }, [currentDate]);
+
   return (
     <Box sx={{ p: 3, height: '100vh', overflow: 'auto', bgcolor: theme.bg, color: theme.text }}>
       {/* Header */}
@@ -174,6 +194,18 @@ function MonthlyPlanner() {
           </IconButton>
         </Tooltip>
       </Box>
+
+      {/* YEAR FOCUS (From Yearly Planner) */}
+      {yearFocus && (
+        <Paper sx={{ p: 1.5, mb: 2, bgcolor: 'rgba(49, 130, 206, 0.08)', borderRadius: 2, border: `1px solid ${theme.primary}` }}>
+          <Typography variant="caption" sx={{ color: theme.primary, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', mb: 0.5, fontSize: '0.75rem' }}>
+            Year Focus ({getYear(currentDate)})
+          </Typography>
+          <Typography variant="body2" sx={{ color: theme.text, fontSize: '0.9rem' }}>
+            {yearFocus}
+          </Typography>
+        </Paper>
+      )}
 
       {/* MONTHLY FOCUS */}
       <Paper sx={{ p: 3, mb: 3, bgcolor: theme.paper, borderRadius: 2, boxShadow: theme.shadow }}>
