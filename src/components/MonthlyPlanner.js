@@ -52,6 +52,7 @@ function MonthlyPlanner() {
 
   const currentMonthData = plannerData[monthId] || {
     rules: '',
+    monthlyFocus: '',
     habits: [{ id: 1, name: '', days: {} }],
     journal: {
       comfortZone: '', topPriority: '', boundary: '',
@@ -76,6 +77,8 @@ function MonthlyPlanner() {
   const handleNavigate = (direction) => {
     setCurrentDate(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1));
   };
+
+  const handleMonthlyFocusChange = (val) => updateMonthData({ monthlyFocus: val });
 
   const handleRulesChange = (val) => updateMonthData({ rules: val });
 
@@ -172,6 +175,17 @@ function MonthlyPlanner() {
         </Tooltip>
       </Box>
 
+      {/* MONTHLY FOCUS */}
+      <Paper sx={{ p: 3, mb: 3, bgcolor: theme.paper, borderRadius: 2, boxShadow: theme.shadow }}>
+        <Typography variant="h6" sx={{ mb: 2, color: theme.accent3, fontWeight: 700 }}>Monthly Focus</Typography>
+        <TextField
+          fullWidth multiline minRows={2}
+          placeholder="Enter your main focus for the month..."
+          value={currentMonthData.monthlyFocus}
+          onChange={(e) => handleMonthlyFocusChange(e.target.value)}
+          sx={{ bgcolor: theme.inputBg, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: theme.divider } } }}
+        />
+      </Paper>
       {/* JOURNALING SECTION (TOP) */}
       <Box sx={{ mb: 5 }}>
         <Grid container spacing={3}>
