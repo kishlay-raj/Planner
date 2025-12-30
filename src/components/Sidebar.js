@@ -19,7 +19,7 @@ import {
   Menu,
   ViewWeek,
   CalendarMonth,
-  DateRange
+  EmojiEvents
 } from '@mui/icons-material';
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
@@ -179,7 +179,7 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
             }}
           >
             <ListItemIcon>
-              <DateRange sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
+              <EmojiEvents sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
             </ListItemIcon>
             {isExpanded && <ListItemText primary="Yearly" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
           </ListItemButton>
