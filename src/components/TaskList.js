@@ -347,13 +347,15 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                     }
                   />
                   <IconButton
+                    size="small"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleTaskEdit(task);
                     }}
                     className="edit-button"
+                    sx={{ padding: '4px' }}
                   >
-                    <EditIcon />
+                    <EditIcon fontSize="small" />
                   </IconButton>
 
                 </ListItem>
