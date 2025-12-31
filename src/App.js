@@ -7,6 +7,7 @@ import MonthlyPlanner from './components/MonthlyPlanner';
 import YearlyPlanner from './components/YearlyPlanner';
 import DailyJournal from './components/DailyJournal';
 import RoutinePlanner from './components/RoutinePlanner';
+import EisenhowerMatrix from './components/EisenhowerMatrix';
 import Sidebar from './components/Sidebar';
 import './App.css';
 
@@ -155,6 +156,8 @@ function App() {
         return <RoutinePlanner onTaskCreate={handleTaskCreate} />;
       case 'pomodoro':
         return <PomodoroPanel onModeChange={handlePomodoroModeChange} />;
+      case 'eisenhower':
+        return <EisenhowerMatrix />;
       default:
         return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
     }

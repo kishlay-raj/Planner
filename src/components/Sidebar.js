@@ -19,7 +19,8 @@ import {
   CalendarMonth,
   EmojiEvents,
   MenuBook,
-  SelfImprovement
+  SelfImprovement,
+  ViewQuilt
 } from '@mui/icons-material';
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
@@ -218,6 +219,24 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
               <SelfImprovement sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
             </ListItemIcon>
             {isExpanded && <ListItemText primary="Routines" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
+          </ListItemButton>
+        </Tooltip>
+
+        <Tooltip title="Eisenhower Matrix" placement="right" arrow disableHoverListener={isExpanded}>
+          <ListItemButton
+            onClick={() => handleNavigate('eisenhower')}
+            sx={{
+              '&:hover': {
+                bgcolor: activePanel === 'pomodoro'
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
+            <ListItemIcon>
+              <ViewQuilt sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
+            </ListItemIcon>
+            {isExpanded && <ListItemText primary="Matrix" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
           </ListItemButton>
         </Tooltip>
 
