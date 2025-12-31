@@ -16,7 +16,6 @@ import {
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import ScheduleIcon from '@mui/icons-material/Schedule';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -356,15 +355,7 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                   >
                     <EditIcon />
                   </IconButton>
-                  <IconButton
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onTaskSchedule(task.id, new Date());
-                    }}
-                    className="schedule-button"
-                  >
-                    <ScheduleIcon />
-                  </IconButton>
+
                 </ListItem>
               )}
             </Draggable>
