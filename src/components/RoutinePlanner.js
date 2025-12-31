@@ -153,7 +153,8 @@ function RoutinePlanner({ onTaskCreate }) {
                     priority: 'P2',
                     tag: 'Personal',
                     important: false,
-                    urgent: false
+                    urgent: false,
+                    isToday: true
                 });
             });
             alert(`Added ${items.length} tasks to your Daily Planner.`);

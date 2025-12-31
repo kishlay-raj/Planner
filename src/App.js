@@ -153,7 +153,8 @@ function App() {
       important: taskData.important || false,
       urgent: taskData.urgent || false,
       completed: false,
-      isToday: false
+      isToday: taskData.isToday !== undefined ? taskData.isToday : false,
+      date: (taskData.isToday || taskData.isToday === undefined) ? new Date().toISOString() : undefined
     };
     const updatedTasks = [...tasks, newTask];
     setTasks(updatedTasks);
