@@ -20,10 +20,22 @@ import {
   EmojiEvents,
   MenuBook,
   SelfImprovement,
-  ViewQuilt
+  ViewQuilt,
+  Settings
 } from '@mui/icons-material';
 
-function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
+const iconMap = {
+  dashboard: <Dashboard />,
+  viewWeek: <ViewWeek />,
+  calendarMonth: <CalendarMonth />,
+  emojiEvents: <EmojiEvents />,
+  menuBook: <MenuBook />,
+  selfImprovement: <SelfImprovement />,
+  viewQuilt: <ViewQuilt />,
+  timer: <Timer />
+};
+
+function Sidebar({ onNavigate, activePanel, pomodoroMode, navConfig }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
   const modeColors = {
@@ -104,182 +116,73 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode }) {
         }}
       />
 
-      <List component="nav">
-        <Tooltip title="Daily Planner" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton
-            onClick={() => handleNavigate('planner')}
-            sx={{
-              '&:hover': {
-                bgcolor: activePanel === 'pomodoro'
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.04)'
-              }
-            }}
-          >
-            <ListItemIcon>
-              <Dashboard sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
-            </ListItemIcon>
-            {isExpanded && <ListItemText
-              primary="Daily"
-              sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
-            />}
-          </ListItemButton>
-        </Tooltip>
-
-        <Tooltip title="Weekly Planner" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton
-            onClick={() => handleNavigate('planner-week')}
-            sx={{
-              '&:hover': {
-                bgcolor: activePanel === 'pomodoro'
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.04)'
-              }
-            }}
-          >
-            <ListItemIcon>
-              <ViewWeek sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
-            </ListItemIcon>
-            {isExpanded && <ListItemText
-              primary="Weekly"
-              sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
-            />}
-          </ListItemButton>
-        </Tooltip>
-
-        <Tooltip title="Monthly Planner" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton
-            onClick={() => handleNavigate('planner-month')}
-            sx={{
-              '&:hover': {
-                bgcolor: activePanel === 'pomodoro'
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.04)'
-              }
-            }}
-          >
-            <ListItemIcon>
-              <CalendarMonth sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
-            </ListItemIcon>
-            {isExpanded && <ListItemText
-              primary="Monthly"
-              sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
-            />}
-          </ListItemButton>
-        </Tooltip>
-
-        <Tooltip title="Yearly Planner" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton
-            onClick={() => handleNavigate('planner-year')}
-            sx={{
-              '&:hover': {
-                bgcolor: activePanel === 'pomodoro'
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.04)'
-              }
-            }}
-          >
-            <ListItemIcon>
-              <EmojiEvents sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
-            </ListItemIcon>
-            {isExpanded && <ListItemText primary="Yearly" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
-          </ListItemButton>
-        </Tooltip>
-
-        <Tooltip title="Daily Journal" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton
-            onClick={() => handleNavigate('daily-journal')}
-            sx={{
-              '&:hover': {
-                bgcolor: activePanel === 'pomodoro'
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.04)'
-              }
-            }}
-          >
-            <ListItemIcon>
-              <MenuBook sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
-            </ListItemIcon>
-            {isExpanded && <ListItemText primary="Journal" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
-          </ListItemButton>
-        </Tooltip>
-
-        <Tooltip title="Routines & Rituals" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton
-            onClick={() => handleNavigate('routines')}
-            sx={{
-              '&:hover': {
-                bgcolor: activePanel === 'pomodoro'
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.04)'
-              }
-            }}
-          >
-            <ListItemIcon>
-              <SelfImprovement sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
-            </ListItemIcon>
-            {isExpanded && <ListItemText primary="Routines" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
-          </ListItemButton>
-        </Tooltip>
-
-        <Tooltip title="Eisenhower Matrix" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton
-            onClick={() => handleNavigate('eisenhower')}
-            sx={{
-              '&:hover': {
-                bgcolor: activePanel === 'pomodoro'
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.04)'
-              }
-            }}
-          >
-            <ListItemIcon>
-              <ViewQuilt sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
-            </ListItemIcon>
-            {isExpanded && <ListItemText primary="Matrix" sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />}
-          </ListItemButton>
-        </Tooltip>
-
-        <Tooltip title="Pomodoro" placement="right" arrow disableHoverListener={isExpanded}>
-          <ListItemButton
-            onClick={() => handleNavigate('pomodoro')}
-            sx={{
-              '&:hover': {
-                bgcolor: activePanel === 'pomodoro'
-                  ? 'rgba(255, 255, 255, 0.1)'
-                  : 'rgba(0, 0, 0, 0.04)'
-              }
-            }}
-          >
-            <ListItemIcon>
-              <Timer sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }} />
-            </ListItemIcon>
-            {isExpanded && <ListItemText
-              primary="Pomodoro"
-              sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
-            />}
-          </ListItemButton>
-        </Tooltip>
-
-        <Divider
-          sx={{
-            my: 1,
-            borderColor: activePanel === 'pomodoro'
-              ? 'rgba(255, 255, 255, 0.12)'
-              : 'rgba(0, 0, 0, 0.12)'
-          }}
-        />
+      <List component="nav" sx={{ flexGrow: 1 }}>
+        {navConfig && navConfig.map((item) => {
+          if (!item.visible) return null;
+          return (
+            <Tooltip key={item.id} title={item.label} placement="right" arrow disableHoverListener={isExpanded}>
+              <ListItemButton
+                onClick={() => handleNavigate(item.id)}
+                selected={activePanel === item.id}
+                sx={{
+                  '&.Mui-selected': {
+                    bgcolor: activePanel === 'pomodoro' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.08)'
+                  },
+                  '&:hover': {
+                    bgcolor: activePanel === 'pomodoro'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.04)'
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}>
+                  {iconMap[item.iconKey] || <Dashboard />}
+                </ListItemIcon>
+                {isExpanded && <ListItemText
+                  primary={item.label}
+                  sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
+                />}
+              </ListItemButton>
+            </Tooltip>
+          );
+        })}
       </List>
-      <Box sx={{
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        p: 1,
-        display: 'flex',
-        justifyContent: 'center'
-      }}>
-        <Divider />
-      </Box>
+
+      <Divider
+        sx={{
+          borderColor: activePanel === 'pomodoro'
+            ? 'rgba(255, 255, 255, 0.12)'
+            : 'rgba(0, 0, 0, 0.12)'
+        }}
+      />
+
+      {/* Settings Link at the bottom */}
+      <List>
+        <Tooltip title="Settings" placement="right" arrow disableHoverListener={isExpanded}>
+          <ListItemButton
+            onClick={() => handleNavigate('settings')}
+            selected={activePanel === 'settings'}
+            sx={{
+              '&.Mui-selected': {
+                bgcolor: activePanel === 'pomodoro' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.08)'
+              },
+              '&:hover': {
+                bgcolor: activePanel === 'pomodoro'
+                  ? 'rgba(255, 255, 255, 0.1)'
+                  : 'rgba(0, 0, 0, 0.04)'
+              }
+            }}
+          >
+            <ListItemIcon sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}>
+              <Settings />
+            </ListItemIcon>
+            {isExpanded && <ListItemText
+              primary="Settings"
+              sx={{ color: activePanel === 'pomodoro' ? 'white' : 'inherit' }}
+            />}
+          </ListItemButton>
+        </Tooltip>
+      </List>
     </Drawer>
   );
 }

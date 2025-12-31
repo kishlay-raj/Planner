@@ -8,6 +8,7 @@ import YearlyPlanner from './components/YearlyPlanner';
 import DailyJournal from './components/DailyJournal';
 import RoutinePlanner from './components/RoutinePlanner';
 import EisenhowerMatrix from './components/EisenhowerMatrix';
+import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import './App.css';
 
@@ -119,6 +120,29 @@ function App() {
   const [activePanel, setActivePanel] = useState('planner');
   const [pomodoroMode, setPomodoroMode] = useState('pomodoro');
 
+  // Navigation Configuration State
+  const [navConfig, setNavConfig] = useState(() => {
+    const savedConfig = localStorage.getItem('navConfig');
+    if (savedConfig) {
+      return JSON.parse(savedConfig);
+    }
+    return [
+      { id: 'planner', label: 'Daily', iconKey: 'dashboard', visible: true },
+      { id: 'planner-week', label: 'Weekly', iconKey: 'viewWeek', visible: true },
+      { id: 'planner-month', label: 'Monthly', iconKey: 'calendarMonth', visible: true },
+      { id: 'planner-year', label: 'Yearly', iconKey: 'emojiEvents', visible: true },
+      { id: 'daily-journal', label: 'Journal', iconKey: 'menuBook', visible: true },
+      { id: 'routines', label: 'Routines', iconKey: 'selfImprovement', visible: true },
+      { id: 'eisenhower', label: 'Matrix', iconKey: 'viewQuilt', visible: true },
+      { id: 'pomodoro', label: 'Pomodoro', iconKey: 'timer', visible: true }
+    ];
+  });
+
+  const handleNavUpdate = (newConfig) => {
+    setNavConfig(newConfig);
+    localStorage.setItem('navConfig', JSON.stringify(newConfig));
+  };
+
   const handleTaskCreate = (taskData) => {
     const newTask = {
       id: Date.now(),
@@ -158,6 +182,8 @@ function App() {
         return <PomodoroPanel onModeChange={handlePomodoroModeChange} />;
       case 'eisenhower':
         return <EisenhowerMatrix />;
+      case 'settings':
+        return <Settings navConfig={navConfig} onUpdate={handleNavUpdate} />;
       default:
         return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
     }
@@ -174,6 +200,7 @@ function App() {
           onNavigate={setActivePanel}
           activePanel={activePanel}
           pomodoroMode={pomodoroMode}
+          navConfig={navConfig}
         />
         <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
           {renderPanel()}
