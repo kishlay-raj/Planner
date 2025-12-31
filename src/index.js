@@ -13,7 +13,5 @@ window.addEventListener('error', (e) => {
 });
 
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  <App />
 ); 
