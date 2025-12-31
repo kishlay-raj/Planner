@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Paper, 
-  Typography, 
-  Box, 
+import {
+  Paper,
+  Typography,
+  Box,
   Grid,
   Card,
   CardContent,
@@ -43,9 +43,8 @@ function ReportPanel() {
 
   const calculateStats = () => {
     // Get tasks from localStorage
-    const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-    const weeklyTasks = JSON.parse(localStorage.getItem('weeklyTasks') || '{}');
-    const monthlyTasks = JSON.parse(localStorage.getItem('monthlyTasks') || '{}');
+    const tasks = JSON.parse(localStorage.getItem('allTasks') || '[]');
+
 
     // Calculate basic stats
     const completed = tasks.filter(task => task.completed).length;
@@ -113,9 +112,9 @@ function ReportPanel() {
                 Total Tasks
               </Typography>
               <Typography variant="h4">{taskStats.total}</Typography>
-              <LinearProgress 
-                variant="determinate" 
-                value={(taskStats.completed / taskStats.total) * 100 || 0} 
+              <LinearProgress
+                variant="determinate"
+                value={(taskStats.completed / taskStats.total) * 100 || 0}
                 sx={{ mt: 2 }}
               />
             </CardContent>

@@ -64,6 +64,23 @@ function PomodoroPanel({ onModeChange }) {
     };
   });
 
+  const [stats, setStats] = useState(() => {
+    const savedStats = localStorage.getItem('pomodoroStats');
+    const defaultStats = { total: 0, today: 0, lastDate: new Date().toDateString() };
+    if (savedStats) {
+      const parsed = JSON.parse(savedStats);
+      if (parsed.lastDate !== new Date().toDateString()) {
+        return { ...parsed, today: 0, lastDate: new Date().toDateString() };
+      }
+      return parsed;
+    }
+    return defaultStats;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('pomodoroStats', JSON.stringify(stats));
+  }, [stats]);
+
   // Save settings to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
@@ -182,6 +199,15 @@ function PomodoroPanel({ onModeChange }) {
       }
 
       setCycles(c => c + 1);
+      setStats(prev => {
+        const isNewDay = prev.lastDate !== new Date().toDateString();
+        return {
+          ...prev,
+          total: prev.total + 1,
+          today: isNewDay ? 1 : prev.today + 1,
+          lastDate: new Date().toDateString()
+        };
+      });
 
       // Handle auto-start features
       if (mode === 'pomodoro') {
@@ -446,6 +472,9 @@ function PomodoroPanel({ onModeChange }) {
             </Typography>
           </Box>
         </Fade>
+        <Typography variant="body2" sx={{ mt: 2, opacity: 0.6 }}>
+          Today's Focus: {stats.today} cycles
+        </Typography>
       </Container>
 
       <Dialog
