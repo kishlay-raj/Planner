@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider, Box, Typography } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import { getYear, getISOWeek } from 'date-fns';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
@@ -130,8 +131,9 @@ function PlannerScreen() {
   return (
     <div className="planner-screen">
       <div className="planner-header">
-        <div className="planner-nav">
-          <span className="planner-title">Planner</span>
+        <div className="planner-nav" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <TimelineIcon sx={{ color: '#1976d2', fontSize: '32px' }} />
+          <span className="planner-title">Flow Planner</span>
         </div>
         <div className="planner-actions">
           <TaskCreationButton onTaskCreate={handleTaskCreate} selectedDate={selectedDate} />
