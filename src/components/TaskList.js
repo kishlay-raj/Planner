@@ -13,9 +13,11 @@ import {
   AccordionDetails,
   Typography,
   InputBase,
+  Tooltip,
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -357,6 +359,19 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
                   >
                     <EditIcon fontSize="small" />
                   </IconButton>
+                  <Tooltip title="Add to Calendar">
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTaskSchedule(task.id, new Date());
+                      }}
+                      className="schedule-button"
+                      sx={{ padding: '4px' }}
+                    >
+                      <ScheduleIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
 
                 </ListItem>
               )}
