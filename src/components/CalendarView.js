@@ -46,30 +46,37 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
   const now = new Date();
   const scrollTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0);
 
-  const events = scheduledTasks.map(task => ({
-    id: task.id,
-    title: `${task.name} (${task.duration}min) - ${format(new Date(task.scheduledTime), 'HH:mm')} to ${format(new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000), 'HH:mm')}`,
-    start: new Date(task.scheduledTime),
-    end: new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000),
-    resource: task,
-    completed: task.completed
-  })).sort((a, b) => {
-    // Sort by start time
-    if (a.start < b.start) return -1;
-    if (a.start > b.start) return 1;
+  const events = scheduledTasks
+    .filter(task => {
+      // Filter out tasks with invalid scheduledTime
+      if (!task.scheduledTime) return false;
+      const date = new Date(task.scheduledTime);
+      return !isNaN(date.getTime());
+    })
+    .map(task => ({
+      id: task.id,
+      title: `${task.name} (${task.duration}min) - ${format(new Date(task.scheduledTime), 'HH:mm')} to ${format(new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000), 'HH:mm')}`,
+      start: new Date(task.scheduledTime),
+      end: new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000),
+      resource: task,
+      completed: task.completed
+    })).sort((a, b) => {
+      // Sort by start time
+      if (a.start < b.start) return -1;
+      if (a.start > b.start) return 1;
 
-    // Then by duration (longer events first usually looks better)
-    const durationA = a.end - a.start;
-    const durationB = b.end - b.start;
-    if (durationA > durationB) return -1;
-    if (durationA < durationB) return 1;
+      // Then by duration (longer events first usually looks better)
+      const durationA = a.end - a.start;
+      const durationB = b.end - b.start;
+      if (durationA > durationB) return -1;
+      if (durationA < durationB) return 1;
 
-    // Finally by ID for deterministic stability
-    if (a.id < b.id) return -1;
-    if (a.id > b.id) return 1;
+      // Finally by ID for deterministic stability
+      if (a.id < b.id) return -1;
+      if (a.id > b.id) return 1;
 
-    return 0;
-  });
+      return 0;
+    });
 
   const handleSelectSlot = useCallback(({ start }) => {
     if (draggedEvent) {
@@ -111,19 +118,38 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
   };
 
   const handleDrop = useCallback((event) => {
-    const taskData = JSON.parse(event.dataTransfer.getData('task'));
-    const calendarElement = document.querySelector('.rbc-calendar');
-    const calendarRect = calendarElement.getBoundingClientRect();
-    const timeContent = document.querySelector('.rbc-time-content');
-    const timeContentRect = timeContent.getBoundingClientRect();
+    event.preventDefault();
+    try {
+      const taskDataStr = event.dataTransfer.getData('task');
+      if (!taskDataStr) {
+        console.warn('No task data found in drop event');
+        return;
+      }
 
-    // Calculate position relative to time content
-    const relativeY = event.clientY - timeContentRect.top + timeContent.scrollTop;
+      const taskData = JSON.parse(taskDataStr);
+      const timeContent = document.querySelector('.rbc-time-content');
 
-    const dropTime = getTimeFromPosition(relativeY);
+      if (!timeContent) {
+        console.warn('Could not find calendar time content element');
+        // Fallback: schedule at current time
+        const now = new Date(selectedDate);
+        now.setHours(new Date().getHours(), 0, 0, 0);
+        onTaskSchedule(taskData.id, now);
+        return;
+      }
 
-    onTaskSchedule(taskData.id, dropTime);
-  }, [onTaskSchedule]);
+      const timeContentRect = timeContent.getBoundingClientRect();
+
+      // Calculate position relative to time content
+      const relativeY = event.clientY - timeContentRect.top + timeContent.scrollTop;
+
+      const dropTime = getTimeFromPosition(relativeY);
+
+      onTaskSchedule(taskData.id, dropTime);
+    } catch (error) {
+      console.error('Error handling drop:', error);
+    }
+  }, [onTaskSchedule, selectedDate]);
 
   const handleEventDrop = useCallback(({ event, start, end }) => {
     // Calculate new duration based on the drop

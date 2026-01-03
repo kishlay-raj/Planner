@@ -103,13 +103,20 @@ function PlannerScreen() {
   };
 
   const handleTaskSchedule = async (taskId, timeSlot, newDuration) => {
-    const task = tasks.find(t => t.id === taskId || t.id === taskId.toString());
+    // Convert taskId to string for consistent comparison
+    const taskIdStr = String(taskId);
+    const task = tasks.find(t => String(t.id) === taskIdStr);
 
     if (task) {
-      await updateTask(taskId.toString(), {
-        scheduledTime: timeSlot,
+      // Convert Date to ISO string for Firestore
+      const scheduledTime = timeSlot instanceof Date ? timeSlot.toISOString() : timeSlot;
+
+      await updateTask(taskIdStr, {
+        scheduledTime: scheduledTime,
         duration: newDuration || task.duration
       });
+    } else {
+      console.warn('Task not found for scheduling:', taskId);
     }
   };
 
