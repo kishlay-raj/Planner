@@ -5,6 +5,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './NotesPanel.css';
 import { useFirestoreDoc } from '../hooks/useFirestoreNew';
+import { useAuth } from '../contexts/AuthContext';
 
 // Import markdown shortcuts if available
 // eslint-disable-next-line no-unused-vars
@@ -16,9 +17,35 @@ try {
   console.warn('quill-markdown-shortcuts not available, markdown features disabled');
 }
 
+// Demo content for non-logged-in users
+const DEMO_CONTENT = `<h1>✨ Welcome to Flow Planner Demo</h1>
+<p><br></p>
+<p>This is your space for <strong>daily notes</strong> — and yes, it supports markdown! But for now, let's get you started:</p>
+<p><br></p>
+<h2>🧠 Main Focus</h2>
+<ul>
+  <li>Create some new to-dos</li>
+  <li>Drag and re-order your to-dos</li>
+  <li>Drop a to-do in the <strong>timebox scheduler</strong></li>
+  <li>Check off a to-do to complete it!</li>
+</ul>
+<p><br></p>
+<h2>🚀 What Else Does Flow Planner Offer?</h2>
+<p>Click on the <strong>left panel</strong> to discover:</p>
+<ul>
+  <li>📅 Weekly, Monthly & Yearly Planners</li>
+  <li>📓 Daily Journal</li>
+  <li>🔄 Routine Builder</li>
+  <li>🍅 Pomodoro Timer</li>
+  <li>...and more!</li>
+</ul>
+<p><br></p>
+<p><em>Sign in with Google to save your notes and access all features!</em></p>`;
+
 const initialNoteData = { content: '' };
 
 function NotesPanel({ selectedDate }) {
+  const { currentUser } = useAuth();
   const currentDate = format(selectedDate, 'yyyy-MM-dd');
 
   // Use date-based document path - each day is a separate small document
@@ -84,6 +111,11 @@ function NotesPanel({ selectedDate }) {
     }
   };
 
+  // For non-logged-in users, show demo content as default; for logged-in users, show their saved content
+  const displayContent = currentUser
+    ? (noteData?.content || '')
+    : (noteData?.content || DEMO_CONTENT);
+
   return (
     <Paper
       className="notes-panel"
@@ -116,7 +148,7 @@ function NotesPanel({ selectedDate }) {
       }}>
         <ReactQuill
           theme="snow"
-          value={noteData?.content || ''}
+          value={displayContent}
           onChange={handleNoteChange}
           modules={modules}
           formats={formats}
@@ -134,4 +166,4 @@ function NotesPanel({ selectedDate }) {
   );
 }
 
-export default NotesPanel; 
+export default NotesPanel;
