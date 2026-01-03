@@ -17,10 +17,14 @@ import {
     ListItem,
     ListItemText,
     ListItemSecondaryAction,
+    InputLabel,
+    Tab,
+    Tabs,
+    Switch,
+    FormControl,
     Select,
     MenuItem,
-    FormControl,
-    InputLabel
+    ListItemIcon
 } from '@mui/material';
 import {
     NavigateBefore,
@@ -36,7 +40,8 @@ import {
     TrackChanges,
     Visibility,
     Terrain,
-    Build
+    Build,
+    Notes
 } from '@mui/icons-material';
 import { format, addDays, subDays } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
@@ -61,18 +66,18 @@ const DEFAULT_PROMPTS = [
     { id: '16', section: 'Evening', text: '3 Amazing things that happened today.' },
     { id: '17', section: 'Evening', text: 'How could I have made today even better?' },
     // Phase 1: Awareness Audit
-    { id: 'detox-1', section: 'Detox Phase 1: Awareness', text: 'The "One Thing" Analysis: If I eliminated just one distraction, which one would have the biggest impact? Why haven\'t I cut it yet?' },
-    { id: 'detox-2', section: 'Detox Phase 1: Awareness', text: 'The Hijack Log: "My brain gets hijacked when..." (trigger). What is the specific trigger?' },
-    { id: 'detox-3', section: 'Detox Phase 1: Awareness', text: 'Excitement vs. Fulfillment: List 3 stimulating things I did today. Did they leave me fulfilling or empty?' },
-    { id: 'detox-4', section: 'Detox Phase 1: Awareness', text: 'Mind Tricks: What lies did my brain tell me today to get a dopamine hit? (e.g. "Just 5 minutes")' },
+    { id: 'detox-1', section: 'Dopamine detox phase 1: Awareness', text: 'The "One Thing" Analysis: If I eliminated just one distraction, which one would have the biggest impact? Why haven\'t I cut it yet?' },
+    { id: 'detox-2', section: 'Dopamine detox phase 1: Awareness', text: 'The Hijack Log: "My brain gets hijacked when..." (trigger). What is the specific trigger?' },
+    { id: 'detox-3', section: 'Dopamine detox phase 1: Awareness', text: 'Excitement vs. Fulfillment: List 3 stimulating things I did today. Did they leave me fulfilling or empty?' },
+    { id: 'detox-4', section: 'Dopamine detox phase 1: Awareness', text: 'Mind Tricks: What lies did my brain tell me today to get a dopamine hit? (e.g. "Just 5 minutes")' },
     // Phase 2: The Struggle
-    { id: 'detox-5', section: 'Detox Phase 2: The Struggle', text: 'Sitting with Boredom: When I urged for my phone, what emotion was underneath? What happened when I sat with it?' },
-    { id: 'detox-6', section: 'Detox Phase 2: The Struggle', text: 'The "Hard Thing" Re-frame: I tackled a hard task without breaks. Was it actually difficult or just the transition?' },
-    { id: 'detox-7', section: 'Detox Phase 2: The Struggle', text: 'Clarity Check: Without constant inputs, what creative thoughts bubbled up naturally?' },
+    { id: 'detox-5', section: 'Dopamine detox phase 2: The Struggle', text: 'Sitting with Boredom: When I urged for my phone, what emotion was underneath? What happened when I sat with it?' },
+    { id: 'detox-6', section: 'Dopamine detox phase 2: The Struggle', text: 'The "Hard Thing" Re-frame: I tackled a hard task without breaks. Was it actually difficult or just the transition?' },
+    { id: 'detox-7', section: 'Dopamine detox phase 2: The Struggle', text: 'Clarity Check: Without constant inputs, what creative thoughts bubbled up naturally?' },
     // Phase 3: Maintenance
-    { id: 'detox-8', section: 'Detox Phase 3: Maintenance', text: 'The Morning Audit: Did I start with High Stimulation or Low Stimulation? How did it dictate my focus?' },
-    { id: 'detox-9', section: 'Detox Phase 3: Maintenance', text: 'Friction Review: Did I make bad habits harder and good habits easier today?' },
-    { id: 'detox-10', section: 'Detox Phase 3: Maintenance', text: 'The "Closed System" Check: Did I close out loops (emails, tabs) or leave them draining attention?' }
+    { id: 'detox-8', section: 'Dopamine detox phase 3: Maintenance', text: 'The Morning Audit: Did I start with High Stimulation or Low Stimulation? How did it dictate my focus?' },
+    { id: 'detox-9', section: 'Dopamine detox phase 3: Maintenance', text: 'Friction Review: Did I make bad habits harder and good habits easier today?' },
+    { id: 'detox-10', section: 'Dopamine detox phase 3: Maintenance', text: 'The "Closed System" Check: Did I close out loops (emails, tabs) or leave them draining attention?' }
 ];
 
 function DailyJournal() {
@@ -85,10 +90,20 @@ function DailyJournal() {
     // State for journal entries (answers)
     const [journalData, setJournalData] = useFirestore('dailyJournalData', {});
 
+    // State for disabled (hidden) sections
+    const [disabledSections, setDisabledSections] = useFirestore('journalDisabledSections', []);
+
     // Edit Prompts Dialog State
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState(0); // 0: Prompts, 1: Sections
     const [newPromptText, setNewPromptText] = useState('');
-    const [newPromptSection, setNewPromptSection] = useState('Morning');
+
+    // Section selection state
+    const [selectedSectionInput, setSelectedSectionInput] = useState('Morning');
+    const [customSectionName, setCustomSectionName] = useState('');
+    const isCustomSection = selectedSectionInput === 'NEW_SECTION';
+
+    const getFinalSection = () => isCustomSection ? customSectionName : selectedSectionInput;
 
     // Migration & Deduplication: Ensure new sections exist and remove duplicates
     useEffect(() => {
@@ -106,9 +121,9 @@ function DailyJournal() {
                     (dp.section === 'Deep Work' && !hasDeepWork) ||
                     (dp.section === 'Digital Minimalism' && !hasDigitalMinimalism) ||
                     (dp.section === 'Behavioral Triggers' && !hasBehavioralTriggers) ||
-                    (dp.section === 'Detox Phase 1: Awareness' && !updatedPrompts.some(p => p.section === 'Detox Phase 1: Awareness')) ||
-                    (dp.section === 'Detox Phase 2: The Struggle' && !updatedPrompts.some(p => p.section === 'Detox Phase 2: The Struggle')) ||
-                    (dp.section === 'Detox Phase 3: Maintenance' && !updatedPrompts.some(p => p.section === 'Detox Phase 3: Maintenance'))
+                    (dp.section === 'Dopamine detox phase 1: Awareness' && !updatedPrompts.some(p => p.section === 'Dopamine detox phase 1: Awareness')) ||
+                    (dp.section === 'Dopamine detox phase 2: The Struggle' && !updatedPrompts.some(p => p.section === 'Dopamine detox phase 2: The Struggle')) ||
+                    (dp.section === 'Dopamine detox phase 3: Maintenance' && !updatedPrompts.some(p => p.section === 'Dopamine detox phase 3: Maintenance'))
                 );
                 if (newDefaults.length > 0) {
                     updatedPrompts = [...updatedPrompts, ...newDefaults];
@@ -161,11 +176,35 @@ function DailyJournal() {
     };
 
     const handleAddPrompt = () => {
-        if (!newPromptText.trim()) return;
+        const sectionToAdd = getFinalSection();
+        if (!newPromptText.trim() || !sectionToAdd.trim()) return;
+
         const newId = Date.now().toString();
-        setPrompts([...prompts, { id: newId, text: newPromptText, section: newPromptSection }]);
+        setPrompts([...prompts, { id: newId, text: newPromptText, section: sectionToAdd }]);
         setNewPromptText('');
+        if (isCustomSection) {
+            setCustomSectionName('');
+            setSelectedSectionInput(sectionToAdd); // Switch to the newly created section
+        }
     };
+
+    const handleToggleSection = (sectionName) => {
+        if (disabledSections.includes(sectionName)) {
+            setDisabledSections(disabledSections.filter(s => s !== sectionName));
+        } else {
+            setDisabledSections([...disabledSections, sectionName]);
+        }
+    };
+
+    // Calculate all available sections based on prompts + defaults
+    const getAllSections = () => {
+        const sections = new Set(DEFAULT_PROMPTS.map(p => p.section));
+        prompts.forEach(p => sections.add(p.section));
+        return Array.from(sections);
+    };
+
+    const allSections = getAllSections();
+    const visibleSections = allSections.filter(s => !disabledSections.includes(s));
 
     const handleDeletePrompt = (id) => {
         setPrompts(prompts.filter(p => p.id !== id));
@@ -178,10 +217,10 @@ function DailyJournal() {
             case 'Deep Work': return { icon: Psychology, color: '#29B6F6', borderColor: '#29B6F6' }; // Light Blue
             case 'Digital Minimalism': return { icon: PhonelinkOff, color: '#26A69A', borderColor: '#26A69A' }; // Teal
             case 'Behavioral Triggers': return { icon: TrackChanges, color: '#EF5350', borderColor: '#EF5350' }; // Red
-            case 'Detox Phase 1: Awareness': return { icon: Visibility, color: '#7E57C2', borderColor: '#7E57C2' }; // Deep Purple
-            case 'Detox Phase 2: The Struggle': return { icon: Terrain, color: '#FF7043', borderColor: '#FF7043' }; // Deep Orange
-            case 'Detox Phase 3: Maintenance': return { icon: Build, color: '#66BB6A', borderColor: '#66BB6A' }; // Green
-            default: return { icon: SelfImprovement, color: theme.palette.text.secondary, borderColor: theme.palette.divider };
+            case 'Dopamine detox phase 1: Awareness': return { icon: Visibility, color: '#7E57C2', borderColor: '#7E57C2' }; // Deep Purple
+            case 'Dopamine detox phase 2: The Struggle': return { icon: Terrain, color: '#FF7043', borderColor: '#FF7043' }; // Deep Orange
+            case 'Dopamine detox phase 3: Maintenance': return { icon: Build, color: '#66BB6A', borderColor: '#66BB6A' }; // Green
+            default: return { icon: Notes, color: theme.palette.text.secondary, borderColor: theme.palette.divider };
         }
     };
 
@@ -274,7 +313,7 @@ function DailyJournal() {
                             '&:hover': { borderColor: theme.palette.text.secondary, bgcolor: 'transparent' }
                         }}
                     >
-                        Customize Prompts
+                        Customize Journal
                     </Button>
 
                     <Paper sx={{
@@ -307,30 +346,27 @@ function DailyJournal() {
             </Box>
 
             <Grid container spacing={4}>
-                <Grid item xs={12} md={6}>
-                    {renderSection('Morning')}
-                    {renderSection('Deep Work')}
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    {renderSection('Evening')}
-                    {renderSection('Digital Minimalism')}
-                    {renderSection('Behavioral Triggers')}
-                </Grid>
-            </Grid>
+                {/* Dynamically render visible sections */}
+                {visibleSections.map((section, index) => {
+                    // Simple 2-column layout logic: Evens left, Odds right (not perfect for height, but functional)
+                    // Or simply map all and let Masonry handles it? 
+                    // Since we don't have masonry, we can split into 2 columns arrays
+                    return null;
+                })}
 
-            {/* Dopamine Detox Section Header */}
-            <Typography variant="h5" sx={{ mt: 6, mb: 3, fontWeight: 700, color: theme.palette.text.primary, borderBottom: `2px solid ${theme.palette.divider}`, pb: 1 }}>
-                Dopamine Detox
-            </Typography>
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={4}>
-                    {renderSection('Detox Phase 1: Awareness')}
+                <Grid item xs={12} md={6}>
+                    {visibleSections.filter((_, i) => i % 2 === 0).map(section => (
+                        <Box key={section} sx={{ mb: 2 }}>
+                            {renderSection(section)}
+                        </Box>
+                    ))}
                 </Grid>
-                <Grid item xs={12} md={4}>
-                    {renderSection('Detox Phase 2: The Struggle')}
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    {renderSection('Detox Phase 3: Maintenance')}
+                <Grid item xs={12} md={6}>
+                    {visibleSections.filter((_, i) => i % 2 !== 0).map(section => (
+                        <Box key={section} sx={{ mb: 2 }}>
+                            {renderSection(section)}
+                        </Box>
+                    ))}
                 </Grid>
             </Grid>
 
@@ -377,70 +413,119 @@ function DailyJournal() {
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle sx={{ fontWeight: 700 }}>Customize Journal Prompts</DialogTitle>
+                <DialogTitle sx={{ fontWeight: 700 }}>Customize Journal</DialogTitle>
                 <DialogContent>
-                    <Grid container spacing={3} sx={{ mt: 1 }}>
-                        {/* Add New Prompt */}
-                        <Grid item xs={12}>
-                            <Paper sx={{ p: 2, bgcolor: 'action.hover', display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                                <TextField
-                                    fullWidth
-                                    label="New Prompt Question"
-                                    value={newPromptText}
-                                    onChange={(e) => setNewPromptText(e.target.value)}
-                                    size="small"
-                                />
-                                <FormControl size="small" sx={{ minWidth: 120 }}>
-                                    <InputLabel>Section</InputLabel>
-                                    <Select
-                                        value={newPromptSection}
-                                        label="Section"
-                                        onChange={(e) => setNewPromptSection(e.target.value)}
-                                    >
-                                        <MenuItem value="Morning">Morning</MenuItem>
-                                        <MenuItem value="Deep Work">Deep Work</MenuItem>
-                                        <MenuItem value="Digital Minimalism">Digital Minimalism</MenuItem>
-                                        <MenuItem value="Behavioral Triggers">Behavioral Triggers</MenuItem>
-                                        <MenuItem value="Detox Phase 1: Awareness">Detox Phase 1: Awareness</MenuItem>
-                                        <MenuItem value="Detox Phase 2: The Struggle">Detox Phase 2: The Struggle</MenuItem>
-                                        <MenuItem value="Detox Phase 3: Maintenance">Detox Phase 3: Maintenance</MenuItem>
-                                        <MenuItem value="Evening">Evening</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                <Button
-                                    variant="contained"
-                                    startIcon={<AddIcon />}
-                                    onClick={handleAddPrompt}
-                                    disabled={!newPromptText.trim()}
-                                >
-                                    Add
-                                </Button>
-                            </Paper>
-                        </Grid>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+                        <Tabs value={activeTab} onChange={(e, v) => setActiveTab(v)}>
+                            <Tab label="Sections" />
+                            <Tab label="Prompts" />
+                        </Tabs>
+                    </Box>
 
-                        {/* List Existing Prompts */}
-                        <Grid item xs={12}>
-                            <List>
-                                {prompts.map(prompt => (
-                                    <React.Fragment key={prompt.id}>
-                                        <ListItem>
-                                            <ListItemText
-                                                primary={prompt.text}
-                                                secondary={prompt.section}
-                                                primaryTypographyProps={{ fontWeight: 500 }}
+                    {activeTab === 0 && (
+                        <List>
+                            {allSections.map(section => (
+                                <React.Fragment key={section}>
+                                    <ListItem>
+                                        <ListItemIcon>
+                                            {getSectionConfig(section).icon && React.createElement(getSectionConfig(section).icon)}
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary={section}
+                                            secondary={disabledSections.includes(section) ? "Hidden" : "Visible"}
+                                        />
+                                        <ListItemSecondaryAction>
+                                            <Switch
+                                                edge="end"
+                                                checked={!disabledSections.includes(section)}
+                                                onChange={() => handleToggleSection(section)}
                                             />
-                                            <ListItemSecondaryAction>
-                                                <IconButton edge="end" aria-label="delete" onClick={() => handleDeletePrompt(prompt.id)}>
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </ListItemSecondaryAction>
-                                        </ListItem>
-                                        <Divider component="li" />
-                                    </React.Fragment>
-                                ))}
-                            </List>
+                                        </ListItemSecondaryAction>
+                                    </ListItem>
+                                    <Divider component="li" />
+                                </React.Fragment>
+                            ))}
+                        </List>
+                    )}
+
+                    {activeTab === 1 && (
+                        <Grid container spacing={3} sx={{ mt: 1 }}>
+                            {/* Add New Prompt */}
+                            <Grid item xs={12}>
+                                <Paper sx={{ p: 2, bgcolor: 'action.hover', display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <TextField
+                                        fullWidth
+                                        label="New Prompt Question"
+                                        value={newPromptText}
+                                        onChange={(e) => setNewPromptText(e.target.value)}
+                                        size="small"
+                                        sx={{ flexBasis: '100%', mb: 2 }}
+                                    />
+
+                                    <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
+                                        <FormControl size="small" sx={{ minWidth: 200, flexGrow: 1 }}>
+                                            <InputLabel>Section</InputLabel>
+                                            <Select
+                                                value={selectedSectionInput}
+                                                label="Section"
+                                                onChange={(e) => setSelectedSectionInput(e.target.value)}
+                                            >
+                                                {allSections.map(s => (
+                                                    <MenuItem key={s} value={s}>{s}</MenuItem>
+                                                ))}
+                                                <Divider />
+                                                <MenuItem value="NEW_SECTION" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                                                    + Create Create New Section
+                                                </MenuItem>
+                                            </Select>
+                                        </FormControl>
+
+                                        {isCustomSection && (
+                                            <TextField
+                                                label="Custom Section Name"
+                                                value={customSectionName}
+                                                onChange={(e) => setCustomSectionName(e.target.value)}
+                                                size="small"
+                                                sx={{ flexGrow: 1 }}
+                                            />
+                                        )}
+
+                                        <Button
+                                            variant="contained"
+                                            startIcon={<AddIcon />}
+                                            onClick={handleAddPrompt}
+                                            disabled={!newPromptText.trim() || (isCustomSection && !customSectionName.trim())}
+                                        >
+                                            Add
+                                        </Button>
+                                    </Box>
+                                </Paper>
+                            </Grid>
+
+                            {/* List Existing Prompts */}
+                            <Grid item xs={12}>
+                                <List>
+                                    {prompts.map(prompt => (
+                                        <React.Fragment key={prompt.id}>
+                                            <ListItem>
+                                                <ListItemText
+                                                    primary={prompt.text}
+                                                    secondary={prompt.section}
+                                                    primaryTypographyProps={{ fontWeight: 500 }}
+                                                />
+                                                <ListItemSecondaryAction>
+                                                    <IconButton edge="end" aria-label="delete" onClick={() => handleDeletePrompt(prompt.id)}>
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </ListItemSecondaryAction>
+                                            </ListItem>
+                                            <Divider component="li" />
+                                        </React.Fragment>
+                                    ))}
+                                </List>
+                            </Grid>
                         </Grid>
-                    </Grid>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setIsEditDialogOpen(false)}>Done</Button>
