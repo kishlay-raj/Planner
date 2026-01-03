@@ -196,46 +196,7 @@ function App() {
           pomodoroMode={pomodoroMode}
           navConfig={navConfig}
         />
-        {/* Support Button - Top Right Corner */}
-        <Tooltip title="Support">
-          <IconButton
-            onClick={(e) => setSupportAnchor(e.currentTarget)}
-            sx={{
-              position: 'fixed',
-              top: 16,
-              right: 16,
-              zIndex: 1200,
-              bgcolor: 'background.paper',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-              '&:hover': { bgcolor: 'primary.light', color: 'white' }
-            }}
-          >
-            <HelpOutlineIcon />
-          </IconButton>
-        </Tooltip>
-        <Popover
-          open={Boolean(supportAnchor)}
-          anchorEl={supportAnchor}
-          onClose={() => setSupportAnchor(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          PaperProps={{
-            sx: { p: 2.5, maxWidth: 320, borderRadius: 2 }
-          }}
-        >
-          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-            💬 Support & Feedback
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            For any support or suggestions, write to:
-          </Typography>
-          <Link
-            href="mailto:kishlayrajmanju@gmail.com"
-            sx={{ display: 'block', mt: 1, fontWeight: 600 }}
-          >
-            kishlayrajmanju@gmail.com
-          </Link>
-        </Popover>
+
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
           <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
             {renderPanel()}

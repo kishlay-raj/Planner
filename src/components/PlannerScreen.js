@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider, Box, Typography, Avatar, Menu, MenuItem } from '@mui/material';
+import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider, Box, Typography, Avatar, Menu, MenuItem, Popover, Link } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import { getYear, getISOWeek } from 'date-fns';
@@ -19,6 +20,7 @@ function PlannerScreen() {
   const { currentUser, loginWithGoogle, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const [migrating, setMigrating] = useState(false);
+  const [supportAnchor, setSupportAnchor] = useState(null);
 
   // Check and run migration on login
   useEffect(() => {
@@ -190,22 +192,46 @@ function PlannerScreen() {
             </Button>
           )}
 
-          <Tooltip title="Reset All Tasks">
+          {/* Support Button */}
+          <Tooltip title="Support">
             <IconButton
-              onClick={() => setResetDialogOpen(true)}
+              size="small"
+              onClick={(e) => setSupportAnchor(e.currentTarget)}
               sx={{
                 color: 'text.secondary',
-                padding: '2px',
-                width: '28px',
-                height: '28px',
+                p: 0.5,
                 '&:hover': {
-                  backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                  backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                  color: 'primary.main'
                 }
               }}
             >
-              <RestartAltIcon sx={{ fontSize: '18px' }} />
+              <HelpOutlineIcon sx={{ fontSize: '24px' }} />
             </IconButton>
           </Tooltip>
+          <Popover
+            open={Boolean(supportAnchor)}
+            anchorEl={supportAnchor}
+            onClose={() => setSupportAnchor(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            PaperProps={{
+              sx: { p: 2.5, maxWidth: 320, borderRadius: 2 }
+            }}
+          >
+            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+              💬 Support & Feedback
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              For any support or suggestions, write to:
+            </Typography>
+            <Link
+              href="mailto:kishlayrajmanju@gmail.com"
+              sx={{ display: 'block', mt: 1, fontWeight: 600 }}
+            >
+              kishlayrajmanju@gmail.com
+            </Link>
+          </Popover>
         </div>
       </div>
 
