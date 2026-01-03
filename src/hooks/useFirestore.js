@@ -86,8 +86,11 @@ export function useFirestore(location, initialValue, merge = true) {
         };
     }, []);
 
-    const saveData = (newData) => {
+    const saveData = (newDataOrFn) => {
         console.log("saveData called for:", location);
+
+        // Support functional updates like React's setState
+        const newData = typeof newDataOrFn === 'function' ? newDataOrFn(data) : newDataOrFn;
 
         // 1. Update local state immediately for responsiveness
         setData(newData);
