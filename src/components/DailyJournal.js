@@ -33,7 +33,10 @@ import {
     SelfImprovement,
     PhonelinkOff,
     Psychology,
-    TrackChanges
+    TrackChanges,
+    Visibility,
+    Terrain,
+    Build
 } from '@mui/icons-material';
 import { format, addDays, subDays } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
@@ -56,7 +59,20 @@ const DEFAULT_PROMPTS = [
     { id: '14', section: 'Behavioral Triggers', text: 'The Transition Trap: Did I lose time during a task, or between tasks? (Most time is wasted in the "transition moments" just after finishing one thing and before starting the next).' },
     { id: '15', section: 'Evening', text: 'Review: What is one system I can tweak to make tomorrow 1% easier?' },
     { id: '16', section: 'Evening', text: '3 Amazing things that happened today.' },
-    { id: '17', section: 'Evening', text: 'How could I have made today even better?' }
+    { id: '17', section: 'Evening', text: 'How could I have made today even better?' },
+    // Phase 1: Awareness Audit
+    { id: 'detox-1', section: 'Detox Phase 1: Awareness', text: 'The "One Thing" Analysis: If I eliminated just one distraction, which one would have the biggest impact? Why haven\'t I cut it yet?' },
+    { id: 'detox-2', section: 'Detox Phase 1: Awareness', text: 'The Hijack Log: "My brain gets hijacked when..." (trigger). What is the specific trigger?' },
+    { id: 'detox-3', section: 'Detox Phase 1: Awareness', text: 'Excitement vs. Fulfillment: List 3 stimulating things I did today. Did they leave me fulfilling or empty?' },
+    { id: 'detox-4', section: 'Detox Phase 1: Awareness', text: 'Mind Tricks: What lies did my brain tell me today to get a dopamine hit? (e.g. "Just 5 minutes")' },
+    // Phase 2: The Struggle
+    { id: 'detox-5', section: 'Detox Phase 2: The Struggle', text: 'Sitting with Boredom: When I urged for my phone, what emotion was underneath? What happened when I sat with it?' },
+    { id: 'detox-6', section: 'Detox Phase 2: The Struggle', text: 'The "Hard Thing" Re-frame: I tackled a hard task without breaks. Was it actually difficult or just the transition?' },
+    { id: 'detox-7', section: 'Detox Phase 2: The Struggle', text: 'Clarity Check: Without constant inputs, what creative thoughts bubbled up naturally?' },
+    // Phase 3: Maintenance
+    { id: 'detox-8', section: 'Detox Phase 3: Maintenance', text: 'The Morning Audit: Did I start with High Stimulation or Low Stimulation? How did it dictate my focus?' },
+    { id: 'detox-9', section: 'Detox Phase 3: Maintenance', text: 'Friction Review: Did I make bad habits harder and good habits easier today?' },
+    { id: 'detox-10', section: 'Detox Phase 3: Maintenance', text: 'The "Closed System" Check: Did I close out loops (emails, tabs) or leave them draining attention?' }
 ];
 
 function DailyJournal() {
@@ -89,7 +105,10 @@ function DailyJournal() {
                 const newDefaults = DEFAULT_PROMPTS.filter(dp =>
                     (dp.section === 'Deep Work' && !hasDeepWork) ||
                     (dp.section === 'Digital Minimalism' && !hasDigitalMinimalism) ||
-                    (dp.section === 'Behavioral Triggers' && !hasBehavioralTriggers)
+                    (dp.section === 'Behavioral Triggers' && !hasBehavioralTriggers) ||
+                    (dp.section === 'Detox Phase 1: Awareness' && !updatedPrompts.some(p => p.section === 'Detox Phase 1: Awareness')) ||
+                    (dp.section === 'Detox Phase 2: The Struggle' && !updatedPrompts.some(p => p.section === 'Detox Phase 2: The Struggle')) ||
+                    (dp.section === 'Detox Phase 3: Maintenance' && !updatedPrompts.some(p => p.section === 'Detox Phase 3: Maintenance'))
                 );
                 if (newDefaults.length > 0) {
                     updatedPrompts = [...updatedPrompts, ...newDefaults];
@@ -159,6 +178,9 @@ function DailyJournal() {
             case 'Deep Work': return { icon: Psychology, color: '#29B6F6', borderColor: '#29B6F6' }; // Light Blue
             case 'Digital Minimalism': return { icon: PhonelinkOff, color: '#26A69A', borderColor: '#26A69A' }; // Teal
             case 'Behavioral Triggers': return { icon: TrackChanges, color: '#EF5350', borderColor: '#EF5350' }; // Red
+            case 'Detox Phase 1: Awareness': return { icon: Visibility, color: '#7E57C2', borderColor: '#7E57C2' }; // Deep Purple
+            case 'Detox Phase 2: The Struggle': return { icon: Terrain, color: '#FF7043', borderColor: '#FF7043' }; // Deep Orange
+            case 'Detox Phase 3: Maintenance': return { icon: Build, color: '#66BB6A', borderColor: '#66BB6A' }; // Green
             default: return { icon: SelfImprovement, color: theme.palette.text.secondary, borderColor: theme.palette.divider };
         }
     };
@@ -296,6 +318,22 @@ function DailyJournal() {
                 </Grid>
             </Grid>
 
+            {/* Dopamine Detox Section Header */}
+            <Typography variant="h5" sx={{ mt: 6, mb: 3, fontWeight: 700, color: theme.palette.text.primary, borderBottom: `2px solid ${theme.palette.divider}`, pb: 1 }}>
+                Dopamine Detox
+            </Typography>
+            <Grid container spacing={4}>
+                <Grid item xs={12} md={4}>
+                    {renderSection('Detox Phase 1: Awareness')}
+                </Grid>
+                <Grid item xs={12} md={4}>
+                    {renderSection('Detox Phase 2: The Struggle')}
+                </Grid>
+                <Grid item xs={12} md={4}>
+                    {renderSection('Detox Phase 3: Maintenance')}
+                </Grid>
+            </Grid>
+
             {/* Freeform Notes */}
             <Paper sx={{
                 p: 4,
@@ -363,6 +401,9 @@ function DailyJournal() {
                                         <MenuItem value="Deep Work">Deep Work</MenuItem>
                                         <MenuItem value="Digital Minimalism">Digital Minimalism</MenuItem>
                                         <MenuItem value="Behavioral Triggers">Behavioral Triggers</MenuItem>
+                                        <MenuItem value="Detox Phase 1: Awareness">Detox Phase 1: Awareness</MenuItem>
+                                        <MenuItem value="Detox Phase 2: The Struggle">Detox Phase 2: The Struggle</MenuItem>
+                                        <MenuItem value="Detox Phase 3: Maintenance">Detox Phase 3: Maintenance</MenuItem>
                                         <MenuItem value="Evening">Evening</MenuItem>
                                     </Select>
                                 </FormControl>
