@@ -3,6 +3,9 @@ import { doc, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 
+// Only show logs in development mode
+const isDev = process.env.NODE_ENV === 'development';
+
 export function useFirestore(location, initialValue, merge = true) {
     const { currentUser } = useAuth();
 
@@ -28,7 +31,7 @@ export function useFirestore(location, initialValue, merge = true) {
                     setData(JSON.parse(saved));
                 }
             } catch (e) {
-                console.warn("Error reading localStorage", e);
+                if (isDev) console.warn("Error reading localStorage", e);
             }
             setLoading(false);
             return;
@@ -87,7 +90,7 @@ export function useFirestore(location, initialValue, merge = true) {
     }, []);
 
     const saveData = (newDataOrFn) => {
-        console.log("saveData called for:", location);
+        if (isDev) console.log("saveData called for:", location);
 
         // Support functional updates like React's setState
         const newData = typeof newDataOrFn === 'function' ? newDataOrFn(data) : newDataOrFn;
@@ -103,8 +106,8 @@ export function useFirestore(location, initialValue, merge = true) {
         timeoutRef.current = setTimeout(async () => {
             if (currentUser) {
                 const docPath = `users/${currentUser.uid}/userData/${Array.isArray(location) ? location.join('_') : location}`;
-                console.log("⏳ Starting Firestore write...");
-                console.log("📍 Document path:", docPath);
+                if (isDev) console.log("⏳ Starting Firestore write...");
+                if (isDev) console.log("📍 Document path:", docPath);
                 const docRef = doc(db, 'users', currentUser.uid, 'userData', Array.isArray(location) ? location.join('_') : location);
                 try {
                     // Wrap arrays in an object since Firestore requires objects at root
@@ -114,22 +117,22 @@ export function useFirestore(location, initialValue, merge = true) {
 
                     // Safety check for undefined/null data
                     if (dataToSave === undefined || dataToSave === null) {
-                        console.warn("⚠️ Skipping Firestore write - data is undefined or null for:", location);
+                        if (isDev) console.warn("⚠️ Skipping Firestore write - data is undefined or null for:", location);
                         return;
                     }
 
                     const dataPreview = JSON.stringify(dataToSave) || '';
-                    console.log("📦 Data to save:", dataPreview.substring(0, 200) + (dataPreview.length > 200 ? "..." : ""));
+                    if (isDev) console.log("📦 Data to save:", dataPreview.substring(0, 200) + (dataPreview.length > 200 ? "..." : ""));
                     const writeStartTime = Date.now();
                     await setDoc(docRef, dataToSave, { merge });
                     const writeEndTime = Date.now();
-                    console.log(`✅ Firestore write SUCCESS for "${location}" (took ${writeEndTime - writeStartTime}ms)`);
+                    if (isDev) console.log(`✅ Firestore write SUCCESS for "${location}" (took ${writeEndTime - writeStartTime}ms)`);
                 } catch (e) {
                     console.error("❌ Error saving to Firestore:", e.code, e.message);
                     console.error("Full error:", e);
                 }
             } else {
-                console.log("Writing to LocalStorage (No User):", location);
+                if (isDev) console.log("Writing to LocalStorage (No User):", location);
                 const localKey = Array.isArray(location) ? location.join('_') : location;
                 localStorage.setItem(localKey, JSON.stringify(newData));
             }
@@ -138,3 +141,4 @@ export function useFirestore(location, initialValue, merge = true) {
 
     return [data, saveData, loading];
 }
+
