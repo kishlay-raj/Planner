@@ -24,7 +24,8 @@ import {
     FormControl,
     Select,
     MenuItem,
-    ListItemIcon
+    ListItemIcon,
+    Collapse
 } from '@mui/material';
 import {
     NavigateBefore,
@@ -32,6 +33,8 @@ import {
     Edit as EditIcon,
     Delete as DeleteIcon,
     Add as AddIcon,
+    ExpandMore,
+    ExpandLess,
     WbSunny,
     NightsStay,
     SelfImprovement,
@@ -224,63 +227,94 @@ function DailyJournal() {
         }
     };
 
+    const [collapsedSections, setCollapsedSections] = useState([]);
+
+    const handleToggleCollapse = (sectionName) => {
+        if (collapsedSections.includes(sectionName)) {
+            setCollapsedSections(collapsedSections.filter(s => s !== sectionName));
+        } else {
+            setCollapsedSections([...collapsedSections, sectionName]);
+        }
+    };
+
     const renderSection = (sectionName) => {
         const sectionPrompts = prompts.filter(p => p.section === sectionName);
         const config = getSectionConfig(sectionName);
         const Icon = config.icon;
+        const isCollapsed = collapsedSections.includes(sectionName);
 
         return (
             <Paper sx={{
-                p: 4,
+                p: 0, // Removed padding here, handled inside
                 mb: 4,
                 bgcolor: theme.palette.background.paper,
                 borderRadius: 2,
                 boxShadow: 'none',
                 border: `1px solid ${theme.palette.divider}`,
-                borderTop: `3px solid ${config.borderColor}`
+                borderTop: `3px solid ${config.borderColor}`,
+                overflow: 'hidden' // Ensure collapse animation is clean
             }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                    <Icon sx={{ color: config.color, mr: 2, fontSize: 24, opacity: 0.9 }} />
-                    <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '0.85rem' }}>
-                        {sectionName} Reflection
-                    </Typography>
+                <Box
+                    onClick={() => handleToggleCollapse(sectionName)}
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        p: 3,
+                        cursor: 'pointer',
+                        '&:hover': { bgcolor: 'action.hover' },
+                        justifyContent: 'space-between'
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Icon sx={{ color: config.color, mr: 2, fontSize: 24, opacity: 0.9 }} />
+                        <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', fontSize: '0.85rem' }}>
+                            {sectionName} Reflection
+                        </Typography>
+                    </Box>
+                    <IconButton size="small">
+                        {isCollapsed ? <ExpandMore /> : <ExpandLess />}
+                    </IconButton>
                 </Box>
 
-                {sectionPrompts.length === 0 && (
-                    <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontStyle: 'italic', opacity: 0.7 }}>
-                        No prompts configured for this section.
-                    </Typography>
-                )}
+                <Collapse in={!isCollapsed}>
+                    <Box sx={{ px: 4, pb: 4 }}>
+                        {sectionPrompts.length === 0 && (
+                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontStyle: 'italic', opacity: 0.7 }}>
+                                No prompts configured for this section.
+                            </Typography>
+                        )}
 
-                {sectionPrompts.map(prompt => (
-                    <Box key={prompt.id} sx={{ mb: 4 }}>
-                        <Typography variant="body1" sx={{ color: theme.palette.text.primary, fontWeight: 600, mb: 1.5, fontSize: '0.95rem' }}>
-                            {prompt.text}
-                        </Typography>
-                        <TextField
-                            fullWidth
-                            multiline
-                            minRows={2}
-                            placeholder="Type here..."
-                            value={currentEntry.responses[prompt.id] || ''}
-                            onChange={(e) => handleResponseChange(prompt.id, e.target.value)}
-                            variant="standard"
-                            InputProps={{
-                                disableUnderline: true
-                            }}
-                            sx={{
-                                bgcolor: 'transparent',
-                                '& .MuiInputBase-root': {
-                                    fontSize: '1rem',
-                                    color: theme.palette.text.secondary,
-                                    lineHeight: 1.6,
-                                    padding: 0
-                                }
-                            }}
-                        />
-                        <Divider sx={{ mt: 1.5, borderColor: theme.palette.divider, opacity: 0.6 }} />
+                        {sectionPrompts.map(prompt => (
+                            <Box key={prompt.id} sx={{ mb: 4 }}>
+                                <Typography variant="body1" sx={{ color: theme.palette.text.primary, fontWeight: 600, mb: 1.5, fontSize: '0.95rem' }}>
+                                    {prompt.text}
+                                </Typography>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    minRows={2}
+                                    placeholder="Type here..."
+                                    value={currentEntry.responses[prompt.id] || ''}
+                                    onChange={(e) => handleResponseChange(prompt.id, e.target.value)}
+                                    variant="standard"
+                                    InputProps={{
+                                        disableUnderline: true
+                                    }}
+                                    sx={{
+                                        bgcolor: 'transparent',
+                                        '& .MuiInputBase-root': {
+                                            fontSize: '1rem',
+                                            color: theme.palette.text.secondary,
+                                            lineHeight: 1.6,
+                                            padding: 0
+                                        }
+                                    }}
+                                />
+                                <Divider sx={{ mt: 1.5, borderColor: theme.palette.divider, opacity: 0.6 }} />
+                            </Box>
+                        ))}
                     </Box>
-                ))}
+                </Collapse>
             </Paper>
         );
     };
