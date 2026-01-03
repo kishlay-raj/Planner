@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Paper, Typography, Box } from '@mui/material';
 import { format } from 'date-fns';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './NotesPanel.css';
+import { useFirestoreDoc } from '../hooks/useFirestoreNew';
 
 // Import markdown shortcuts if available
 // eslint-disable-next-line no-unused-vars
@@ -12,29 +13,20 @@ try {
   MarkdownShortcuts = require('quill-markdown-shortcuts');
 } catch (e) {
   console.warn('quill-markdown-shortcuts not available, markdown features disabled');
+  console.warn('quill-markdown-shortcuts not available, markdown features disabled');
 }
 
+const initialNoteData = { content: '' };
+
 function NotesPanel({ selectedDate }) {
-  const [notes, setNotes] = useState(() => {
-    const savedNotes = localStorage.getItem('dailyNotes');
-    return savedNotes ? JSON.parse(savedNotes) : {};
-  });
-
   const currentDate = format(selectedDate, 'yyyy-MM-dd');
-  const [currentNote, setCurrentNote] = useState('');
 
-  // Load the note for the selected date
-  useEffect(() => {
-    setCurrentNote(notes[currentDate] || '');
-  }, [currentDate, notes]);
+  // Use date-based document path - each day is a separate small document
+  const [noteData, setNoteData] = useFirestoreDoc(`planner/daily/${currentDate}`, initialNoteData);
 
   // Save notes when they change
   const handleNoteChange = (content) => {
-    setCurrentNote(content);
-
-    const updatedNotes = { ...notes, [currentDate]: content };
-    setNotes(updatedNotes);
-    localStorage.setItem('dailyNotes', JSON.stringify(updatedNotes));
+    setNoteData({ content });
   };
 
   // Quill editor modules and formats
@@ -124,7 +116,7 @@ function NotesPanel({ selectedDate }) {
       }}>
         <ReactQuill
           theme="snow"
-          value={currentNote}
+          value={noteData?.content || ''}
           onChange={handleNoteChange}
           modules={modules}
           formats={formats}

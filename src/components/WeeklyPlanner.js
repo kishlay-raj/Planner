@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useFirestoreDoc } from '../hooks/useFirestoreNew';
 import {
   Box,
   Paper,
@@ -30,63 +31,56 @@ import {
   getMonth
 } from 'date-fns';
 
+// Default week data structure
+const defaultWeekData = {
+  focus: '',
+  goals: [],
+  habit: { name: '', days: [false, false, false, false, false, false, false] },
+  journal: { start: '', stop: '', continue: '', grateful: '' },
+  days: {},
+  notes: ''
+};
+
 function WeeklyPlanner() {
   const [currentDate, setCurrentDate] = useState(new Date());
-
-  // Retrieve Monthly Focus for Cascading View
-  const [monthlyFocus, setMonthlyFocus] = useState('');
-
-  useEffect(() => {
-    try {
-      const savedMonthly = localStorage.getItem('monthlyPlannerData');
-      const monthlyData = savedMonthly ? JSON.parse(savedMonthly) : {};
-      const currentMonthKey = `${getYear(currentDate)}-${getMonth(currentDate) + 1}`;
-      setMonthlyFocus(monthlyData[currentMonthKey]?.monthlyFocus || '');
-    } catch (e) {
-      console.error("Error loading monthly focus", e);
-    }
-  }, [currentDate]);
-
   const [isDark, setIsDark] = useState(false);
-  // ... (rest of state initialization)
-
-  const [plannerData, setPlannerData] = useState(() => {
-    try {
-      const saved = localStorage.getItem('weeklyPlannerData');
-      return saved ? JSON.parse(saved) : {};
-    } catch (e) {
-      console.error('Error loading weekly planner:', e);
-      return {};
-    }
-  });
 
   const weekId = `${getYear(currentDate)}-${getISOWeek(currentDate)}`;
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 }); // Monday start
   const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
   const daysOfWeek = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-  // Initialize current week data if missing
-  const currentWeekData = plannerData[weekId] || {
-    focus: '',
-    goals: [], // { id, text, completed }
-    habit: { name: '', days: [false, false, false, false, false, false, false] },
-    journal: { start: '', stop: '', continue: '', grateful: '' },
-    days: {},
-    notes: ''
+  // Use week-specific document path
+  const [rawWeekData, setWeekData] = useFirestoreDoc(`planner/weekly/${weekId}`, defaultWeekData);
+
+  // Ensure all nested properties have safe defaults (merge with defaults)
+  const currentWeekData = {
+    focus: rawWeekData?.focus ?? '',
+    goals: rawWeekData?.goals ?? [],
+    habit: {
+      name: rawWeekData?.habit?.name ?? '',
+      days: rawWeekData?.habit?.days ?? [false, false, false, false, false, false, false]
+    },
+    journal: {
+      start: rawWeekData?.journal?.start ?? '',
+      stop: rawWeekData?.journal?.stop ?? '',
+      continue: rawWeekData?.journal?.continue ?? '',
+      grateful: rawWeekData?.journal?.grateful ?? ''
+    },
+    days: rawWeekData?.days ?? {},
+    notes: rawWeekData?.notes ?? ''
   };
 
-  useEffect(() => {
-    localStorage.setItem('weeklyPlannerData', JSON.stringify(plannerData));
-  }, [plannerData]);
+  // Get monthly focus from current month
+  const currentMonthKey = `${getYear(currentDate)}-${getMonth(currentDate) + 1}`;
+  const [monthlyData] = useFirestoreDoc(`planner/monthly/${currentMonthKey}`, {});
+  const monthlyFocus = monthlyData?.monthlyFocus || '';
 
   const updateWeekData = (updates) => {
-    setPlannerData(prev => ({
-      ...prev,
-      [weekId]: {
-        ...currentWeekData,
-        ...updates
-      }
-    }));
+    setWeekData({
+      ...currentWeekData,
+      ...updates
+    });
   };
 
   const handleNavigate = (direction) => {

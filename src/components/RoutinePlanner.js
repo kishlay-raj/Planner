@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useFirestore } from '../hooks/useFirestore';
 import {
     Box,
     Paper,
@@ -59,14 +60,7 @@ function RoutinePlanner({ onTaskCreate }) {
     const [activeTab, setActiveTab] = useState(0); // 0 = Weekday, 1 = Weekend
 
     // Load from LS or defaults
-    const [routines, setRoutines] = useState(() => {
-        try {
-            const saved = localStorage.getItem('routineData');
-            return saved ? JSON.parse(saved) : DEFAULT_ROUTINES;
-        } catch (e) {
-            return DEFAULT_ROUTINES;
-        }
-    });
+    const [routines, setRoutines] = useFirestore('routineData', DEFAULT_ROUTINES);
 
     const [newItemText, setNewItemText] = useState({});
     const [newSectionName, setNewSectionName] = useState('');
@@ -76,10 +70,6 @@ function RoutinePlanner({ onTaskCreate }) {
 
     // Get all section keys for the current type
     const sectionKeys = Object.keys(routines[currentType] || {});
-
-    useEffect(() => {
-        localStorage.setItem('routineData', JSON.stringify(routines));
-    }, [routines]);
 
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue);

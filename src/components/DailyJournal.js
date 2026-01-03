@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFirestore } from '../hooks/useFirestore';
 import {
     Box,
     Paper,
@@ -63,34 +64,15 @@ function DailyJournal() {
     const [currentDate, setCurrentDate] = useState(new Date());
 
     // State for prompts configuration
-    const [prompts, setPrompts] = useState(() => {
-        try {
-            const saved = localStorage.getItem('journalPrompts');
-            return saved ? JSON.parse(saved) : DEFAULT_PROMPTS;
-        } catch (e) {
-            return DEFAULT_PROMPTS;
-        }
-    });
+    const [prompts, setPrompts] = useFirestore('journalPrompts', DEFAULT_PROMPTS);
 
     // State for journal entries (answers)
-    const [journalData, setJournalData] = useState(() => {
-        try {
-            const saved = localStorage.getItem('dailyJournalData');
-            return saved ? JSON.parse(saved) : {};
-        } catch (e) {
-            return {};
-        }
-    });
+    const [journalData, setJournalData] = useFirestore('dailyJournalData', {});
 
     // Edit Prompts Dialog State
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [newPromptText, setNewPromptText] = useState('');
     const [newPromptSection, setNewPromptSection] = useState('Morning');
-
-    // Persistence
-    useEffect(() => {
-        localStorage.setItem('journalPrompts', JSON.stringify(prompts));
-    }, [prompts]);
 
     // Migration & Deduplication: Ensure new sections exist and remove duplicates
     useEffect(() => {
@@ -131,9 +113,7 @@ function DailyJournal() {
         });
     }, []);
 
-    useEffect(() => {
-        localStorage.setItem('dailyJournalData', JSON.stringify(journalData));
-    }, [journalData]);
+
 
     const dateKey = format(currentDate, 'yyyy-MM-dd');
     const currentEntry = journalData[dateKey] || { responses: {}, notes: '' };

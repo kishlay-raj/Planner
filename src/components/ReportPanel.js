@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useFirestore } from '../hooks/useFirestore';
 import {
   Paper,
   Typography,
@@ -29,6 +30,7 @@ import { format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 
 function ReportPanel() {
   const [timeRange, setTimeRange] = useState('week');
+  const [tasks] = useFirestore('allTasks', []);
   const [taskStats, setTaskStats] = useState({
     total: 0,
     completed: 0,
@@ -39,11 +41,11 @@ function ReportPanel() {
 
   useEffect(() => {
     calculateStats();
-  }, [timeRange]);
+  }, [timeRange, tasks]);
 
   const calculateStats = () => {
-    // Get tasks from localStorage
-    const tasks = JSON.parse(localStorage.getItem('allTasks') || '[]');
+    // Tasks are now from state
+    // const tasks = JSON.parse(localStorage.getItem('allTasks') || '[]'); // Removed
 
 
     // Calculate basic stats

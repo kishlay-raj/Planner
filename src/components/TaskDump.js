@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Paper,
   Typography,
@@ -27,19 +27,17 @@ import {
   ArrowForward,
   Flag as FlagIcon
 } from '@mui/icons-material';
+import { useFirestore } from '../hooks/useFirestore';
 
 function TaskDump() {
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = localStorage.getItem('taskDump');
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
+  // Use Firestore for task dump data
+  const [tasks, setTasks] = useFirestore('taskDumpData', []);
+  // Also get access to main tasks for the "move to tasks" feature
+  const [mainTasks, setMainTasks] = useFirestore('tasksData', []);
+
   const [newTask, setNewTask] = useState('');
   const [editingTask, setEditingTask] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('taskDump', JSON.stringify(tasks));
-  }, [tasks]);
 
   const handleAddTask = (event) => {
     event.preventDefault();
@@ -64,7 +62,7 @@ function TaskDump() {
   };
 
   const handleUpdateTask = () => {
-    setTasks(tasks.map(task => 
+    setTasks(tasks.map(task =>
       task.id === editingTask.id ? editingTask : task
     ));
     setIsDialogOpen(false);
@@ -76,18 +74,17 @@ function TaskDump() {
   };
 
   const handleMoveToTasks = (task) => {
-    // Get existing tasks
-    const mainTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-    
-    // Add task to main tasks
+    // Add task to main tasks using Firestore
     const newMainTask = {
       ...task,
       id: Date.now(),
       date: new Date().toISOString().split('T')[0]
     };
-    
-    localStorage.setItem('tasks', JSON.stringify([...mainTasks, newMainTask]));
-    
+
+    // Use Firestore-backed setMainTasks
+    const updatedMainTasks = Array.isArray(mainTasks) ? [...mainTasks, newMainTask] : [newMainTask];
+    setMainTasks(updatedMainTasks);
+
     // Remove from task dump
     handleDeleteTask(task.id);
   };

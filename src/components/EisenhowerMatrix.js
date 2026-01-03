@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useFirestore } from '../hooks/useFirestore';
 import {
     Box,
     Paper,
@@ -172,27 +173,10 @@ const Quadrant = ({ title, tasks, color, bgColor, icon, onEdit, onDelete, onTogg
 
 function EisenhowerMatrix() {
     const theme = useTheme();
-    const [tasks, setTasks] = useState([]);
+    const [tasks, setTasks] = useFirestore('allTasks', []);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [currentTask, setCurrentTask] = useState(null);
     const [defaultQuadrant, setDefaultQuadrant] = useState({ urgent: false, important: false });
-
-    // Load tasks
-    useEffect(() => {
-        try {
-            const savedTasks = localStorage.getItem('allTasks');
-            if (savedTasks) {
-                setTasks(JSON.parse(savedTasks));
-            }
-        } catch (e) {
-            console.error('Failed to load tasks', e);
-        }
-    }, []);
-
-    // Save tasks
-    useEffect(() => {
-        localStorage.setItem('allTasks', JSON.stringify(tasks));
-    }, [tasks]);
 
     const handleAddTask = (urgent, important) => {
         setDefaultQuadrant({ urgent, important });

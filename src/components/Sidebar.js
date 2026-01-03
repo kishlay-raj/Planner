@@ -37,6 +37,7 @@ const iconMap = {
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode, navConfig }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
+  // Auth logic removed as it moved to PlannerScreen header
 
   const modeColors = {
     pomodoro: '#b74b4b',
@@ -94,6 +95,7 @@ function Sidebar({ onNavigate, activePanel, pomodoroMode, navConfig }) {
         p: 1,
         minHeight: 56
       }}>
+        <Box sx={{ flexGrow: 1 }} /> {/* Spacer */}
         <IconButton
           onClick={toggleDrawer}
           sx={{

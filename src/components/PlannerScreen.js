@@ -1,132 +1,120 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider, Box, Typography } from '@mui/material';
+import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider, Box, Typography, Avatar, Menu, MenuItem } from '@mui/material';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import { getYear, getISOWeek } from 'date-fns';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
-import TaskCreationButton from './TaskCreationButton';
+// import TaskCreationButton from './TaskCreationButton'; // Removed as per request
 import NotesPanel from './NotesPanel';
+import { useAuth } from '../contexts/AuthContext';
+import { useFirestoreCollection, useFirestoreDoc } from '../hooks/useFirestoreNew';
+import { migrateUserData, needsMigration } from '../hooks/dataMigration';
+import GoogleIcon from '@mui/icons-material/Google';
 import './PlannerScreen.css';
 
+const emptyObject = {};
+
 function PlannerScreen() {
-  // Initialize states with data from localStorage
-  const [allTasks, setAllTasks] = useState(() => {
-    try {
-      const savedTasks = localStorage.getItem('allTasks');
-      return savedTasks ? JSON.parse(savedTasks) : [];
-    } catch (error) {
-      console.error('Error loading tasks:', error);
-      return [];
+  const { currentUser, loginWithGoogle, logout } = useAuth();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [migrating, setMigrating] = useState(false);
+
+  // Check and run migration on login
+  useEffect(() => {
+    async function checkMigration() {
+      if (currentUser) {
+        const needs = await needsMigration(currentUser.uid);
+        if (needs) {
+          setMigrating(true);
+          await migrateUserData(currentUser.uid);
+          setMigrating(false);
+        }
+      }
     }
-  });
+    checkMigration();
+  }, [currentUser]);
 
-  const [scheduledTasks, setScheduledTasks] = useState(() => {
-    const savedScheduled = localStorage.getItem('scheduledTasks');
-    return savedScheduled ? JSON.parse(savedScheduled) : [];
-  });
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogin = async () => {
+    try {
+      await loginWithGoogle();
+    } catch (error) {
+      console.error("Failed to log in", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      handleMenuClose();
+    } catch (error) {
+      console.error("Failed to log out", error);
+    }
+  };
+
+  // Use new collection-based hooks for tasks
+  const [tasks, addTask, updateTask, deleteTask, tasksLoading] = useFirestoreCollection('tasks/active', 'createdAt');
+
+  // Weekly planner data for focus display
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Retrieve Weekly Focus for Cascading View
-  const [weeklyFocus, setWeeklyFocus] = useState('');
+  // Get weekly focus from planner
+  const weekId = `${getYear(selectedDate)}-${getISOWeek(selectedDate)}`;
+  // Use stable empty object for initial value to prevent re-subscriptions
+  const [weeklyData] = useFirestoreDoc(`planner/weekly/${weekId}`, emptyObject);
+  const weeklyFocus = weeklyData?.focus || '';
 
-  useEffect(() => {
-    try {
-      const savedWeekly = localStorage.getItem('weeklyPlannerData');
-      const weeklyData = savedWeekly ? JSON.parse(savedWeekly) : {};
-      const weekId = `${getYear(selectedDate)}-${getISOWeek(selectedDate)}`;
-      setWeeklyFocus(weeklyData[weekId]?.focus || '');
-    } catch (e) {
-      console.error("Error loading weekly focus", e);
+
+  // Task handlers using new collection-based approach
+  const handleReset = async () => {
+    // Delete all tasks
+    for (const task of tasks) {
+      await deleteTask(task.id);
     }
-  }, [selectedDate]);
-
-  // Save tasks to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('allTasks', JSON.stringify(allTasks));
-  }, [allTasks]);
-
-  useEffect(() => {
-    localStorage.setItem('scheduledTasks', JSON.stringify(scheduledTasks));
-  }, [scheduledTasks]);
-
-  const handleReset = () => {
-    localStorage.removeItem('allTasks');
-    localStorage.removeItem('scheduledTasks');
-    setAllTasks([]);
-    setScheduledTasks([]);
     setResetDialogOpen(false);
   };
 
-  const handleTaskCreate = (task) => {
-    const newTask = {
+  const handleTaskCreate = async (task) => {
+    await addTask({
       ...task,
-      id: Date.now()
-    };
-    setAllTasks(prevTasks => Array.isArray(prevTasks) ? [...prevTasks, newTask] : [newTask]);
-
-    // If task has scheduledTime, add it to scheduledTasks
-    if (newTask.scheduledTime) {
-      setScheduledTasks(prevScheduled => [...prevScheduled, newTask]);
-    }
+      completed: false,
+      createdAt: Date.now()
+    });
   };
 
-  const handleTaskUpdate = (updatedTasks) => {
+  const handleTaskUpdate = async (updatedTasks) => {
     // Convert single task to array if needed
     const tasksToUpdate = Array.isArray(updatedTasks) ? updatedTasks : [updatedTasks];
 
-    // Check if this is a new task being added
-    if (tasksToUpdate.length > allTasks.length) {
-      setAllTasks(tasksToUpdate);
-      return;
-    }
-
-    // Update allTasks
-    setAllTasks(prevTasks => {
-      return prevTasks.map(task => {
-        const updatedTask = tasksToUpdate.find(t => t.id === task.id);
-        return updatedTask || task;
-      });
-    });
-
-    // Update scheduledTasks
-    setScheduledTasks(prevScheduled => {
-      return prevScheduled.map(task => {
-        const updatedTask = tasksToUpdate.find(t => t.id === task.id);
-        return updatedTask || task;
-      });
-    });
-  };
-
-  const handleTaskSchedule = (taskId, timeSlot, newDuration) => {
-    const task = allTasks.find(t => t.id === taskId) ||
-      scheduledTasks.find(t => t.id === taskId);
-
-    if (task) {
-      const updatedTask = {
-        ...task,
-        scheduledTime: timeSlot,
-        duration: newDuration || task.duration
-      };
-
-      // If task is already in scheduledTasks, update it
-      if (scheduledTasks.find(t => t.id === taskId)) {
-        const updatedScheduledTasks = scheduledTasks.map(t => t.id === taskId ? updatedTask : t);
-        setScheduledTasks(updatedScheduledTasks);
-      } else {
-        // If task is new, add it to scheduledTasks but keep it in allTasks
-        const updatedScheduledTasks = [...scheduledTasks, updatedTask];
-        setScheduledTasks(updatedScheduledTasks);
-        // Update the task in allTasks to reflect its scheduled status
-        const updatedAllTasks = allTasks.map(t =>
-          t.id === taskId ? { ...t, scheduledTime: timeSlot } : t
-        );
-        setAllTasks(updatedAllTasks);
+    for (const taskUpdate of tasksToUpdate) {
+      if (taskUpdate.id) {
+        await updateTask(taskUpdate.id.toString(), taskUpdate);
       }
     }
   };
+
+  const handleTaskSchedule = async (taskId, timeSlot, newDuration) => {
+    const task = tasks.find(t => t.id === taskId || t.id === taskId.toString());
+
+    if (task) {
+      await updateTask(taskId.toString(), {
+        scheduledTime: timeSlot,
+        duration: newDuration || task.duration
+      });
+    }
+  };
+
+  // Get scheduled tasks (tasks with scheduledTime)
+  const scheduledTasks = tasks.filter(t => t.scheduledTime);
 
   return (
     <div className="planner-screen">
@@ -135,8 +123,66 @@ function PlannerScreen() {
           <TimelineIcon sx={{ color: '#1976d2', fontSize: '32px' }} />
           <span className="planner-title">Flow Planner</span>
         </div>
-        <div className="planner-actions">
-          <TaskCreationButton onTaskCreate={handleTaskCreate} selectedDate={selectedDate} />
+        <div className="planner-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {currentUser ? (
+            <>
+              <Tooltip title="Account Settings">
+                <IconButton onClick={handleMenuOpen} size="small" sx={{ p: 0 }}>
+                  <Avatar alt={currentUser.displayName} src={currentUser.photoURL} sx={{ width: 32, height: 32 }} />
+                </IconButton>
+              </Tooltip>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                onClick={handleMenuClose}
+                PaperProps={{
+                  elevation: 0,
+                  sx: {
+                    overflow: 'visible',
+                    filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                    mt: 1.5,
+                    '&:before': {
+                      content: '""',
+                      display: 'block',
+                      position: 'absolute',
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: 'background.paper',
+                      transform: 'translateY(-50%) rotate(45deg)',
+                      zIndex: 0,
+                    },
+                  },
+                }}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              >
+                <MenuItem onClick={handleLogout}>
+                  Logout
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <Button
+              variant="contained"
+              startIcon={<GoogleIcon />}
+              onClick={handleLogin}
+              sx={{
+                textTransform: 'none',
+                backgroundColor: '#fff',
+                color: '#757575',
+                '&:hover': {
+                  backgroundColor: '#f5f5f5',
+                },
+                boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)'
+              }}
+            >
+              Sign in with Google
+            </Button>
+          )}
+
           <Tooltip title="Reset All Tasks">
             <IconButton
               onClick={() => setResetDialogOpen(true)}
@@ -186,7 +232,8 @@ function PlannerScreen() {
         <Grid item xs={12} md={3}>
           <Paper className="task-list-container">
             <TaskList
-              tasks={allTasks}
+              tasks={tasks}
+              onTaskCreate={handleTaskCreate}
               onTaskUpdate={handleTaskUpdate}
               onTaskSchedule={handleTaskSchedule}
               selectedDate={selectedDate}

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useFirestoreDoc } from '../hooks/useFirestoreNew';
 import {
   Box,
   Paper,
@@ -30,18 +31,24 @@ import {
   getDay
 } from 'date-fns';
 
+// Default month data structure
+const defaultMonthData = {
+  rules: '',
+  monthlyFocus: '',
+  habits: [{ id: 1, name: '', days: {} }],
+  journal: {
+    comfortZone: '', topPriority: '', boundary: '',
+    start: '', stop: '', continue: '',
+    inputs: '', outputs: '', rule8020: '',
+    distractions: '', skillGap: '', goalCheck: '', oneThing: ''
+  },
+  days: {},
+  notes: ''
+};
+
 function MonthlyPlanner() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isDark, setIsDark] = useState(false);
-  const [plannerData, setPlannerData] = useState(() => {
-    try {
-      const saved = localStorage.getItem('monthlyPlannerData');
-      return saved ? JSON.parse(saved) : {};
-    } catch (e) {
-      console.error('Error loading monthly planner:', e);
-      return {};
-    }
-  });
 
   const monthId = `${getYear(currentDate)}-${getMonth(currentDate) + 1}`;
   const monthStart = startOfMonth(currentDate);
@@ -50,29 +57,38 @@ function MonthlyPlanner() {
   const startDayOfWeek = getDay(monthStart);
   const paddingDays = Array(startDayOfWeek).fill(null);
 
-  const currentMonthData = plannerData[monthId] || {
-    rules: '',
-    monthlyFocus: '',
-    habits: [{ id: 1, name: '', days: {} }],
+  // Use month-specific document path
+  const [rawMonthData, setMonthData] = useFirestoreDoc(`planner/monthly/${monthId}`, defaultMonthData);
+
+  // Ensure all nested properties have safe defaults
+  const currentMonthData = {
+    rules: rawMonthData?.rules ?? '',
+    monthlyFocus: rawMonthData?.monthlyFocus ?? '',
+    habits: rawMonthData?.habits ?? [{ id: 1, name: '', days: {} }],
     journal: {
-      comfortZone: '', topPriority: '', boundary: '',
-      start: '', stop: '', continue: '',
-      inputs: '', outputs: '', rule8020: '',
-      distractions: '', skillGap: '', goalCheck: '', oneThing: ''
+      comfortZone: rawMonthData?.journal?.comfortZone ?? '',
+      topPriority: rawMonthData?.journal?.topPriority ?? '',
+      boundary: rawMonthData?.journal?.boundary ?? '',
+      start: rawMonthData?.journal?.start ?? '',
+      stop: rawMonthData?.journal?.stop ?? '',
+      continue: rawMonthData?.journal?.continue ?? '',
+      inputs: rawMonthData?.journal?.inputs ?? '',
+      outputs: rawMonthData?.journal?.outputs ?? '',
+      rule8020: rawMonthData?.journal?.rule8020 ?? '',
+      distractions: rawMonthData?.journal?.distractions ?? '',
+      skillGap: rawMonthData?.journal?.skillGap ?? '',
+      goalCheck: rawMonthData?.journal?.goalCheck ?? '',
+      oneThing: rawMonthData?.journal?.oneThing ?? ''
     },
-    days: {},
-    notes: ''
+    days: rawMonthData?.days ?? {},
+    notes: rawMonthData?.notes ?? ''
   };
 
-  useEffect(() => {
-    localStorage.setItem('monthlyPlannerData', JSON.stringify(plannerData));
-  }, [plannerData]);
-
   const updateMonthData = (updates) => {
-    setPlannerData(prev => ({
-      ...prev,
-      [monthId]: { ...currentMonthData, ...updates }
-    }));
+    setMonthData({
+      ...currentMonthData,
+      ...updates
+    });
   };
 
   const handleNavigate = (direction) => {
@@ -156,24 +172,9 @@ function MonthlyPlanner() {
   ];
 
   // Retrieve Year Focus from YearlyPlanner
-  const [yearFocus, setYearFocus] = useState('');
-
-  useEffect(() => {
-    try {
-      const savedYearly = localStorage.getItem('yearlyPlannerData');
-      if (savedYearly) {
-        const yearlyData = JSON.parse(savedYearly);
-        const currentYearKey = String(getYear(currentDate));
-        if (yearlyData[currentYearKey]) {
-          setYearFocus(yearlyData[currentYearKey].yearFocus || '');
-        } else {
-          setYearFocus('');
-        }
-      }
-    } catch (e) {
-      console.error("Error loading year focus", e);
-    }
-  }, [currentDate]);
+  const currentYearKey = String(getYear(currentDate));
+  const [yearlyData] = useFirestoreDoc(`planner/yearly/${currentYearKey}`, {});
+  const yearFocus = yearlyData?.yearFocus || '';
 
   return (
     <Box sx={{ p: 3, height: '100vh', overflow: 'auto', bgcolor: theme.bg, color: theme.text }}>

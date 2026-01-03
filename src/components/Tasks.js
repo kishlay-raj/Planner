@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Paper,
   Typography,
@@ -21,18 +21,13 @@ import {
   Flag as FlagIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
+import { useFirestore } from '../hooks/useFirestore';
 
 function Tasks({ selectedDate }) {
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = localStorage.getItem('tasks');
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
+  // Use Firestore for tasks data
+  const [tasks, setTasks] = useFirestore('tasksData', []);
   const [newTask, setNewTask] = useState('');
   const [priority, setPriority] = useState('Medium');
-
-  useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }, [tasks]);
 
   const handleAddTask = (e) => {
     e.preventDefault();
@@ -74,8 +69,8 @@ function Tasks({ selectedDate }) {
   const filteredTasks = tasks.filter(task => task.date === dateStr);
 
   return (
-    <Paper sx={{ 
-      height: 'calc(100vh - 80px)', 
+    <Paper sx={{
+      height: 'calc(100vh - 80px)',
       p: 2,
       flex: 1,
       display: 'flex',

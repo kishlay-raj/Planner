@@ -26,7 +26,7 @@ import TaskEditDialog from './TaskEditDialog';
 import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 
-function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
+function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedDate }) {
   const taskList = Array.isArray(tasks) ? tasks : [];
   const [editDialog, setEditDialog] = useState({ open: false, task: null });
   const [newTaskTexts, setNewTaskTexts] = useState({
@@ -151,19 +151,25 @@ function TaskList({ tasks, onTaskUpdate, onTaskSchedule, selectedDate }) {
 
   const handleQuickAdd = (priority, section) => {
     if (newTaskTexts[section]?.trim()) {
+      // Create new task object WITHOUT custom ID (let Firestore/hook handle it if possible,
+      // or if handleTaskCreate uses Date.now(), that's fine too).
+      // Ideally, we just pass the data.
       const newTask = {
-        id: Date.now(),
         name: newTaskTexts[section],
         priority,
-        duration: 30,
+        duration: 30, // Default duration
         completed: false,
         todoLater: section === 'todoLater',
         date: format(selectedDate, 'yyyy-MM-dd'),
-        createdAt: new Date().toISOString()
+        // ID and createdAt will be assigned by create handler
       };
 
-      const updatedTasks = [...taskList, newTask];
-      onTaskUpdate(updatedTasks);
+      if (onTaskCreate) {
+        onTaskCreate(newTask);
+      } else {
+        console.warn("onTaskCreate prop missing in TaskList");
+      }
+
       setNewTaskTexts(prev => ({
         ...prev,
         [section]: ''

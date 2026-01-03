@@ -22,6 +22,7 @@
     "date-fns": "^2.30.0",
     "electron-is-dev": "^3.0.1",
     "express": "^4.18.2",
+    "firebase": "^12.7.0",
     "quill-markdown-shortcuts": "^0.0.10",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",

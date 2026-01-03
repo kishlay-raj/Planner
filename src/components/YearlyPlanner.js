@@ -1,39 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useFirestoreDoc } from '../hooks/useFirestoreNew';
 import { Box, Paper, Typography, IconButton, Grid, TextField, Tooltip } from '@mui/material';
 import { NavigateBefore, NavigateNext, Brightness4, Brightness7 } from '@mui/icons-material';
 import { format, addYears, subYears } from 'date-fns';
 
+// Default year data structure
+const defaultYearData = {
+    yearFocus: '',
+    whyStatement: '',
+    priorities: '',
+    notes: '',
+    monthlyGoals: {}
+};
+
 function YearlyPlanner() {
     const [currentYear, setCurrentYear] = useState(new Date());
     const [isDark, setIsDark] = useState(false);
-    const [plannerData, setPlannerData] = useState(() => {
-        try {
-            const saved = localStorage.getItem('yearlyPlannerData');
-            return saved ? JSON.parse(saved) : {};
-        } catch (e) {
-            console.error('Error loading yearly planner data:', e);
-            return {};
-        }
-    });
 
     const yearKey = `${currentYear.getFullYear()}`;
-    const currentYearData = plannerData[yearKey] || {
-        yearFocus: '',
-        whyStatement: '',
-        priorities: '',
-        notes: '',
-        monthlyGoals: {} // { '01': '', '02': '', ... }
+
+    // Use year-specific document path
+    const [rawYearData, setYearData] = useFirestoreDoc(`planner/yearly/${yearKey}`, defaultYearData);
+
+    // Ensure all properties have safe defaults
+    const currentYearData = {
+        yearFocus: rawYearData?.yearFocus ?? '',
+        whyStatement: rawYearData?.whyStatement ?? '',
+        priorities: rawYearData?.priorities ?? '',
+        notes: rawYearData?.notes ?? '',
+        monthlyGoals: rawYearData?.monthlyGoals ?? {}
     };
 
-    useEffect(() => {
-        localStorage.setItem('yearlyPlannerData', JSON.stringify(plannerData));
-    }, [plannerData]);
-
     const updateYearData = (updates) => {
-        setPlannerData(prev => ({
-            ...prev,
-            [yearKey]: { ...currentYearData, ...updates }
-        }));
+        setYearData({
+            ...currentYearData,
+            ...updates
+        });
     };
 
     const handleNavigate = (dir) => {

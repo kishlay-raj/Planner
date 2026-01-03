@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Box, Typography } from '@mui/material';
 import PlannerScreen from './components/PlannerScreen';
 import PomodoroPanel from './components/PomodoroPanel';
 import WeeklyPlanner from './components/WeeklyPlanner';
@@ -10,6 +10,7 @@ import RoutinePlanner from './components/RoutinePlanner';
 import EisenhowerMatrix from './components/EisenhowerMatrix';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
+import { useFirestore } from './hooks/useFirestore';
 import './App.css';
 
 const theme = createTheme({
@@ -112,35 +113,26 @@ const theme = createTheme({
 });
 
 function App() {
-  const [tasks, setTasks] = useState(() => {
-    // Load initial tasks from localStorage if available
-    const savedTasks = localStorage.getItem('allTasks');
-    return savedTasks ? JSON.parse(savedTasks) : [];
-  });
+  const [tasks, setTasks] = useFirestore('allTasks', []);
   const [activePanel, setActivePanel] = useState('planner');
   const [pomodoroMode, setPomodoroMode] = useState('pomodoro');
 
   // Navigation Configuration State
-  const [navConfig, setNavConfig] = useState(() => {
-    const savedConfig = localStorage.getItem('navConfig');
-    if (savedConfig) {
-      return JSON.parse(savedConfig);
-    }
-    return [
-      { id: 'planner', label: 'Daily', iconKey: 'dashboard', visible: true },
-      { id: 'planner-week', label: 'Weekly', iconKey: 'viewWeek', visible: true },
-      { id: 'planner-month', label: 'Monthly', iconKey: 'calendarMonth', visible: true },
-      { id: 'planner-year', label: 'Yearly', iconKey: 'emojiEvents', visible: true },
-      { id: 'daily-journal', label: 'Journal', iconKey: 'menuBook', visible: true },
-      { id: 'routines', label: 'Routines', iconKey: 'selfImprovement', visible: true },
-      { id: 'eisenhower', label: 'Matrix', iconKey: 'viewQuilt', visible: true },
-      { id: 'pomodoro', label: 'Pomodoro', iconKey: 'timer', visible: true }
-    ];
-  });
+  const defaultNavConfig = [
+    { id: 'planner', label: 'Daily', iconKey: 'dashboard', visible: true },
+    { id: 'planner-week', label: 'Weekly', iconKey: 'viewWeek', visible: true },
+    { id: 'planner-month', label: 'Monthly', iconKey: 'calendarMonth', visible: true },
+    { id: 'planner-year', label: 'Yearly', iconKey: 'emojiEvents', visible: true },
+    { id: 'daily-journal', label: 'Journal', iconKey: 'menuBook', visible: true },
+    { id: 'routines', label: 'Routines', iconKey: 'selfImprovement', visible: true },
+    { id: 'eisenhower', label: 'Matrix', iconKey: 'viewQuilt', visible: true },
+    { id: 'pomodoro', label: 'Pomodoro', iconKey: 'timer', visible: true }
+  ];
+
+  const [navConfig, setNavConfig] = useFirestore('navConfig', defaultNavConfig);
 
   const handleNavUpdate = (newConfig) => {
     setNavConfig(newConfig);
-    localStorage.setItem('navConfig', JSON.stringify(newConfig));
   };
 
   const handleTaskCreate = (taskData) => {
@@ -158,7 +150,6 @@ function App() {
     };
     const updatedTasks = [...tasks, newTask];
     setTasks(updatedTasks);
-    localStorage.setItem('allTasks', JSON.stringify(updatedTasks));
   };
 
   const handlePomodoroModeChange = (mode) => {
@@ -203,8 +194,28 @@ function App() {
           pomodoroMode={pomodoroMode}
           navConfig={navConfig}
         />
-        <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-          {renderPanel()}
+        <Box sx={{ flexGrow: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ flexGrow: 1 }}>
+            {renderPanel()}
+          </Box>
+          <Box sx={{
+            py: 2,
+            px: 3,
+            mt: 'auto',
+            borderTop: '1px solid rgba(0, 0, 0, 0.08)',
+            textAlign: 'center',
+            bgcolor: 'background.default'
+          }}>
+            <Typography variant="caption" color="text.secondary">
+              Need help or have suggestions? Contact us at{' '}
+              <a
+                href="mailto:kishlayrajmanju@gmail.com"
+                style={{ color: 'inherit', fontWeight: 600, textDecoration: 'none' }}
+              >
+                kishlayrajmanju@gmail.com
+              </a>
+            </Typography>
+          </Box>
         </Box>
       </Box>
     </ThemeProvider>

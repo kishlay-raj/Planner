@@ -23,6 +23,8 @@ import {
   Settings
 } from '@mui/icons-material';
 
+import { useFirestore } from '../hooks/useFirestore';
+
 function PomodoroPanel({ onModeChange }) {
   const [timeLeft, setTimeLeft] = useState(30 * 60); // Default 30 minutes
   const [isActive, setIsActive] = useState(false);
@@ -43,48 +45,31 @@ function PomodoroPanel({ onModeChange }) {
   // Keep track of active sound intervals
   const [tickInterval, setTickInterval] = useState(null);
 
-  const [settings, setSettings] = useState(() => {
-    const savedSettings = localStorage.getItem('pomodoroSettings');
-    return savedSettings ? JSON.parse(savedSettings) : {
-      pomodoro: 30,
-      shortBreak: 5,
-      longBreak: 15,
-      autoStartBreaks: false,
-      autoStartPomodoros: false,
-      longBreakInterval: 4,
-      autoCheckTasks: false,
-      autoSwitchTasks: true,
-      alarmSound: 'Kitchen',
-      alarmVolume: 50,
-      alarmRepeat: 1,
-      tickingSound: 'Ticking Slow',
-      tickingVolume: 50,
-      darkMode: false,
-      hourFormat: '24-hour',
-    };
-  });
+  const defaultSettings = {
+    pomodoro: 30,
+    shortBreak: 5,
+    longBreak: 15,
+    autoStartBreaks: false,
+    autoStartPomodoros: false,
+    longBreakInterval: 4,
+    autoCheckTasks: false,
+    autoSwitchTasks: true,
+    alarmSound: 'Kitchen',
+    alarmVolume: 50,
+    alarmRepeat: 1,
+    tickingSound: 'Ticking Slow',
+    tickingVolume: 50,
+    darkMode: false,
+    hourFormat: '24-hour',
+  };
 
-  const [stats, setStats] = useState(() => {
-    const savedStats = localStorage.getItem('pomodoroStats');
-    const defaultStats = { total: 0, today: 0, lastDate: new Date().toDateString() };
-    if (savedStats) {
-      const parsed = JSON.parse(savedStats);
-      if (parsed.lastDate !== new Date().toDateString()) {
-        return { ...parsed, today: 0, lastDate: new Date().toDateString() };
-      }
-      return parsed;
-    }
-    return defaultStats;
-  });
+  const [settings, setSettings] = useFirestore('pomodoroSettings', defaultSettings);
 
-  useEffect(() => {
-    localStorage.setItem('pomodoroStats', JSON.stringify(stats));
-  }, [stats]);
+  const defaultStats = { total: 0, today: 0, lastDate: new Date().toDateString() };
+  const [stats, setStats] = useFirestore('pomodoroStats', defaultStats);
 
-  // Save settings to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('pomodoroSettings', JSON.stringify(settings));
-  }, [settings]);
+  // Stats date check logic (optional here, might be better inside the update function or a useEffect to reset today if date changed)
+  // For simplicity, we check date when updating stats (already implemented in setStats update logic below)
 
   // Simple beep sound function
   const playBeep = () => {
