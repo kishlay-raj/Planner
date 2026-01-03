@@ -194,17 +194,17 @@ function App() {
           pomodoroMode={pomodoroMode}
           navConfig={navConfig}
         />
-        <Box sx={{ flexGrow: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <Box sx={{ flexGrow: 1 }}>
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+          <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
             {renderPanel()}
           </Box>
           <Box sx={{
-            py: 2,
+            py: 1.5,
             px: 3,
-            mt: 'auto',
             borderTop: '1px solid rgba(0, 0, 0, 0.08)',
             textAlign: 'center',
-            bgcolor: 'background.default'
+            bgcolor: 'background.paper',
+            flexShrink: 0
           }}>
             <Typography variant="caption" color="text.secondary">
               Need help or have suggestions? Contact us at{' '}
