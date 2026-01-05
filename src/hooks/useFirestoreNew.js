@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { doc, collection, onSnapshot, setDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,7 +16,14 @@ export function useFirestoreDoc(path, initialValue) {
     const [loading, setLoading] = useState(true);
     const timeoutRef = useRef(null);
 
+    // Store initialValue in a ref to avoid dependency issues
+    const initialValueRef = useRef(initialValue);
+    initialValueRef.current = initialValue;
+
     const isTyping = useRef(false);
+
+    // Track the current path to detect changes
+    const currentPathRef = useRef(path);
 
     // Build full path: users/{uid}/{path}
     // Firestore requires document refs to have even segments (collection/doc/collection/doc)
@@ -40,19 +47,31 @@ export function useFirestoreDoc(path, initialValue) {
 
     // Subscribe to real-time updates
     useEffect(() => {
+        // Check if path actually changed
+        const pathChanged = currentPathRef.current !== path;
+        currentPathRef.current = path;
+
         // Reset state when path changes to ensure we load fresh data and don't show stale data
-        isTyping.current = false;
-        setLoading(true);
-        setData(initialValue);
+        if (pathChanged) {
+            isTyping.current = false;
+            setLoading(true);
+            // Don't reset data immediately - let Firestore provide the new data
+            // This prevents the "blank flash" when switching dates
+        }
 
         if (!currentUser) {
             // Fallback to localStorage when not logged in
             try {
                 const localKey = `firestore_${path}`;
                 const saved = localStorage.getItem(localKey);
-                if (saved) setData(JSON.parse(saved));
+                if (saved) {
+                    setData(JSON.parse(saved));
+                } else {
+                    setData(initialValueRef.current);
+                }
             } catch (e) {
                 console.warn('localStorage read error:', e);
+                setData(initialValueRef.current);
             }
             setLoading(false);
             return;
@@ -74,8 +93,8 @@ export function useFirestoreDoc(path, initialValue) {
                 if (snap.exists()) {
                     setData(snap.data());
                 } else {
-                    // Document doesn't exist, ensure we are using initial value
-                    setData(initialValue);
+                    // Document doesn't exist, use initial value
+                    setData(initialValueRef.current);
                 }
                 setLoading(false);
             },
@@ -86,7 +105,7 @@ export function useFirestoreDoc(path, initialValue) {
         );
 
         return () => unsubscribe();
-    }, [currentUser, path, getDocRef, initialValue]);
+    }, [currentUser, path, getDocRef]);
 
     // Cleanup timeout on unmount
     useEffect(() => {
