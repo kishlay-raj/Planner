@@ -10,7 +10,13 @@ import {
     ListItemIcon,
     Switch,
     useTheme,
-    Divider
+    Divider,
+    Button,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions
 } from '@mui/material';
 import {
     DragIndicator,
@@ -21,8 +27,10 @@ import {
     MenuBook,
     SelfImprovement,
     ViewQuilt,
-    Timer
+    Timer,
+    DeleteForever
 } from '@mui/icons-material';
+import { useFirestore } from '../hooks/useFirestore';
 
 // Map icon keys to actual components
 const iconMap = {
@@ -39,6 +47,9 @@ const iconMap = {
 function Settings({ navConfig, onUpdate }) {
     const theme = useTheme();
 
+    const [tasks, setTasks] = useFirestore('allTasks', []);
+    const [openResetDialog, setOpenResetDialog] = React.useState(false);
+
     const handleDragEnd = (result) => {
         if (!result.destination) return;
 
@@ -54,6 +65,11 @@ function Settings({ navConfig, onUpdate }) {
             item.id === id ? { ...item, visible: !item.visible } : item
         );
         onUpdate(updatedConfig);
+    };
+
+    const handleResetAllTasks = () => {
+        setTasks([]);
+        setOpenResetDialog(false);
     };
 
     return (
@@ -125,6 +141,58 @@ function Settings({ navConfig, onUpdate }) {
                     </Droppable>
                 </DragDropContext>
             </Paper>
+
+            <Box sx={{ mt: 6 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: theme.palette.error.main }}>
+                    Danger Zone
+                </Typography>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 3,
+                        borderRadius: 3,
+                        border: `1px solid ${theme.palette.error.light}`,
+                        bgcolor: 'error.lighter' // You might need to define this in theme or use alpha
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.error.dark }}>
+                                Reset All Tasks
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                                This will permanently delete all your tasks. This action cannot be undone.
+                            </Typography>
+                        </Box>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            startIcon={<DeleteForever />}
+                            onClick={() => setOpenResetDialog(true)}
+                        >
+                            Reset All
+                        </Button>
+                    </Box>
+                </Paper>
+            </Box>
+
+            <Dialog
+                open={openResetDialog}
+                onClose={() => setOpenResetDialog(false)}
+            >
+                <DialogTitle>Reset All Tasks?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to delete all tasks? This process cannot be undone and you will lose all your progress.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenResetDialog(false)}>Cancel</Button>
+                    <Button onClick={handleResetAllTasks} color="error" autoFocus>
+                        Reset All
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

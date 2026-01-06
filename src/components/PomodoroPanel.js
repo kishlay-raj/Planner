@@ -304,6 +304,7 @@ function PomodoroPanel({ onModeChange }) {
         <IconButton
           color="inherit"
           onClick={() => setSettingsOpen(true)}
+          aria-label="Settings"
           sx={{
             bgcolor: 'rgba(255, 255, 255, 0.1)',
             width: 36,

@@ -2,67 +2,143 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import CalendarView from '../CalendarView';
-import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../theme';
 
-// Mock the drag and drop functionality
-jest.mock('react-big-calendar/lib/addons/dragAndDrop', () => {
-  return function DragAndDropCalendar(props) {
-    return <div data-testid="calendar">{props.children}</div>;
+// Mock dependencies
+jest.mock('react-big-calendar', () => {
+  return {
+    Calendar: ({ events, onSelectSlot, onDoubleClickEvent }) => {
+      return (
+        <div data-testid="mock-calendar">
+          {events.map(event => (
+            <div
+              key={event.id}
+              data-testid={`event-${event.id}`}
+              onDoubleClick={() => onDoubleClickEvent && onDoubleClickEvent(event)}
+            >
+              {event.title}
+            </div>
+          ))}
+          <button
+            data-testid="slot-trigger"
+            onClick={() => onSelectSlot && onSelectSlot({ start: new Date('2026-01-01T10:00:00') })}
+          >
+            Click Slot
+          </button>
+        </div>
+      );
+    },
+    dateFnsLocalizer: () => ({})
   };
 });
 
-const mockScheduledTasks = [
-  {
-    id: 1,
-    name: 'Test Task 1',
-    scheduledTime: new Date('2024-01-01T10:00:00'),
-    duration: 30,
-    completed: false
-  }
-];
+jest.mock('react-big-calendar/lib/addons/dragAndDrop', () => {
+  return (CalendarComponent) => (props) => <CalendarComponent {...props} />;
+});
+
+// Mock QuickTaskDialog and TaskEditDialog
+jest.mock('../QuickTaskDialog', () => ({ open, onSave }) => (
+  open ? (
+    <div data-testid="quick-task-dialog">
+      <button onClick={() => onSave({ name: 'New Quick Task', duration: 30 })}>Save</button>
+    </div>
+  ) : null
+));
+
+jest.mock('../TaskEditDialog', () => ({ open, task, onSave }) => (
+  open ? (
+    <div data-testid="task-edit-dialog">
+      Editing: {task?.name}
+      <button onClick={() => onSave({ ...task, name: 'Updated Task' })}>Save</button>
+    </div>
+  ) : null
+));
 
 describe('CalendarView Component', () => {
-  const mockTaskSchedule = jest.fn();
-  const mockTaskCreate = jest.fn();
+  const mockOnTaskSchedule = jest.fn();
+  const mockOnTaskCreate = jest.fn();
+  const mockOnTaskUpdate = jest.fn();
+  const mockOnDateChange = jest.fn();
+  const selectedDate = new Date('2026-01-01');
 
-  const renderCalendarView = () => {
-    return render(
-      <ThemeProvider theme={theme}>
-        <CalendarView
-          scheduledTasks={mockScheduledTasks}
-          onTaskSchedule={mockTaskSchedule}
-          onTaskCreate={mockTaskCreate}
-        />
-      </ThemeProvider>
-    );
-  };
+  const scheduledTasks = [
+    {
+      id: 1,
+      name: 'Meeting',
+      duration: 60,
+      scheduledTime: '2026-01-01T09:00:00',
+      completed: false
+    }
+  ];
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('renders calendar with scheduled tasks', () => {
-    renderCalendarView();
-    expect(screen.getByTestId('calendar')).toBeInTheDocument();
+  const renderCalendar = (tasks = scheduledTasks) => {
+    return render(
+      <CalendarView
+        scheduledTasks={tasks}
+        onTaskSchedule={mockOnTaskSchedule}
+        onTaskCreate={mockOnTaskCreate}
+        onTaskUpdate={mockOnTaskUpdate}
+        selectedDate={selectedDate}
+        onDateChange={mockOnDateChange}
+      />
+    );
+  };
+
+  it('renders scheduled tasks as events', () => {
+    renderCalendar();
+    expect(screen.getByTestId('event-1')).toBeInTheDocument();
+    expect(screen.getByText(/Meeting/)).toBeInTheDocument();
   });
 
-  test('renders navigation buttons', () => {
-    renderCalendarView();
-    const calendar = screen.getByTestId('calendar');
-    expect(calendar).toBeInTheDocument();
+  it('filters out tasks with invalid scheduledTime', () => {
+    const tasksWithInvalid = [
+      ...scheduledTasks,
+      { id: 2, name: 'Invalid Task', duration: 30, scheduledTime: null }
+    ];
+    renderCalendar(tasksWithInvalid);
+    expect(screen.getByTestId('event-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('event-2')).not.toBeInTheDocument();
   });
 
-  test('handles task scheduling', () => {
-    renderCalendarView();
-    const calendar = screen.getByTestId('calendar');
-    fireEvent.drop(calendar, {
-      clientX: 100,
-      clientY: 100,
-      dataTransfer: {
-        getData: () => JSON.stringify(mockScheduledTasks[0])
-      }
-    });
-    expect(mockTaskSchedule).toHaveBeenCalled();
+  it('opens QuickTaskDialog when clicking a slot', () => {
+    renderCalendar();
+    fireEvent.click(screen.getByTestId('slot-trigger'));
+    expect(screen.getByTestId('quick-task-dialog')).toBeInTheDocument();
   });
-}); 
+
+  it('creates a new task via QuickTaskDialog', () => {
+    renderCalendar();
+    fireEvent.click(screen.getByTestId('slot-trigger'));
+
+    fireEvent.click(within(screen.getByTestId('quick-task-dialog')).getByText('Save'));
+
+    expect(mockOnTaskCreate).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'New Quick Task',
+      date: '2026-01-01'
+    }));
+  });
+
+  it('opens TaskEditDialog when double clicking an event', () => {
+    renderCalendar();
+    fireEvent.doubleClick(screen.getByTestId('event-1'));
+    expect(screen.getByTestId('task-edit-dialog')).toBeInTheDocument();
+    expect(screen.getByText('Editing: Meeting')).toBeInTheDocument();
+  });
+
+  it('saves updated task from TaskEditDialog', () => {
+    renderCalendar();
+    fireEvent.doubleClick(screen.getByTestId('event-1'));
+
+    fireEvent.click(within(screen.getByTestId('task-edit-dialog')).getByText('Save'));
+
+    expect(mockOnTaskUpdate).toHaveBeenCalledWith(expect.objectContaining({
+      id: 1,
+      name: 'Updated Task'
+    }));
+  });
+});
+
+import { within } from '@testing-library/react';

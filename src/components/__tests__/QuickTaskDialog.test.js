@@ -2,55 +2,61 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import QuickTaskDialog from '../QuickTaskDialog';
-import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../theme';
-
-jest.mock('@mui/material/Dialog', () => {
-  return ({ children, open }) => open ? <div>{children}</div> : null;
-});
 
 describe('QuickTaskDialog Component', () => {
-  const mockOnClose = jest.fn();
   const mockOnSave = jest.fn();
-  const selectedTime = new Date();
-
-  const renderDialog = (open = true) => {
-    return render(
-      <ThemeProvider theme={theme}>
-        <QuickTaskDialog
-          open={open}
-          selectedTime={selectedTime}
-          onClose={mockOnClose}
-          onSave={mockOnSave}
-        />
-      </ThemeProvider>
-    );
-  };
+  const mockOnClose = jest.fn();
+  const selectedTime = new Date('2026-01-01T10:00:00');
+  const selectedDate = new Date('2026-01-01');
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('renders dialog when open', () => {
+  const renderDialog = (open = true) => {
+    return render(
+      <QuickTaskDialog
+        open={open}
+        selectedTime={selectedTime}
+        selectedDate={selectedDate}
+        onSave={mockOnSave}
+        onClose={mockOnClose}
+      />
+    );
+  };
+
+  it('renders dialog when open', () => {
     renderDialog();
-    expect(screen.getByText('Quick Add Task')).toBeInTheDocument();
+    expect(screen.getByText(/Add Task for/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Task Name/i)).toBeInTheDocument();
   });
 
-  test('can create task', () => {
+  it('can create task', () => {
     renderDialog();
-    const input = screen.getByRole('textbox');
-    fireEvent.change(input, { target: { value: 'New Quick Task' } });
-    const saveButton = screen.getByText('Save');
-    fireEvent.click(saveButton);
+
+    // Use Label Text to be specific
+    const nameInput = screen.getByLabelText(/Task Name/i);
+    fireEvent.change(nameInput, { target: { value: 'New Quick Task' } });
+
+    // Find button
+    const addButton = screen.getByRole('button', { name: /Add Task/i });
+
+    // Check if enabled (it should be after typing)
+    expect(addButton).not.toBeDisabled();
+
+    fireEvent.click(addButton);
+
     expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'New Quick Task'
+      name: 'New Quick Task',
+      priority: 'P4', // Default
+      duration: 30
     }));
   });
 
-  test('can close dialog', () => {
+  it('closes on cancel', () => {
     renderDialog();
     const cancelButton = screen.getByText('Cancel');
     fireEvent.click(cancelButton);
     expect(mockOnClose).toHaveBeenCalled();
   });
-}); 
+});

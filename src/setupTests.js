@@ -1,18 +1,18 @@
 import '@testing-library/jest-dom';
 
 // Mock window.matchMedia
-window.matchMedia = window.matchMedia || function() {
+window.matchMedia = window.matchMedia || function () {
   return {
     matches: false,
-    addListener: function() {},
-    removeListener: function() {}
+    addListener: function () { },
+    removeListener: function () { }
   };
 };
 
 // Mock drag and drop
 jest.mock('react-beautiful-dnd', () => ({
   DragDropContext: ({ children }) => children,
-  Droppable: ({ children }) => 
+  Droppable: ({ children }) =>
     children({
       draggableProps: {
         style: {},
@@ -26,19 +26,16 @@ jest.mock('react-beautiful-dnd', () => ({
         placeholder: null
       }
     }),
-  Draggable: ({ children }) => 
+  Draggable: ({ children }) =>
     children({
       draggableProps: {
         style: {},
       },
       innerRef: jest.fn(),
       dragHandleProps: {},
-      draggableProps: {},
-      provided: {
-        innerRef: jest.fn(),
-        draggableProps: {},
-        dragHandleProps: {}
-      }
+    }, {
+      isDragging: false,
+      isDropAnimating: false,
     }),
 }));
 
@@ -48,7 +45,7 @@ jest.mock('react-big-calendar', () => ({
   dateFnsLocalizer: jest.fn()
 }));
 
-jest.mock('react-big-calendar/lib/addons/dragAndDrop', () => () => 
+jest.mock('react-big-calendar/lib/addons/dragAndDrop', () => () =>
   function DragAndDropCalendar(props) {
     return <div data-testid="calendar">DnD Calendar Mock</div>;
   }

@@ -1,89 +1,142 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import TaskList from '../TaskList';
-import { ThemeProvider } from '@mui/material/styles';
-import theme from '../../theme';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { DragDropContext } from 'react-beautiful-dnd';
+
+// Mock theme
+const theme = createTheme({
+  palette: {
+    priority: {
+      p1: '#d32f2f',
+      p2: '#ed6c02',
+      p3: '#0288d1',
+      p4: '#546e7a'
+    },
+    tag: {
+      work: '#2e7d32',
+      personal: '#7b1fa2',
+      study: '#e65100',
+      health: '#0097a7'
+    }
+  }
+});
 
 const mockTasks = [
   {
     id: 1,
-    name: 'Test Task 1',
+    name: 'Critical Task',
     priority: 'P1',
     duration: 30,
-    isToday: true,
-    completed: false,
-    important: true,
-    urgent: true
+    date: '2026-01-01',
+    completed: false
   },
   {
     id: 2,
-    name: 'Test Task 2',
-    priority: 'P2',
-    duration: 45,
-    isToday: false,
-    completed: false,
-    important: false,
-    urgent: false
+    name: 'Low Priority Task',
+    priority: 'P4',
+    duration: 15,
+    date: '2026-01-01',
+    completed: false
   }
 ];
 
 describe('TaskList Component', () => {
-  const mockTaskUpdate = jest.fn();
-  const mockTaskSchedule = jest.fn();
+  const mockOnTaskUpdate = jest.fn();
+  const mockOnTaskCreate = jest.fn();
+  const mockOnTaskSchedule = jest.fn();
+  const selectedDate = new Date('2026-01-01T12:00:00');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
   const renderTaskList = () => {
     return render(
       <ThemeProvider theme={theme}>
-        <DragDropContext onDragEnd={() => {}}>
+        <DragDropContext onDragEnd={() => { }}>
           <TaskList
             tasks={mockTasks}
-            onTaskUpdate={mockTaskUpdate}
-            onTaskSchedule={mockTaskSchedule}
+            onTaskUpdate={mockOnTaskUpdate}
+            onTaskCreate={mockOnTaskCreate}
+            onTaskSchedule={mockOnTaskSchedule}
+            selectedDate={selectedDate}
           />
         </DragDropContext>
       </ThemeProvider>
     );
   };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  test('renders all priority sections', () => {
+  it('renders priority sections correctly', () => {
     renderTaskList();
     expect(screen.getByText('P1 - Critical')).toBeInTheDocument();
-    expect(screen.getByText('P2 - High')).toBeInTheDocument();
-    expect(screen.getByText('P3 - Medium')).toBeInTheDocument();
-    expect(screen.getByText('P4 - Low')).toBeInTheDocument();
+    expect(screen.getByText('P4 - Low (To-Do Later)')).toBeInTheDocument();
   });
 
-  test('can add new task', () => {
+  it('renders filtered tasks for the selected date', () => {
     renderTaskList();
-    const input = screen.getAllByPlaceholderText('Add a task...')[0];
-    fireEvent.change(input, { target: { value: 'New Task' } });
-    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
-    expect(mockTaskUpdate).toHaveBeenCalled();
+    expect(screen.getByText('Critical Task')).toBeInTheDocument();
+    expect(screen.getByText('Low Priority Task')).toBeInTheDocument();
   });
 
-  test('can mark task as complete', () => {
+  it('does not render tasks for other dates', () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <DragDropContext onDragEnd={() => { }}>
+          <TaskList
+            tasks={mockTasks}
+            // Different date
+            selectedDate={new Date('2026-01-02T12:00:00')}
+            onTaskUpdate={mockOnTaskUpdate}
+          />
+        </DragDropContext>
+      </ThemeProvider>
+    );
+    expect(screen.queryByText('Critical Task')).not.toBeInTheDocument();
+  });
+
+  it('shows empty state when no tasks exist', () => {
+    render(
+      <ThemeProvider theme={theme}>
+        <DragDropContext onDragEnd={() => { }}>
+          <TaskList
+            tasks={[]}
+            selectedDate={selectedDate}
+            onTaskUpdate={mockOnTaskUpdate}
+          />
+        </DragDropContext>
+      </ThemeProvider>
+    );
+    // "No tasks" should appear for each priority section (4 times)
+    const emptyStateMessages = screen.getAllByText('No tasks');
+    expect(emptyStateMessages.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('can toggle task completion', () => {
     renderTaskList();
     const checkbox = screen.getAllByRole('checkbox')[0];
     fireEvent.click(checkbox);
-    expect(mockTaskUpdate).toHaveBeenCalled();
+
+    expect(mockOnTaskUpdate).toHaveBeenCalled();
+    // Check if the update function was called with modified task list
+    const updatedTasks = mockOnTaskUpdate.mock.calls[0][0];
+    expect(updatedTasks.find(t => t.id === 1).completed).toBe(true);
   });
 
-  test('switches between Priorities and Tasks tabs', () => {
+  it('can quick add a task', () => {
     renderTaskList();
-    const tasksTab = screen.getByText('Tasks');
-    fireEvent.click(tasksTab);
-    expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Dump')).toBeInTheDocument();
-  });
 
-  beforeAll(() => {
-    // Mock the scrollIntoView function
-    Element.prototype.scrollIntoView = jest.fn();
+    // Find input for P1 section (first one)
+    const inputs = screen.getAllByPlaceholderText('Add a task...');
+    const p1Input = inputs[0];
+
+    fireEvent.change(p1Input, { target: { value: 'New P1 Task' } });
+    fireEvent.keyPress(p1Input, { key: 'Enter', code: 'Enter', charCode: 13 });
+
+    expect(mockOnTaskCreate).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'New P1 Task',
+      priority: 'P1'
+    }));
   });
-}); 
+});

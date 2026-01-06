@@ -1,21 +1,66 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import PlannerScreen from '../PlannerScreen';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../../theme';
 import { DragDropContext } from 'react-beautiful-dnd';
+import * as AuthContext from '../../contexts/AuthContext';
+import * as FirestoreHooks from '../../hooks/useFirestoreNew';
 
-jest.mock('../TaskCreationButton', () => ({
-  __esModule: true,
-  default: () => <button aria-label="Add Task">Add Task</button>
-}));
+// --- Mocks ---
+jest.mock('../../contexts/AuthContext');
+jest.mock('../../hooks/useFirestoreNew');
+jest.mock('../CalendarView', () => () => <div data-testid="calendar-view">Calendar View</div>);
+jest.mock('../TaskList', () => ({ onTaskCreate }) => (
+  <div data-testid="task-list">
+    Task List
+    <button onClick={() => onTaskCreate({ name: 'New Task' })}>Add Mock Task</button>
+  </div>
+));
+jest.mock('../NotesPanel', () => () => <div data-testid="notes-panel">Notes Panel</div>);
 
 describe('PlannerScreen Component', () => {
+  // Shared mock functions
+  const mockAddTask = jest.fn();
+  const mockUpdateTask = jest.fn();
+  const mockDeleteTask = jest.fn();
+  const mockSetWeeklyData = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Setup Auth Mock
+    AuthContext.useAuth.mockReturnValue({
+      currentUser: { uid: 'test-user', displayName: 'Test User' },
+      loginWithGoogle: jest.fn(),
+      logout: jest.fn(),
+    });
+
+    // Setup Firestore Collection Mock
+    FirestoreHooks.useFirestoreCollection.mockReturnValue([
+      [
+        { id: '1', name: 'Task 1', completed: false, createdAt: 123 },
+        { id: '2', name: 'Task 2', completed: true, createdAt: 124 }
+      ],
+      mockAddTask,
+      mockUpdateTask,
+      mockDeleteTask,
+      false // loading
+    ]);
+
+    // Setup Firestore Doc Mock
+    FirestoreHooks.useFirestoreDoc.mockReturnValue([
+      { focus: 'Test Focus' }, // weeklyData
+      mockSetWeeklyData, // setWeeklyData
+      false // loading
+    ]);
+  });
+
   const renderPlannerScreen = () => {
     return render(
       <ThemeProvider theme={theme}>
-        <DragDropContext onDragEnd={() => {}}>
+        <DragDropContext onDragEnd={() => { }}>
           <PlannerScreen />
         </DragDropContext>
       </ThemeProvider>
@@ -23,7 +68,7 @@ describe('PlannerScreen Component', () => {
   };
 
   beforeAll(() => {
-    // Mock window.matchMedia
+    // Mock window.matchMedia not implemented in JSDOM
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       value: jest.fn().mockImplementation(query => ({
@@ -39,33 +84,38 @@ describe('PlannerScreen Component', () => {
     });
   });
 
-  beforeEach(() => {
-    localStorage.clear();
+  it('renders main layout components', () => {
+    renderPlannerScreen();
+
+    expect(screen.getByText('Flow Planner')).toBeInTheDocument();
+    expect(screen.getByText('WEEKLY FOCUS')).toBeInTheDocument();
+    expect(screen.getByText('Test Focus')).toBeInTheDocument();
+
+    expect(screen.getByTestId('calendar-view')).toBeInTheDocument();
+    expect(screen.getByTestId('task-list')).toBeInTheDocument();
+    expect(screen.getByTestId('notes-panel')).toBeInTheDocument();
   });
 
-  test('renders main components', () => {
+  it('does NOT show the Reset All Tasks button (moved to Settings)', () => {
     renderPlannerScreen();
-    expect(screen.getByText('Planner')).toBeInTheDocument();
-    expect(screen.getByTitle('Reset All Tasks')).toBeInTheDocument();
+    // The reset button was removed, so we verify it's not present
+    const resetButton = screen.queryByTitle('Reset All Tasks');
+    expect(resetButton).not.toBeInTheDocument();
   });
 
-  test('can create new task', () => {
+  it('can create a task via interaction', async () => {
     renderPlannerScreen();
-    const addButton = screen.getByLabelText('Add Task');
-    fireEvent.click(addButton);
-    const input = screen.getByRole('textbox');
-    fireEvent.change(input, { target: { value: 'New Task' } });
-    const saveButton = screen.getByText('Save');
-    fireEvent.click(saveButton);
-    expect(localStorage.getItem('allTasks')).toContain('New Task');
-  });
 
-  test('can reset all tasks', () => {
-    renderPlannerScreen();
-    const resetButton = screen.getByTitle('Reset All Tasks');
-    fireEvent.click(resetButton);
-    const confirmButton = screen.getByText('Reset All');
-    fireEvent.click(confirmButton);
-    expect(localStorage.getItem('allTasks')).toBe('[]');
+    // Find our mock task list button
+    const addMockBtn = screen.getByText('Add Mock Task');
+    fireEvent.click(addMockBtn);
+
+    await waitFor(() => {
+      // We expect addTask to be called with name and some defaults
+      expect(mockAddTask).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'New Task',
+        completed: false
+      }));
+    });
   });
-}); 
+});
