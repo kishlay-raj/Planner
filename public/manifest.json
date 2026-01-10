@@ -1,0 +1,35 @@
+{
+    "short_name": "Flow Planner",
+    "name": "Flow Planner - Task & Time Management",
+    "description": "A comprehensive productivity planner with calendar, tasks, notes, and journal",
+    "icons": [
+        {
+            "src": "icon-192.png",
+            "type": "image/png",
+            "sizes": "192x192",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512",
+            "purpose": "any maskable"
+        }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#1976d2",
+    "background_color": "#ffffff",
+    "orientation": "any",
+    "categories": [
+        "productivity",
+        "lifestyle"
+    ],
+    "screenshots": [
+        {
+            "src": "screenshot.png",
+            "type": "image/png",
+            "sizes": "1280x720"
+        }
+    ]
+}
