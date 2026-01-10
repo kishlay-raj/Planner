@@ -75,26 +75,36 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
   const completedSectionTasks = filteredTasks.filter(task => task.completed);
 
   const handleDragEnd = (result) => {
+    // Defensive checks to prevent react-beautiful-dnd errors
+    if (!result) return;
     if (!result.destination) return;
-
-    const taskToMove = taskList.find(task => String(task.id) === result.draggableId);
-    if (!taskToMove) return;
-
-    let updatedTask = { ...taskToMove };
-
-    if (result.destination.droppableId === 'completed-list') {
-      updatedTask.completed = true;
-    } else if (result.destination.droppableId.includes('priority')) {
-      const newPriority = result.destination.droppableId.split('-')[0];
-      updatedTask.priority = newPriority;
-      // If moving back from completed, ensure it's marked active
-      if (updatedTask.completed) {
-        updatedTask.completed = false;
-      }
+    if (result.source.droppableId === result.destination.droppableId &&
+      result.source.index === result.destination.index) {
+      return; // No change in position
     }
 
-    // Only update the single modified task
-    onTaskUpdate([updatedTask]);
+    try {
+      const taskToMove = taskList.find(task => String(task.id) === result.draggableId);
+      if (!taskToMove) return;
+
+      let updatedTask = { ...taskToMove };
+
+      if (result.destination.droppableId === 'completed-list') {
+        updatedTask.completed = true;
+      } else if (result.destination.droppableId.includes('priority')) {
+        const newPriority = result.destination.droppableId.split('-')[0];
+        updatedTask.priority = newPriority;
+        // If moving back from completed, ensure it's marked active
+        if (updatedTask.completed) {
+          updatedTask.completed = false;
+        }
+      }
+
+      // Only update the single modified task
+      onTaskUpdate([updatedTask]);
+    } catch (error) {
+      console.error('Drag end error:', error);
+    }
   };
 
   const handleDragStart = (event, task) => {

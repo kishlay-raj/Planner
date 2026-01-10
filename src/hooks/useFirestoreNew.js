@@ -208,10 +208,15 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
         const unsubscribe = onSnapshot(
             q,
             (snapshot) => {
-                const docs = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                const docs = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // Remove id from data if it exists (for backwards compatibility with old data)
+                    const { id: _, ...dataWithoutId } = data;
+                    return {
+                        id: doc.id,  // Always use document ID, not data.id
+                        ...dataWithoutId
+                    };
+                });
                 setItems(docs);
                 setLoading(false);
             },
