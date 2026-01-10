@@ -241,12 +241,19 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
         const id = customId || Date.now().toString();
         const docRef = doc(colRef, id);
 
+        const newItem = { id, ...itemData, createdAt: itemData.createdAt || Date.now() };
+
+        // Optimistic update
+        setItems(prev => [...prev, newItem]);
+
         try {
-            await setDoc(docRef, { ...itemData, createdAt: Date.now() });
+            await setDoc(docRef, { ...itemData, createdAt: newItem.createdAt });
             console.log(`✅ Added to ${collectionPath}: ${id}`);
             return id;
         } catch (e) {
             console.error(`❌ Add failed:`, e);
+            // Revert optimistic update on error
+            setItems(prev => prev.filter(item => item.id !== id));
             return null;
         }
     }, [currentUser, collectionPath, getCollectionRef, items]);
@@ -262,15 +269,23 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
             return;
         }
 
+        // Optimistic update
+        const timestamp = Date.now();
+        setItems(prev => prev.map(item =>
+            item.id === id ? { ...item, ...updates, updatedAt: timestamp } : item
+        ));
+
         const colRef = getCollectionRef();
         if (!colRef) return;
 
         const docRef = doc(colRef, id);
         try {
-            await setDoc(docRef, { ...updates, updatedAt: Date.now() }, { merge: true });
+            await setDoc(docRef, { ...updates, updatedAt: timestamp }, { merge: true });
             console.log(`✅ Updated ${collectionPath}/${id}`);
         } catch (e) {
             console.error(`❌ Update failed:`, e);
+            // We might want to revert here, but tricky without previous state.
+            // Simplified: rely on snapshot to fix eventually, or could capture prev item.
         }
     }, [currentUser, collectionPath, getCollectionRef, items]);
 
@@ -283,6 +298,9 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
             return;
         }
 
+        // Optimistic update
+        setItems(prev => prev.filter(item => item.id !== id));
+
         const colRef = getCollectionRef();
         if (!colRef) return;
 
@@ -292,6 +310,7 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
             console.log(`✅ Deleted ${collectionPath}/${id}`);
         } catch (e) {
             console.error(`❌ Delete failed:`, e);
+            // Revert on error? Requires fetching or restoring.
         }
     }, [currentUser, collectionPath, getCollectionRef, items]);
 

@@ -53,6 +53,15 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
   };
   */
 
+  /*
+  const priorityTasksByLevel = {
+    P1: filteredTasks.filter(task => task.priority === 'P1' && !task.completed),
+    P2: filteredTasks.filter(task => task.priority === 'P2' && !task.completed),
+    P3: filteredTasks.filter(task => task.priority === 'P3' && !task.completed),
+    P4: filteredTasks.filter(task => task.priority === 'P4' && !task.completed)
+  };
+  */
+
   // Tasks for priority sections (active only)
   const priorityTasksByLevel = {
     P1: filteredTasks.filter(task => task.priority === 'P1' && !task.completed),
@@ -67,7 +76,7 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
   const handleDragEnd = (result) => {
     if (!result.destination) return;
 
-    const taskToMove = taskList.find(task => task.id === Number(result.draggableId));
+    const taskToMove = taskList.find(task => String(task.id) === result.draggableId);
     if (!taskToMove) return;
 
     let updatedTask = { ...taskToMove };
@@ -83,11 +92,8 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
       }
     }
 
-    const updatedTasks = taskList.map(task =>
-      task.id === updatedTask.id ? updatedTask : task
-    );
-
-    onTaskUpdate(updatedTasks);
+    // Only update the single modified task
+    onTaskUpdate([updatedTask]);
   };
 
   const handleDragStart = (event, task) => {
@@ -143,10 +149,8 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
   };
 
   const handleTaskSave = (task) => {
-    const updatedTasks = taskList.map(t =>
-      t.id === task.id ? task : t
-    );
-    onTaskUpdate(updatedTasks);
+    // Only update the single modified task
+    onTaskUpdate([task]);
   };
 
   const handleQuickAdd = (priority, section) => {
@@ -233,10 +237,8 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                     size="small"
                     checked={task.completed || false}
                     onChange={() => {
-                      const updatedTasks = taskList.map(t =>
-                        t.id === task.id ? { ...t, completed: !t.completed } : t
-                      );
-                      onTaskUpdate(updatedTasks);
+                      const updatedTask = { ...task, completed: !task.completed };
+                      onTaskUpdate([updatedTask]);
                     }}
                     onClick={(e) => e.stopPropagation()}
                     sx={{
