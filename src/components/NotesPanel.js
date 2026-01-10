@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Typography, Box, Tooltip } from '@mui/material';
+import { Paper, Typography, Box, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import { format } from 'date-fns';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -130,6 +130,21 @@ function NotesPanel({ selectedDate }) {
     setEditorContent(content);
   };
 
+  // State for delete confirmation dialog
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+  const quillRef = React.useRef(null);
+
+  // Helper to open dialog
+  const promptDeleteAll = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  // We need a stable reference to the prompt function for the Quill module
+  const promptDeleteAllRef = React.useRef(promptDeleteAll);
+  React.useEffect(() => {
+    promptDeleteAllRef.current = promptDeleteAll;
+  }, []);
+
   // Quill editor modules and formats
   const modules = React.useMemo(() => ({
     toolbar: {
@@ -170,6 +185,63 @@ function NotesPanel({ selectedDate }) {
     'link'
   ];
 
+  const handleConfirmDelete = () => {
+    setEditorContent('');
+    setShowDeleteConfirm(false);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
+  // Intercept actions that would replace/delete the entire content
+  const checkMassDeletion = (e) => {
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return false;
+
+    const length = editor.getLength(); // Length includes trailing newline
+    const selection = editor.getSelection();
+
+    // Check if entire content (excluding potential trailing newline difference) is selected
+    // Quill document usually has length N+1 (newline). Selection of all text is length N or N+1.
+    // We check if selection length covers at least length - 1
+    if (selection && selection.length >= length - 1 && length > 1) {
+      e.preventDefault();
+      e.stopPropagation();
+      setShowDeleteConfirm(true);
+      return true;
+    }
+    return false;
+  };
+
+  const handleEditorKeyDown = (e) => {
+    // Allow non-modifying keys (arrows, command, etc.)
+    // We want to block:
+    // 1. Printable characters (key length 1) UNLESS Ctrl/Meta/Alt is pressed (shortcuts)
+    // 2. Backspace / Delete
+    // 3. Enter
+
+    // Shortcuts like Cmd+C (Copy), Cmd+A (Select All), Cmd+X (Cut - handled by onCut), Cmd+V (Paste - handled by onPaste), Cmd+B (Bold) should be allowed or handled separately.
+    // Note: Cmd+X/Cmd+V might not fire keydown in all browsers or might need explicit handling. Browser usually fires 'cut'/'paste' events.
+
+    const isShortcut = e.metaKey || e.ctrlKey || e.altKey;
+    const isPrintable = e.key.length === 1 && !isShortcut;
+    const isDelete = e.key === 'Backspace' || e.key === 'Delete';
+    const isEnter = e.key === 'Enter';
+
+    if (isPrintable || isDelete || isEnter) {
+      checkMassDeletion(e);
+    }
+  };
+
+  const handlePaste = (e) => {
+    checkMassDeletion(e);
+  };
+
+  const handleCut = (e) => {
+    checkMassDeletion(e);
+  };
+
   return (
     <Paper
       className="notes-panel"
@@ -193,15 +265,21 @@ function NotesPanel({ selectedDate }) {
         </Typography>
       </Box>
 
-      <Box sx={{
-        flex: 1,
-        overflow: 'hidden',
-        backgroundColor: '#ffffff',
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
+      <Box
+        sx={{
+          flex: 1,
+          overflow: 'hidden',
+          backgroundColor: '#ffffff',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        onKeyDownCapture={handleEditorKeyDown}
+        onPasteCapture={handlePaste}
+        onCutCapture={handleCut}
+      >
         <CustomToolbar />
         <ReactQuill
+          ref={quillRef}
           theme="snow"
           value={editorContent}
           onChange={handleNoteChange}
@@ -211,6 +289,29 @@ function NotesPanel({ selectedDate }) {
           className="notes-editor"
         />
       </Box>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={showDeleteConfirm}
+        onClose={handleCancelDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Start fresh?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete all your notes for this day? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Delete All
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 }
