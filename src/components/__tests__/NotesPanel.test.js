@@ -9,21 +9,46 @@ import * as FirestoreHooks from '../../hooks/useFirestoreNew';
 jest.mock('../../contexts/AuthContext');
 jest.mock('../../hooks/useFirestoreNew');
 
-// Mock ReactQuill because it needs specific DOM APIs
-jest.mock('react-quill', () => ({ value, onChange, placeholder }) => (
-    <div data-testid="react-quill">
-        <textarea
-            aria-label="Editor"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-        />
-        <div data-testid="content-display">{value}</div>
-    </div>
-));
+// Mock ReactQuill to support ref and toolbar simulation
+jest.mock('react-quill', () => {
+    const React = require('react');
+    return React.forwardRef(({ value, onChange, placeholder }, ref) => {
+        // Expose a fake editor instance via ref
+        React.useImperativeHandle(ref, () => ({
+            getEditor: () => ({
+                getModule: (moduleName) => {
+                    if (moduleName === 'toolbar') {
+                        return {
+                            // Use global.document to bypass Jest static analysis check
+                            container: global.document.querySelector('.ql-toolbar')
+                        };
+                    }
+                    return null;
+                }
+            })
+        }));
 
-// Mock date-fns to return consistent dates if needed, 
-// strictly normally we can rely on real date-fns but formatting is important.
+        return (
+            <div data-testid="react-quill">
+                {/* Fake Toolbar for testing tooltips */}
+                <div className="ql-toolbar">
+                    <button className="ql-bold"></button>
+                    <button className="ql-italic"></button>
+                    <button className="ql-strike"></button>
+                    <div className="ql-formats"></div> {/* For H1/H2 container */}
+                    <div className="ql-formats"></div> {/* Second container */}
+                </div>
+                <textarea
+                    aria-label="Editor"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                />
+                <div data-testid="content-display">{value}</div>
+            </div>
+        );
+    });
+});
 
 describe('NotesPanel Component', () => {
     const mockSetNoteData = jest.fn();
@@ -115,8 +140,23 @@ describe('NotesPanel Component', () => {
         );
 
         // Check for some demo text
-        // Check for some demo text in the display div
         const contentDisplay = screen.getByTestId('content-display');
         expect(contentDisplay).toHaveTextContent(/Welcome to Flow Planner Demo/i);
+    });
+
+    it('sets correct tooltips (aria-labels) on custom toolbar buttons', () => {
+        render(
+            <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} />
+        );
+
+        // With MUI Tooltip, the child element gets an aria-label
+        // We can query by class name because Quill uses specific classes
+        const boldBtn = document.querySelector('.ql-bold');
+        const italicBtn = document.querySelector('.ql-italic');
+        const strikeBtn = document.querySelector('.ql-strike');
+
+        expect(boldBtn).toHaveAttribute('aria-label', 'Bold (Cmd+B)');
+        expect(italicBtn).toHaveAttribute('aria-label', 'Italic (Cmd+I)');
+        expect(strikeBtn).toHaveAttribute('aria-label', 'Strike (Cmd+Shift+S)');
     });
 });

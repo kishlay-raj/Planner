@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Typography, Box } from '@mui/material';
+import { Paper, Typography, Box, Tooltip } from '@mui/material';
 import { format } from 'date-fns';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -44,6 +44,46 @@ const DEMO_CONTENT = `<h1>✨ Welcome to Flow Planner Demo</h1>
 
 const initialNoteData = { content: '' };
 
+const CustomToolbar = () => (
+  <div id="notes-toolbar">
+    <span className="ql-formats">
+      <Tooltip title="Bold (Cmd+B)" enterDelay={0} arrow>
+        <button className="ql-bold" aria-label="Bold (Cmd+B)" />
+      </Tooltip>
+      <Tooltip title="Italic (Cmd+I)" enterDelay={0} arrow>
+        <button className="ql-italic" aria-label="Italic (Cmd+I)" />
+      </Tooltip>
+      <Tooltip title="Strike (Cmd+Shift+S)" enterDelay={0} arrow>
+        <button className="ql-strike" aria-label="Strike (Cmd+Shift+S)" />
+      </Tooltip>
+      <Tooltip title="Clear Formatting" enterDelay={0} arrow>
+        <button className="ql-clean" aria-label="Clear Formatting" />
+      </Tooltip>
+    </span>
+    <span className="ql-formats">
+      <Tooltip title="Heading 1" enterDelay={0} arrow>
+        <button className="ql-header" value="1" aria-label="Heading 1">H1</button>
+      </Tooltip>
+      <Tooltip title="Heading 2" enterDelay={0} arrow>
+        <button className="ql-header" value="2" aria-label="Heading 2">H2</button>
+      </Tooltip>
+    </span>
+    <span className="ql-formats">
+      <Tooltip title="Ordered List" enterDelay={0} arrow>
+        <button className="ql-list" value="ordered" aria-label="Ordered List" />
+      </Tooltip>
+      <Tooltip title="Bullet List" enterDelay={0} arrow>
+        <button className="ql-list" value="bullet" aria-label="Bullet List" />
+      </Tooltip>
+    </span>
+    <span className="ql-formats">
+      <Tooltip title="Link" enterDelay={0} arrow>
+        <button className="ql-link" aria-label="Link" />
+      </Tooltip>
+    </span>
+  </div>
+);
+
 function NotesPanel({ selectedDate }) {
   const { currentUser } = useAuth();
   const currentDate = format(selectedDate, 'yyyy-MM-dd');
@@ -65,11 +105,6 @@ function NotesPanel({ selectedDate }) {
     const contentToShow = currentUser
       ? (noteData?.content || '')
       : (noteData?.content || DEMO_CONTENT);
-
-    // Only update local state if:
-    // 1. We haven't initialized this date yet
-    // 2. OR the server content changed significantly (e.g. from another device) AND it's different from our current local state
-    //    (This is tricky with real-time collab, but for single user, just checking date switch is usually enough)
 
     // Simple approach: On date change (key), reset local state
     setEditorContent(contentToShow);
@@ -96,15 +131,37 @@ function NotesPanel({ selectedDate }) {
   };
 
   // Quill editor modules and formats
-  const modules = {
-    toolbar: [
-      // Direct heading buttons instead of dropdown
-      ['bold', 'italic', 'strike', 'clean'],
-      ['h1', 'h2'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      ['link'],
-    ],
-  };
+  const modules = React.useMemo(() => ({
+    toolbar: {
+      container: '#notes-toolbar',
+    },
+    keyboard: {
+      bindings: {
+        bold: {
+          key: 'B',
+          shortKey: true,
+          handler: function (range, context) {
+            this.quill.format('bold', !context.format.bold);
+          }
+        },
+        italic: {
+          key: 'I',
+          shortKey: true,
+          handler: function (range, context) {
+            this.quill.format('italic', !context.format.italic);
+          }
+        },
+        strike: {
+          key: 'S',
+          shortKey: true,
+          shiftKey: true, // Cmd+Shift+S for strike
+          handler: function (range, context) {
+            this.quill.format('strike', !context.format.strike);
+          }
+        }
+      }
+    }
+  }), []);
 
   const formats = [
     'header',
@@ -112,43 +169,6 @@ function NotesPanel({ selectedDate }) {
     'list', 'bullet',
     'link'
   ];
-
-  // Custom toolbar handler to register the heading buttons
-  const handleToolbarInit = (toolbar) => {
-    if (toolbar) {
-      // First, check if buttons already exist to avoid duplicates
-      const existingH1 = toolbar.container.querySelector('button.ql-header[value="1"]');
-      const existingH2 = toolbar.container.querySelector('button.ql-header[value="2"]');
-
-      // Only create buttons if they don't already exist
-      if (existingH1 || existingH2) return;
-
-      // Add H1 button
-      const h1Button = document.createElement('button');
-      h1Button.innerHTML = 'H1';
-      h1Button.className = 'ql-header';
-      h1Button.value = '1';
-      h1Button.title = 'Heading 1';
-
-      // Add H2 button
-      const h2Button = document.createElement('button');
-      h2Button.innerHTML = 'H2';
-      h2Button.className = 'ql-header';
-      h2Button.value = '2';
-      h2Button.title = 'Heading 2';
-
-      // Find the container for heading buttons
-      const headingContainer = toolbar.container.querySelector('.ql-formats:nth-child(2)');
-      if (headingContainer) {
-        // Clear any existing buttons to avoid duplicates
-        while (headingContainer.firstChild) {
-          headingContainer.removeChild(headingContainer.firstChild);
-        }
-        headingContainer.appendChild(h1Button);
-        headingContainer.appendChild(h2Button);
-      }
-    }
-  };
 
   return (
     <Paper
@@ -180,6 +200,7 @@ function NotesPanel({ selectedDate }) {
         display: 'flex',
         flexDirection: 'column',
       }}>
+        <CustomToolbar />
         <ReactQuill
           theme="snow"
           value={editorContent}
@@ -188,12 +209,6 @@ function NotesPanel({ selectedDate }) {
           formats={formats}
           placeholder="Start writing your notes for today..."
           className="notes-editor"
-          ref={(el) => {
-            if (el && el.getEditor()) {
-              const toolbar = el.getEditor().getModule('toolbar');
-              if (toolbar) handleToolbarInit(toolbar);
-            }
-          }}
         />
       </Box>
     </Paper>
