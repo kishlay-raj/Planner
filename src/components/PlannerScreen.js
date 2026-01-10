@@ -93,9 +93,9 @@ function PlannerScreen() {
     });
 
     await addTask({
-      ...task,
       completed: false,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      ...task  // Spread last to preserve scheduledTime and other task properties
     });
   };
 

@@ -190,7 +190,7 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
     // Create and schedule the task immediately
     const task = {
       ...taskData,
-      scheduledTime: quickTaskDialog.selectedTime,
+      scheduledTime: quickTaskDialog.selectedTime ? quickTaskDialog.selectedTime.toISOString() : null,
       date: format(selectedDate, 'yyyy-MM-dd'),
       createdAt: new Date().toISOString()
     };

@@ -20,7 +20,7 @@ function QuickTaskDialog({ open, selectedTime, onClose, onSave, selectedDate }) 
   const [taskData, setTaskData] = useState({
     name: '',
     duration: 30,
-    priority: 'P4',
+    priority: 'P1',
     important: false,
     urgent: false
   });
@@ -28,7 +28,7 @@ function QuickTaskDialog({ open, selectedTime, onClose, onSave, selectedDate }) 
   const handleSave = () => {
     onSave({
       ...taskData,
-      id: Date.now(),
+      id: Date.now().toString(),  // String ID to match Firestore
       completed: false,
       isToday: true,
       date: format(selectedDate, 'yyyy-MM-dd'),
@@ -37,7 +37,7 @@ function QuickTaskDialog({ open, selectedTime, onClose, onSave, selectedDate }) 
     setTaskData({
       name: '',
       duration: 30,
-      priority: 'P4',
+      priority: 'P1',
       important: false,
       urgent: false
     });
@@ -100,9 +100,9 @@ function QuickTaskDialog({ open, selectedTime, onClose, onSave, selectedDate }) 
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button 
-          onClick={handleSave} 
-          variant="contained" 
+        <Button
+          onClick={handleSave}
+          variant="contained"
           disabled={!taskData.name.trim()}
         >
           Add Task

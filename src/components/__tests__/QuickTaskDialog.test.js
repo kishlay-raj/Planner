@@ -48,7 +48,7 @@ describe('QuickTaskDialog Component', () => {
 
     expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
       name: 'New Quick Task',
-      priority: 'P4', // Default
+      priority: 'P1', // Default changed to P1
       duration: 30
     }));
   });
