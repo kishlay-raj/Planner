@@ -35,6 +35,7 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
     P3: '',
     P4: '',
   });
+  const completedSectionRef = React.useRef(null);
 
   // Filter tasks to only show those created for the selected date
   const filteredTasks = taskList.filter(task => {
@@ -470,10 +471,23 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
             </Accordion>
           ))}
 
+
+
           {/* Completed Tasks Section */}
           <Accordion
+            ref={completedSectionRef}
             defaultExpanded={false}
             className="priority-section completed-section"
+            onChange={(event, isExpanded) => {
+              if (isExpanded && completedSectionRef.current) {
+                setTimeout(() => {
+                  completedSectionRef.current.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                  });
+                }, 100); // Small delay to allow accordion animation to start
+              }
+            }}
             sx={{
               mt: 2,
               opacity: 0.8,

@@ -139,4 +139,29 @@ describe('TaskList Component', () => {
       priority: 'P1'
     }));
   });
+
+  it('scrolls to completed section when expanded', () => {
+    jest.useFakeTimers();
+    // Mock scrollIntoView
+    const scrollIntoViewMock = jest.fn();
+    window.HTMLElement.prototype.scrollIntoView = scrollIntoViewMock;
+
+    renderTaskList();
+
+    // Find the Completed accordion summary
+    const completedHeader = screen.getByText('Completed');
+    // Click to expand
+    fireEvent.click(completedHeader);
+
+    // Fast-forward time for the 100ms delay in TaskList.js
+    jest.advanceTimersByTime(110);
+
+    // Check if scrollIntoView was called
+    expect(scrollIntoViewMock).toHaveBeenCalledWith({
+      behavior: 'smooth',
+      block: 'start'
+    });
+
+    jest.useRealTimers();
+  });
 });
