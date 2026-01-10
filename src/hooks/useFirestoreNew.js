@@ -241,13 +241,15 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
         const id = customId || Date.now().toString();
         const docRef = doc(colRef, id);
 
-        const newItem = { id, ...itemData, createdAt: itemData.createdAt || Date.now() };
+        // Remove id from itemData since it's already in the document key
+        const { id: _, ...dataWithoutId } = itemData;
+        const newItem = { id, ...dataWithoutId, createdAt: itemData.createdAt || Date.now() };
 
         // Optimistic update
         setItems(prev => [...prev, newItem]);
 
         try {
-            await setDoc(docRef, { ...itemData, createdAt: newItem.createdAt });
+            await setDoc(docRef, { ...dataWithoutId, createdAt: newItem.createdAt });
             console.log(`✅ Added to ${collectionPath}: ${id}`);
             return id;
         } catch (e) {
