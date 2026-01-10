@@ -5,6 +5,11 @@ import TaskList from '../TaskList';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { DragDropContext } from 'react-beautiful-dnd';
 
+// Mock firebase
+jest.mock('../../firebase', () => ({
+  logAnalyticsEvent: jest.fn()
+}));
+
 // Mock theme
 const theme = createTheme({
   palette: {
@@ -114,6 +119,8 @@ describe('TaskList Component', () => {
   });
 
   it('can toggle task completion', async () => {
+    const { logAnalyticsEvent } = require('../../firebase');
+
     renderTaskList();
     const checkbox = screen.getAllByRole('checkbox')[0];
     fireEvent.click(checkbox);
@@ -121,9 +128,67 @@ describe('TaskList Component', () => {
     await waitFor(() => {
       expect(mockOnTaskUpdate).toHaveBeenCalled();
     });
+
+    // Verify analytics event
+    await waitFor(() => {
+      expect(logAnalyticsEvent).toHaveBeenCalledWith('task_completed', {
+        priority: 'P1'
+      });
+    });
+
     // Check if the update function was called with modified task list
     const updatedTasks = mockOnTaskUpdate.mock.calls[0][0];
     expect(updatedTasks.find(t => t.id === 1).completed).toBe(true);
+  });
+
+  it('logs task_uncompleted analytics event when unchecking task', async () => {
+    const { logAnalyticsEvent } = require('../../firebase');
+
+    // Create a completed task with proper structure
+    const completedTasks = [
+      {
+        id: 3,
+        name: 'Completed Task',
+        priority: 'P2',
+        duration: 30,
+        date: '2026-01-01',
+        completed: true
+      }
+    ];
+
+    render(
+      <ThemeProvider theme={theme}>
+        <DragDropContext onDragEnd={() => { }}>
+          <TaskList
+            tasks={completedTasks}
+            onTaskUpdate={mockOnTaskUpdate}
+            onTaskCreate={mockOnTaskCreate}
+            onTaskSchedule={mockOnTaskSchedule}
+            selectedDate={selectedDate}
+          />
+        </DragDropContext>
+      </ThemeProvider>
+    );
+
+    // Expand the completed section to reveal the checkbox
+    const completedHeader = screen.getByText('Completed');
+    fireEvent.click(completedHeader);
+
+    // Wait for the section to expand and find the checkbox
+    await waitFor(() => {
+      const checkboxes = screen.getAllByRole('checkbox');
+      expect(checkboxes.length).toBeGreaterThan(0);
+    });
+
+    // Now click the checkbox
+    const checkbox = screen.getAllByRole('checkbox')[0];
+    fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(logAnalyticsEvent).toHaveBeenCalledWith('task_uncompleted', {
+        priority: 'P2'
+      });
+    });
   });
 
   it('can quick add a task', () => {

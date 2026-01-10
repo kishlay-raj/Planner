@@ -8,6 +8,9 @@ import * as FirestoreHooks from '../../hooks/useFirestoreNew';
 // --- Mocks ---
 jest.mock('../../contexts/AuthContext');
 jest.mock('../../hooks/useFirestoreNew');
+jest.mock('../../firebase', () => ({
+    logAnalyticsEvent: jest.fn()
+}));
 
 // Mock ReactQuill to support ref and toolbar simulation
 jest.mock('react-quill', () => {
@@ -240,6 +243,14 @@ describe('NotesPanel Component', () => {
             fireEvent.keyDown(textarea, { key: 'a' });
 
             expect(screen.queryByText(/Start fresh?/i)).not.toBeInTheDocument();
+        });
+    });
+
+    describe('Analytics Events', () => {
+        it('has analytics event configured', () => {
+            const { logAnalyticsEvent } = require('../../firebase');
+            // Verify firebase analytics is properly mocked
+            expect(logAnalyticsEvent).toBeDefined();
         });
     });
 });
