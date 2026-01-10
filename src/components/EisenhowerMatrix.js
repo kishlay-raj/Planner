@@ -196,6 +196,16 @@ function EisenhowerMatrix() {
             completed: false
         };
         setTasks([...tasks, newTask]);
+
+        import("../firebase").then(({ logAnalyticsEvent }) => {
+            logAnalyticsEvent('matrix_task_created', {
+                urgent,
+                important,
+                quadrant: (urgent && important) ? 'Just Do It' :
+                    (urgent && !important) ? 'Delegate' :
+                        (!urgent && important) ? 'Schedule' : 'Delete'
+            });
+        });
     };
 
     const handleEditTask = (task) => {
@@ -214,6 +224,16 @@ function EisenhowerMatrix() {
                 important: defaultQuadrant.important
             };
             setTasks([...tasks, newTask]);
+
+            import("../firebase").then(({ logAnalyticsEvent }) => {
+                logAnalyticsEvent('matrix_task_created', {
+                    urgent: defaultQuadrant.urgent,
+                    important: defaultQuadrant.important,
+                    quadrant: (defaultQuadrant.urgent && defaultQuadrant.important) ? 'Just Do It' :
+                        (defaultQuadrant.urgent && !defaultQuadrant.important) ? 'Delegate' :
+                            (!defaultQuadrant.urgent && defaultQuadrant.important) ? 'Schedule' : 'Delete'
+                });
+            });
         }
         setEditDialogOpen(false);
     };

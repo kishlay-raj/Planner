@@ -119,11 +119,18 @@ function NotesPanel({ selectedDate }) {
 
     const handler = setTimeout(() => {
       setNoteData({ content: editorContent });
-      lastServerContent.current = editorContent;
+
+      // Analytics
+      import("../firebase").then(({ logAnalyticsEvent }) => {
+        logAnalyticsEvent('note_updated', {
+          length: editorContent.length,
+          date: currentDate
+        });
+      });
     }, 1000); // 1-second debounce
 
     return () => clearTimeout(handler);
-  }, [editorContent, setNoteData]);
+  }, [editorContent, setNoteData, currentDate]);
 
   // Handle immediate local update
   const handleNoteChange = (content) => {

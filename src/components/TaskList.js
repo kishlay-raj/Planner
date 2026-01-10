@@ -237,8 +237,14 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                   <Checkbox
                     size="small"
                     checked={task.completed || false}
-                    onChange={() => {
+                    onChange={async () => {
                       const updatedTask = { ...task, completed: !task.completed };
+                      const { logAnalyticsEvent } = await import("../firebase");
+                      if (updatedTask.completed) {
+                        logAnalyticsEvent('task_completed', { priority: task.priority });
+                      } else {
+                        logAnalyticsEvent('task_uncompleted', { priority: task.priority });
+                      }
                       onTaskUpdate([updatedTask]);
                     }}
                     onClick={(e) => e.stopPropagation()}

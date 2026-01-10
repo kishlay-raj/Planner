@@ -183,6 +183,14 @@ function PomodoroPanel({ onModeChange }) {
         }, 1500);
       }
 
+      // Analytics: Timer Complete
+      import("../firebase").then(({ logAnalyticsEvent }) => {
+        logAnalyticsEvent('timer_complete', {
+          mode,
+          cycles_count: cycles + 1
+        });
+      });
+
       setCycles(c => c + 1);
       setStats(prev => {
         const isNewDay = prev.lastDate !== new Date().toDateString();
@@ -229,7 +237,16 @@ function PomodoroPanel({ onModeChange }) {
     if (isActive) {
       cleanupTick();
     }
-    setIsActive(!isActive);
+    const nextState = !isActive;
+    setIsActive(nextState);
+
+    import("../firebase").then(({ logAnalyticsEvent }) => {
+      if (nextState) {
+        logAnalyticsEvent('timer_start', { mode, duration: timeLeft });
+      } else {
+        logAnalyticsEvent('timer_pause', { mode, duration: timeLeft });
+      }
+    });
   };
 
   const resetTimer = () => {

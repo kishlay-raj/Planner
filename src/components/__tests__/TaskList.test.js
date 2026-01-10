@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import TaskList from '../TaskList';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -113,12 +113,14 @@ describe('TaskList Component', () => {
     expect(emptyStateMessages.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('can toggle task completion', () => {
+  it('can toggle task completion', async () => {
     renderTaskList();
     const checkbox = screen.getAllByRole('checkbox')[0];
     fireEvent.click(checkbox);
 
-    expect(mockOnTaskUpdate).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockOnTaskUpdate).toHaveBeenCalled();
+    });
     // Check if the update function was called with modified task list
     const updatedTasks = mockOnTaskUpdate.mock.calls[0][0];
     expect(updatedTasks.find(t => t.id === 1).completed).toBe(true);

@@ -31,7 +31,11 @@ export const db = getFirestore(app);
 // Initialize Analytics (only in production or when measurementId is present)
 let analytics = null;
 if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
-    analytics = getAnalytics(app);
+    try {
+        analytics = getAnalytics(app);
+    } catch (error) {
+        console.warn("Firebase Analytics failed to initialize", error);
+    }
 }
 export { analytics };
 

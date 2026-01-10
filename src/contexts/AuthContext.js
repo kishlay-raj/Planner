@@ -12,8 +12,23 @@ export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    function loginWithGoogle() {
-        return signInWithPopup(auth, googleProvider);
+    async function loginWithGoogle() {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const { getAdditionalUserInfo } = await import("firebase/auth");
+            const { logAnalyticsEvent } = await import("../firebase");
+
+            const additionalUserInfo = getAdditionalUserInfo(result);
+            if (additionalUserInfo?.isNewUser) {
+                logAnalyticsEvent('sign_up', { method: 'google' });
+            }
+            logAnalyticsEvent('login', { method: 'google' });
+
+            return result;
+        } catch (error) {
+            console.error("Login error:", error);
+            throw error;
+        }
     }
 
     function logout() {

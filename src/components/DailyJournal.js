@@ -178,6 +178,22 @@ function DailyJournal() {
         }));
     };
 
+    // Analytics for Journal Updates
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            // Only log if there's data (avoid initial load empty log)
+            if (Object.keys(journalData).length > 0) {
+                import("../firebase").then(({ logAnalyticsEvent }) => {
+                    logAnalyticsEvent('journal_entry_updated', {
+                        date: dateKey,
+                        entries_count: Object.keys(currentEntry.responses || {}).length
+                    });
+                });
+            }
+        }, 2000); // 2-second debounce
+        return () => clearTimeout(handler);
+    }, [journalData, dateKey]);
+
     const handleAddPrompt = () => {
         const sectionToAdd = getFinalSection();
         if (!newPromptText.trim() || !sectionToAdd.trim()) return;
@@ -185,10 +201,12 @@ function DailyJournal() {
         const newId = Date.now().toString();
         setPrompts([...prompts, { id: newId, text: newPromptText, section: sectionToAdd }]);
         setNewPromptText('');
-        if (isCustomSection) {
-            setCustomSectionName('');
-            setSelectedSectionInput(sectionToAdd); // Switch to the newly created section
-        }
+        setCustomSectionName('');
+        setSelectedSectionInput(sectionToAdd); // Switch to the newly created section
+
+        import("../firebase").then(({ logAnalyticsEvent }) => {
+            logAnalyticsEvent('journal_prompt_added', { section: sectionToAdd });
+        });
     };
 
     const handleToggleSection = (sectionName) => {

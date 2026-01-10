@@ -95,7 +95,17 @@ function MonthlyPlanner() {
     setCurrentDate(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1));
   };
 
-  const handleMonthlyFocusChange = (val) => updateMonthData({ monthlyFocus: val });
+  const handleMonthlyFocusChange = (val) => {
+    updateMonthData({ monthlyFocus: val });
+
+    // Simple debounce for analytics
+    const timeoutId = setTimeout(() => {
+      import("../firebase").then(({ logAnalyticsEvent }) => {
+        logAnalyticsEvent('monthly_focus_set');
+      });
+    }, 2000);
+    return () => clearTimeout(timeoutId);
+  };
 
   const handleNotesChange = (val) => updateMonthData({ notes: val });
 
@@ -120,6 +130,10 @@ function MonthlyPlanner() {
   const addHabit = () => {
     const newId = (currentMonthData.habits.length > 0 ? Math.max(...currentMonthData.habits.map(h => h.id)) : 0) + 1;
     updateMonthData({ habits: [...currentMonthData.habits, { id: newId, name: '', days: {} }] });
+
+    import("../firebase").then(({ logAnalyticsEvent }) => {
+      logAnalyticsEvent('monthly_habit_added');
+    });
   };
 
   const deleteHabit = (id) => {

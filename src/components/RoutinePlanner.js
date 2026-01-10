@@ -91,6 +91,10 @@ function RoutinePlanner({ onTaskCreate }) {
         }));
 
         setNewItemText(prev => ({ ...prev, [section]: '' }));
+
+        import("../firebase").then(({ logAnalyticsEvent }) => {
+            logAnalyticsEvent('habit_item_created', { section });
+        });
     };
 
     const handleDeleteItem = (section, id) => {
@@ -117,6 +121,10 @@ function RoutinePlanner({ onTaskCreate }) {
         }));
         setNewSectionName('');
         setIsAddingSection(false);
+
+        import("../firebase").then(({ logAnalyticsEvent }) => {
+            logAnalyticsEvent('habit_section_created', { section_name: key });
+        });
     };
 
     const handleDeleteSection = (sectionKey) => {

@@ -86,6 +86,12 @@ function PlannerScreen() {
   };
 
   const handleTaskCreate = async (task) => {
+    const { logAnalyticsEvent } = await import("../firebase");
+    logAnalyticsEvent('task_created', {
+      priority: task.priority || 'unknown',
+      category: task.todoLater ? 'todoLater' : (task.priority || 'active')
+    });
+
     await addTask({
       ...task,
       completed: false,

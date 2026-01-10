@@ -120,6 +120,10 @@ function WeeklyPlanner() {
   const handleGoalAdd = () => {
     const newGoal = { id: Date.now(), text: '', completed: false };
     updateWeekData({ goals: [...currentWeekData.goals, newGoal] });
+
+    import("../firebase").then(({ logAnalyticsEvent }) => {
+      logAnalyticsEvent('weekly_goal_added');
+    });
   };
 
   const handleGoalChange = (id, field, value) => {
@@ -141,6 +145,15 @@ function WeeklyPlanner() {
     const newDays = [...currentWeekData.habit.days];
     newDays[index] = !newDays[index];
     updateWeekData({ habit: { ...currentWeekData.habit, days: newDays } });
+
+    // Only log positive tracking
+    if (newDays[index]) {
+      import("../firebase").then(({ logAnalyticsEvent }) => {
+        logAnalyticsEvent('weekly_habit_tracked', {
+          habit_name: currentWeekData.habit.name
+        });
+      });
+    }
   };
 
   const handleJournalChange = (field, value) => {
