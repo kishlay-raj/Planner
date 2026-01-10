@@ -64,16 +64,30 @@ describe('NotesPanel Component', () => {
         expect(screen.getByTestId('content-display')).toHaveTextContent('Notes for Jan 1');
     });
 
-    it('updates content when typing', () => {
+    it('updates content locally immediately but debounces persistence', () => {
+        jest.useFakeTimers();
         render(
             <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} />
         );
 
         const editor = screen.getByLabelText('Editor');
+
+        // Type something
         fireEvent.change(editor, { target: { value: 'New content typed' } });
 
-        // NotesPanel calls setNoteData with object
+        // 1. Verify local update is immediate (optimistic UI)
+        expect(screen.getByTestId('content-display')).toHaveTextContent('New content typed');
+
+        // 2. Verify persistence is NOT called immediately
+        expect(mockSetNoteData).not.toHaveBeenCalled();
+
+        // 3. Fast-forward time by 1000ms (debounce delay)
+        jest.advanceTimersByTime(1000);
+
+        // 4. Verify persistence IS called now
         expect(mockSetNoteData).toHaveBeenCalledWith({ content: 'New content typed' });
+
+        jest.useRealTimers();
     });
 
     it('changes content when date changes', () => {

@@ -51,9 +51,48 @@ function NotesPanel({ selectedDate }) {
   // Use date-based document path - each day is a separate small document
   const [noteData, setNoteData] = useFirestoreDoc(`planner/daily/${currentDate}`, initialNoteData);
 
-  // Save notes when they change
+  // Local state for immediate editor responsiveness
+  // Initialize with persisted content or empty string (or demo content if logged out)
+  const [editorContent, setEditorContent] = React.useState('');
+
+  // Track initialization to prevent overwriting local edits with stale server data
+  const isInitialized = React.useRef(false);
+  const lastServerContent = React.useRef('');
+
+  // Sync from server to local state ONLY on mount or when switching dates
+  React.useEffect(() => {
+    // Determine what content to show
+    const contentToShow = currentUser
+      ? (noteData?.content || '')
+      : (noteData?.content || DEMO_CONTENT);
+
+    // Only update local state if:
+    // 1. We haven't initialized this date yet
+    // 2. OR the server content changed significantly (e.g. from another device) AND it's different from our current local state
+    //    (This is tricky with real-time collab, but for single user, just checking date switch is usually enough)
+
+    // Simple approach: On date change (key), reset local state
+    setEditorContent(contentToShow);
+    lastServerContent.current = contentToShow;
+
+  }, [currentDate, currentUser, noteData?.content]); // Depend on currentDate to reset on day switch
+
+  // Debounced save to Firestore
+  React.useEffect(() => {
+    // Don't save if content hasn't changed from server version (prevents loops)
+    if (editorContent === lastServerContent.current) return;
+
+    const handler = setTimeout(() => {
+      setNoteData({ content: editorContent });
+      lastServerContent.current = editorContent;
+    }, 1000); // 1-second debounce
+
+    return () => clearTimeout(handler);
+  }, [editorContent, setNoteData]);
+
+  // Handle immediate local update
   const handleNoteChange = (content) => {
-    setNoteData({ content });
+    setEditorContent(content);
   };
 
   // Quill editor modules and formats
@@ -111,11 +150,6 @@ function NotesPanel({ selectedDate }) {
     }
   };
 
-  // For non-logged-in users, show demo content as default; for logged-in users, show their saved content
-  const displayContent = currentUser
-    ? (noteData?.content || '')
-    : (noteData?.content || DEMO_CONTENT);
-
   return (
     <Paper
       className="notes-panel"
@@ -148,7 +182,7 @@ function NotesPanel({ selectedDate }) {
       }}>
         <ReactQuill
           theme="snow"
-          value={displayContent}
+          value={editorContent}
           onChange={handleNoteChange}
           modules={modules}
           formats={formats}
