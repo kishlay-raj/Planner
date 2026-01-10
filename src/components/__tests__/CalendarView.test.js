@@ -39,7 +39,13 @@ jest.mock('react-big-calendar/lib/addons/dragAndDrop', () => {
 jest.mock('../QuickTaskDialog', () => ({ open, onSave }) => (
   open ? (
     <div data-testid="quick-task-dialog">
-      <button onClick={() => onSave({ name: 'New Quick Task', duration: 30 })}>Save</button>
+      <button onClick={() => onSave({
+        id: Date.now().toString(),
+        name: 'New Quick Task',
+        duration: 30
+      })}>
+        Save
+      </button>
     </div>
   ) : null
 ));
@@ -138,6 +144,43 @@ describe('CalendarView Component', () => {
       id: 1,
       name: 'Updated Task'
     }));
+  });
+
+  describe('Calendar Task Creation', () => {
+    it('creates task with scheduledTime in ISO string format', () => {
+      renderCalendar();
+      fireEvent.click(screen.getByTestId('slot-trigger'));
+
+      fireEvent.click(within(screen.getByTestId('quick-task-dialog')).getByText('Save'));
+
+      expect(mockOnTaskCreate).toHaveBeenCalledWith(expect.objectContaining({
+        scheduledTime: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+      }));
+    });
+
+    it('creates task with string ID', () => {
+      renderCalendar();
+      fireEvent.click(screen.getByTestId('slot-trigger'));
+
+      fireEvent.click(within(screen.getByTestId('quick-task-dialog')).getByText('Save'));
+
+      const createdTask = mockOnTaskCreate.mock.calls[0][0];
+      expect(typeof createdTask.id).toBe('string');
+    });
+
+    it('includes date and scheduledTime when creating from calendar slot', () => {
+      renderCalendar();
+      fireEvent.click(screen.getByTestId('slot-trigger'));
+
+      fireEvent.click(within(screen.getByTestId('quick-task-dialog')).getByText('Save'));
+
+      expect(mockOnTaskCreate).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'New Quick Task',
+        date: '2026-01-01',
+        scheduledTime: expect.any(String),
+        duration: 30
+      }));
+    });
   });
 });
 
