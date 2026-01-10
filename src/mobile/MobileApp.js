@@ -154,7 +154,7 @@ function MobileApp() {
                         <Typography variant="h5" fontWeight="800" color="primary">Today</Typography>
                         <Typography variant="body2" color="text.secondary" fontWeight="500">{format(new Date(), 'EEE, MMM d')}</Typography>
                     </Box>
-                    <IconButton onClick={handleLogout} size="small" sx={{ opacity: 0.7 }}><Logout fontSize="small" /></IconButton>
+                    <IconButton onClick={handleLogout} size="small" sx={{ opacity: 0.7 }} aria-label="Logout"><Logout fontSize="small" /></IconButton>
                 </Box>
 
                 {/* Context: Weekly Focus */}
