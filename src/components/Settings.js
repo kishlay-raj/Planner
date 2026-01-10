@@ -31,6 +31,7 @@ import {
     DeleteForever
 } from '@mui/icons-material';
 import { useFirestore } from '../hooks/useFirestore';
+import packageJson from '../../package.json';
 
 // Map icon keys to actual components
 const iconMap = {
@@ -193,6 +194,13 @@ function Settings({ navConfig, onUpdate }) {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Version Information */}
+            <Box sx={{ mt: 4, textAlign: 'center' }}>
+                <Typography variant="caption" sx={{ color: theme.palette.text.disabled }}>
+                    Version {packageJson.version}
+                </Typography>
+            </Box>
         </Box>
     );
 }
