@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Snackbar, Alert } from '@mui/material';
+import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider } from '@mui/material';
 import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout } from '@mui/icons-material';
 import packageJson from '../../package.json';
 import { useAuth } from '../contexts/AuthContext';
@@ -48,7 +48,7 @@ const DEFAULT_MOBILE_PROMPTS = [
 ];
 
 function MobileApp() {
-    const { currentUser, loginWithGoogle, logout, authError } = useAuth();
+    const { currentUser, loginWithGoogle, logout } = useAuth();
     const [value, setValue] = useState(0);
 
     // Global State
@@ -100,20 +100,7 @@ function MobileApp() {
 
     // --- HANDLERS ---
 
-    const [error, setError] = useState('');
-    const [loginLoading, setLoginLoading] = useState(false);
-
-    const handleLogin = async () => {
-        try {
-            setLoginLoading(true);
-            await loginWithGoogle();
-            // setLoginLoading(false); // No need, redirect happens or component unmounts
-        } catch (e) {
-            setLoginLoading(false);
-            console.error(e);
-            setError(e.message || 'Login failed');
-        }
-    };
+    const handleLogin = async () => { try { await loginWithGoogle(); } catch (e) { console.error(e); } };
     const handleLogout = async () => { try { await logout(); } catch (e) { console.error(e); } };
 
     const handleAddTask = async () => {
@@ -385,12 +372,6 @@ function MobileApp() {
                     <Button onClick={handleAddTask} variant="contained">Add</Button>
                 </DialogActions>
             </Dialog>
-
-            <Snackbar open={!!(error || authError)} autoHideDuration={6000} onClose={() => setError('')}>
-                <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
-                    {error || authError}
-                </Alert>
-            </Snackbar>
         </ThemeProvider>
     );
 }

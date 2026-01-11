@@ -27,8 +27,7 @@ describe('MobileApp Component', () => {
         useAuth.mockReturnValue({
             currentUser: mockUser,
             logout: mockLogout,
-            loginWithGoogle: jest.fn(),
-            authError: null
+            loginWithGoogle: jest.fn()
         });
 
         // Tasks Mock (useFirestoreCollection)

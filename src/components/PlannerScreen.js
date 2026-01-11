@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider, Box, Typography, Avatar, Menu, MenuItem, Popover, Link, Snackbar, Alert } from '@mui/material';
+import { Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Divider, Box, Typography, Avatar, Menu, MenuItem, Popover, Link } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -17,7 +17,7 @@ import './PlannerScreen.css';
 const emptyObject = {};
 
 function PlannerScreen() {
-  const { currentUser, loginWithGoogle, logout, authError } = useAuth();
+  const { currentUser, loginWithGoogle, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const [migrating, setMigrating] = useState(false);
   const [supportAnchor, setSupportAnchor] = useState(null);
@@ -45,14 +45,11 @@ function PlannerScreen() {
     setAnchorEl(null);
   };
 
-  const [error, setError] = useState('');
-
   const handleLogin = async () => {
     try {
       await loginWithGoogle();
     } catch (error) {
       console.error("Failed to log in", error);
-      setError(error.message || 'Login failed');
     }
   };
 
@@ -312,12 +309,6 @@ function PlannerScreen() {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Snackbar open={!!(error || authError)} autoHideDuration={6000} onClose={() => setError('')}>
-        <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
-          {error || authError}
-        </Alert>
-      </Snackbar>
     </div>
   );
 }

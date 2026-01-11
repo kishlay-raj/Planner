@@ -11,16 +11,13 @@ export function useAuth() {
 export function AuthProvider({ children }) {
     const [currentUser, setCurrentUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [authError, setAuthError] = useState(null);
 
     async function loginWithGoogle() {
-        setAuthError(null);
         try {
             await signInWithRedirect(auth, googleProvider);
             // Page will redirect, no return value needed immediately
         } catch (error) {
             console.error("Login error:", error);
-            setAuthError(error.message);
             throw error;
         }
     }
@@ -45,7 +42,6 @@ export function AuthProvider({ children }) {
             }
         }).catch((error) => {
             console.error("Redirect auth error:", error);
-            setAuthError(error.message);
         });
 
         // Listen for auth state changes
@@ -60,8 +56,7 @@ export function AuthProvider({ children }) {
     const value = {
         currentUser,
         loginWithGoogle,
-        logout,
-        authError
+        logout
     };
 
     return (
