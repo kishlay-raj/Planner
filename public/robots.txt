@@ -1,0 +1,13 @@
+# robots.txt for Flow Planner
+# Allow all crawlers to access the site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://flowplanner.web.app/sitemap.xml
+
+# Disallow crawling of service worker
+Disallow: /service-worker.js
+Disallow: /static/js/
+Disallow: /static/css/
