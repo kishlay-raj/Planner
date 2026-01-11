@@ -45,10 +45,23 @@
   background-color: #f9f9f9;
   padding: 6px 8px;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   gap: 4px;
   align-items: center;
   min-height: 42px;
+  /* Hide scrollbar for cleaner look */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Hide scrollbar for Chrome/Safari/Opera */
+.notes-panel .ql-toolbar::-webkit-scrollbar {
+  display: none;
 }
 
 .notes-panel .ql-editor.ql-blank::before {
@@ -58,6 +71,7 @@
 
 /* Improve button styling */
 .notes-panel .ql-toolbar button {
+  flex-shrink: 0;
   width: 28px;
   height: 28px;
   display: flex;
@@ -183,4 +197,4 @@
   font-size: 1.25em;
   margin: 0.83em 0 0.5em;
   font-weight: 600;
-} 
+}
