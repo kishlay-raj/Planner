@@ -166,6 +166,18 @@ describe('NotesPanel Component', () => {
         expect(strikeBtn).toHaveAttribute('aria-label', 'Strike (Cmd+Shift+S)');
     });
 
+    it('renders the toolbar container with correct ID for scrollable layout', () => {
+        render(
+            <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} />
+        );
+        // The toolbar with ID 'notes-toolbar' should exist to support the CSS-based scrolling fix
+        // eslint-disable-next-line testing-library/no-node-access
+        const toolbar = document.querySelector('#notes-toolbar');
+        expect(toolbar).toBeInTheDocument();
+        // Use classList check if ReactQuill adds it, or just existence
+        // In the real app, ReactQuill adds .ql-toolbar. In mock, it might not unless we mock it.
+    });
+
     describe('Mass Deletion Safeguard', () => {
         it('triggers safeguard when typing over all content', async () => {
             // Render with known content "Notes for Jan 1" (15 chars)
