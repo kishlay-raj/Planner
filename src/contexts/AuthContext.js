@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import { auth, googleProvider } from "../firebase";
-import { signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 
 const AuthContext = React.createContext();
 
@@ -14,8 +14,17 @@ export function AuthProvider({ children }) {
 
     async function loginWithGoogle() {
         try {
-            await signInWithRedirect(auth, googleProvider);
-            // Page will redirect, no return value needed immediately
+            const result = await signInWithPopup(auth, googleProvider);
+            const { getAdditionalUserInfo } = await import("firebase/auth");
+            const { logAnalyticsEvent } = await import("../firebase");
+
+            const additionalUserInfo = getAdditionalUserInfo(result);
+            if (additionalUserInfo?.isNewUser) {
+                logAnalyticsEvent('sign_up', { method: 'google' });
+            }
+            logAnalyticsEvent('login', { method: 'google' });
+
+            return result;
         } catch (error) {
             console.error("Login error:", error);
             throw error;
@@ -26,25 +35,7 @@ export function AuthProvider({ children }) {
         return signOut(auth);
     }
 
-    // Handle Auth State Changes & Redirect Results
     useEffect(() => {
-        // Check for redirect result (from signInWithRedirect)
-        getRedirectResult(auth).then(async (result) => {
-            if (result) {
-                const { getAdditionalUserInfo } = await import("firebase/auth");
-                const { logAnalyticsEvent } = await import("../firebase");
-
-                const additionalUserInfo = getAdditionalUserInfo(result);
-                if (additionalUserInfo?.isNewUser) {
-                    logAnalyticsEvent('sign_up', { method: 'google' });
-                }
-                logAnalyticsEvent('login', { method: 'google' });
-            }
-        }).catch((error) => {
-            console.error("Redirect auth error:", error);
-        });
-
-        // Listen for auth state changes
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
             setLoading(false);
