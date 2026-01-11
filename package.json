@@ -40,6 +40,7 @@
     "test:watch": "react-scripts test --coverage",
     "eject": "react-scripts eject",
     "deploy": "npm run build && gcloud app deploy --quiet",
+    "deployWebApp": "npm run build && firebase deploy --only hosting:flowplanner",
     "start-prod": "node server.js",
     "electron:dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:build": "npm run build && electron-builder",
