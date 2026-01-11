@@ -35,6 +35,7 @@ describe('PlannerScreen Component', () => {
       currentUser: { uid: 'test-user', displayName: 'Test User' },
       loginWithGoogle: jest.fn(),
       logout: jest.fn(),
+      authError: null,
     });
 
     // Setup Firestore Collection Mock
