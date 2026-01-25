@@ -44,8 +44,8 @@ const mobileTheme = createTheme({
 const DEFAULT_MOBILE_PROMPTS = [
     { id: '1', section: 'Morning', text: 'Who is the person I want to become today?' },
     { id: '2', section: 'Morning', text: 'The "Big Rock": What is the one thing I must accomplish today?' },
-    { id: '15', section: 'Evening', text: 'Review: What is one system I can tweak to make tomorrow 1% easier?' },
-    { id: '16', section: 'Evening', text: '3 Amazing things that happened today.' }
+    { id: '13', section: 'Evening', text: 'Review: What is one system I can tweak to make tomorrow 1% easier?' },
+    { id: '14', section: 'Evening', text: '3 Amazing things that happened today.' }
 ];
 
 function MobileApp() {
