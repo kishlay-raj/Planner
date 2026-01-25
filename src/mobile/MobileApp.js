@@ -45,6 +45,7 @@ const MOBILE_JOURNAL_PROMPTS = [
     { id: '1', section: 'Morning', text: 'Who is the person I want to become today?' },
     { id: '2', section: 'Morning', text: 'The "Big Rock": What is the one thing I must accomplish today?' },
     { id: '3', section: 'Morning', text: 'The Obstacle: What is most likely to distract me today?' },
+    { id: '15', section: 'Morning', text: 'Do I have a timeblock or deadline for my goals?' },
     { id: '4', section: 'Deep Work', text: 'The Depth Ratio: How many hours of actual Deep Work did I achieve today?' },
     { id: '5', section: 'Deep Work', text: 'Distraction Deep Dive: When I lost focus, what was the trigger (emotion or app/site)? What was I avoiding?' },
     { id: '6', section: 'Digital Minimalism', text: 'The Solitude Check: Did I spend any time today alone with my own thoughts?' },
@@ -52,6 +53,9 @@ const MOBILE_JOURNAL_PROMPTS = [
     { id: '8', section: 'Behavioral Triggers', text: 'The Transition Trap: Did I lose time during a task, or between tasks?' },
     { id: '13', section: 'Evening', text: 'Daily Improvement: What is one system I can tweak to make tomorrow 1% better?' },
     { id: '14', section: 'Evening', text: '3 Amazing things that happened today.' },
+    // Phase 1: Awareness Audit
+    { id: 'detox-0', section: 'Dopamine detox phase 1: Awareness', text: `"What exactly did I consume today, and in what quantity?" (Be precise: e.g., '2 hours of scrolling,' not 'a little while').` },
+    { id: 'detox-0b', section: 'Dopamine detox phase 1: Awareness', text: "Am I feeling the 'Gremlins' on the pain side right now?" },
     // Daily Digital Audit
     { id: 'digital-3', section: 'Daily Digital Audit', text: 'The "Junk internet" Limit: Total minutes spent on Insta/Twitter/News: ______ (Target: <10 mins)' },
     { id: 'digital-4', section: 'Daily Digital Audit', text: 'Fortress Protocol: Did I actively block websites or use a "single-purpose" device during work hours? (Yes/No)' },

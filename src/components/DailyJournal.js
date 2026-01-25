@@ -58,6 +58,7 @@ const DEFAULT_PROMPTS = [
     { id: '1', section: 'Morning', text: 'Who is the person I want to become today? (e.g., "I am a focused writer," "I am a calm parent.")' },
     { id: '2', section: 'Morning', text: 'The "Big Rock": What is the one thing I must accomplish today to feel satisfied?' },
     { id: '3', section: 'Morning', text: 'The Obstacle: What is most likely to distract me today, and how will I handle it?' },
+    { id: '15', section: 'Morning', text: 'Do I have a timeblock or deadline for my goals?' },
     { id: '4', section: 'Deep Work', text: 'The Depth Ratio: How many hours of actual Deep Work did I achieve today versus "Shallow Work" (emails, meetings, admin)? Was this ratio acceptable?' },
     { id: '5', section: 'Deep Work', text: 'Distraction Deep Dive: When I lost focus today, what was the trigger (internal emotion or external app/site)? What was I trying to avoid or numb?' },
     { id: '6', section: 'Deep Work', text: 'Skill Growth & Value: What specifically did I do today to become better at my craft? Am I building skills that are rare and valuable, or am I doing work that is easy to replicate?' },
@@ -68,6 +69,8 @@ const DEFAULT_PROMPTS = [
     { id: '13', section: 'Evening', text: 'Daily Improvement: What is one system I can tweak or change to make tomorrow 1% better than today?' },
     { id: '14', section: 'Evening', text: '3 Amazing things that happened today.' },
     // Phase 1: Awareness Audit
+    { id: 'detox-0', section: 'Dopamine detox phase 1: Awareness', text: `"What exactly did I consume today, and in what quantity?" (Be precise: e.g., '2 hours of scrolling,' not 'a little while').` },
+    { id: 'detox-0b', section: 'Dopamine detox phase 1: Awareness', text: "Am I feeling the 'Gremlins' on the pain side right now?" },
     { id: 'detox-1', section: 'Dopamine detox phase 1: Awareness', text: 'The "One Thing" Analysis: If I eliminated just one distraction, which one would have the biggest impact? Why haven\'t I cut it yet?' },
     { id: 'detox-2', section: 'Dopamine detox phase 1: Awareness', text: 'Excitement vs. Fulfillment: List 3 stimulating things I did today. Did they leave me fulfilling or empty?' },
     // Phase 2: The Struggle
