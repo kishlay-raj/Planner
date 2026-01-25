@@ -55,6 +55,8 @@ describe('TaskList Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Mock scrollIntoView for all tests since it's not implemented in jsdom
+    Element.prototype.scrollIntoView = jest.fn();
   });
 
   const renderTaskList = () => {
