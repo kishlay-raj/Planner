@@ -21,6 +21,7 @@ import {
   MenuBook,
   SelfImprovement,
   ViewQuilt,
+  Security,
   Settings
 } from '@mui/icons-material';
 
@@ -32,6 +33,7 @@ const iconMap = {
   menuBook: <MenuBook />,
   selfImprovement: <SelfImprovement />,
   viewQuilt: <ViewQuilt />,
+  security: <Security />,
   timer: <Timer />
 };
 

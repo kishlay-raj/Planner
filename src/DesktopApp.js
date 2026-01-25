@@ -8,6 +8,7 @@ import MonthlyPlanner from './components/MonthlyPlanner';
 import YearlyPlanner from './components/YearlyPlanner';
 import DailyJournal from './components/DailyJournal';
 import RoutinePlanner from './components/RoutinePlanner';
+import RelapseFortificationJournal from './components/RelapseFortificationJournal';
 import EisenhowerMatrix from './components/EisenhowerMatrix';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
@@ -126,6 +127,7 @@ function DesktopApp() {
     { id: 'planner-month', label: 'Monthly', iconKey: 'calendarMonth', visible: true },
     { id: 'planner-year', label: 'Yearly', iconKey: 'emojiEvents', visible: true },
     { id: 'daily-journal', label: 'Journal', iconKey: 'menuBook', visible: true },
+    { id: 'relapse-journal', label: 'Fortification', iconKey: 'security', visible: true },
     { id: 'routines', label: 'Routines', iconKey: 'selfImprovement', visible: true },
     { id: 'eisenhower', label: 'Matrix', iconKey: 'viewQuilt', visible: true },
     { id: 'pomodoro', label: 'Pomodoro', iconKey: 'timer', visible: true }
@@ -170,6 +172,8 @@ function DesktopApp() {
         return <YearlyPlanner />;
       case 'daily-journal':
         return <DailyJournal />;
+      case 'relapse-journal':
+        return <RelapseFortificationJournal />;
       case 'routines':
         return <RoutinePlanner onTaskCreate={handleTaskCreate} />;
       case 'pomodoro':
