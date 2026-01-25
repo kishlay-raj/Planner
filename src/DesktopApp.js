@@ -14,6 +14,7 @@ import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import { useFirestore } from './hooks/useFirestore';
 import './App.css';
+import FloatingPomodoro from './components/FloatingPomodoro';
 
 const theme = createTheme({
   palette: {
@@ -114,11 +115,172 @@ const theme = createTheme({
   }
 });
 
+const defaultSettings = {
+  pomodoro: 30,
+  shortBreak: 5,
+  longBreak: 15,
+  autoStartBreaks: false,
+  autoStartPomodoros: false,
+  longBreakInterval: 4,
+  autoCheckTasks: false,
+  autoSwitchTasks: true,
+  alarmSound: 'Kitchen',
+  alarmVolume: 50,
+  alarmRepeat: 1,
+  tickingSound: 'Ticking Slow',
+  tickingVolume: 50,
+  darkMode: false,
+  hourFormat: '24-hour',
+};
+
 function DesktopApp() {
   const [tasks, setTasks] = useFirestore('allTasks', []);
   const [activePanel, setActivePanel] = useState('planner');
-  const [pomodoroMode, setPomodoroMode] = useState('pomodoro');
+  // const [pomodoroMode, setPomodoroMode] = useState('pomodoro'); // Removed: managed in logic below
   const [supportAnchor, setSupportAnchor] = useState(null);
+
+  // --- GLOBAL POMODORO STATE ---
+  const [timeLeft, setTimeLeft] = useState(30 * 60);
+  const [isActive, setIsActive] = useState(false);
+  const [mode, setMode] = useState('pomodoro');
+  const [cycles, setCycles] = useState(0);
+  const [settings, setSettings] = useFirestore('pomodoroSettings', defaultSettings);
+  const defaultStats = { total: 0, today: 0, lastDate: new Date().toDateString() };
+  const [stats, setStats] = useFirestore('pomodoroStats', defaultStats);
+  const [tickInterval, setTickInterval] = useState(null);
+
+  // Audio Context
+  const [audioContext] = useState(() => {
+    try {
+      return new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      console.warn('Web Audio API is not supported');
+      return null;
+    }
+  });
+
+  const playBeep = () => {
+    if (!audioContext) return;
+    try {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(settings.alarmVolume / 100, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (e) { console.warn(e); }
+  };
+
+  const playTick = () => {
+    if (!audioContext) return;
+    try {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(settings.tickingVolume / 400, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (e) { console.warn(e); }
+  };
+
+  const cleanupTick = () => {
+    if (tickInterval) {
+      clearInterval(tickInterval);
+      setTickInterval(null);
+    }
+  };
+
+  useEffect(() => {
+    let interval = null;
+    if (isActive && timeLeft > 0) {
+      if (settings.tickingVolume > 0 && !tickInterval) {
+        setTickInterval(setInterval(playTick, 1000));
+      }
+      interval = setInterval(() => {
+        setTimeLeft(t => t - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      cleanupTick();
+      if (settings.alarmVolume > 0) {
+        let count = 0;
+        const alarmInt = setInterval(() => {
+          if (count < settings.alarmRepeat) { playBeep(); count++; }
+          else clearInterval(alarmInt);
+        }, 1500);
+      }
+
+      // Update stats and cycles
+      setCycles(c => c + 1);
+      setStats(prev => {
+        const isNewDay = prev.lastDate !== new Date().toDateString();
+        return { ...prev, total: prev.total + 1, today: isNewDay ? 1 : prev.today + 1, lastDate: new Date().toDateString() };
+      });
+
+      // Auto-switch logic
+      if (mode === 'pomodoro') {
+        if (cycles + 1 >= settings.longBreakInterval) {
+          setMode('longBreak');
+          setTimeLeft(settings.longBreak * 60);
+          setCycles(0);
+        } else {
+          setMode('shortBreak');
+          setTimeLeft(settings.shortBreak * 60);
+        }
+        setIsActive(settings.autoStartBreaks);
+      } else {
+        setMode('pomodoro');
+        setTimeLeft(settings.pomodoro * 60);
+        setIsActive(settings.autoStartPomodoros);
+      }
+    }
+    return () => { clearInterval(interval); cleanupTick(); };
+  }, [isActive, timeLeft, settings, mode, cycles]);
+
+  const toggleTimer = () => {
+    if (isActive) cleanupTick();
+    setIsActive(!isActive);
+  };
+
+  const resetTimer = () => {
+    setIsActive(false);
+    cleanupTick();
+    // Logic to switch modes manually
+    if (mode === 'pomodoro') {
+      setMode('shortBreak');
+      setTimeLeft(settings.shortBreak * 60);
+    } else if (mode === 'shortBreak') {
+      setMode('longBreak');
+      setTimeLeft(settings.longBreak * 60);
+    } else {
+      setMode('pomodoro');
+      setTimeLeft(settings.pomodoro * 60);
+    }
+  };
+
+  const handleSettingChange = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    // Immediate update if matches current mode
+    if (key === mode) setTimeLeft(value * 60);
+  };
+
+  const setModeAndUpdateTime = (newMode) => {
+    setMode(newMode);
+    setIsActive(false);
+    cleanupTick();
+    if (newMode === 'pomodoro') setTimeLeft(settings.pomodoro * 60);
+    else if (newMode === 'shortBreak') setTimeLeft(settings.shortBreak * 60);
+    else if (newMode === 'longBreak') setTimeLeft(settings.longBreak * 60);
+  };
+
+  // -------------------------
 
   // Navigation Configuration State
   const defaultNavConfig = [
@@ -156,9 +318,9 @@ function DesktopApp() {
     setTasks(updatedTasks);
   };
 
-  const handlePomodoroModeChange = (mode) => {
-    setPomodoroMode(mode);
-  };
+  // const handlePomodoroModeChange = (mode) => {
+  //   setPomodoroMode(mode);
+  // };
 
   const renderPanel = () => {
     switch (activePanel) {
@@ -177,7 +339,17 @@ function DesktopApp() {
       case 'routines':
         return <RoutinePlanner onTaskCreate={handleTaskCreate} />;
       case 'pomodoro':
-        return <PomodoroPanel onModeChange={handlePomodoroModeChange} />;
+        return <PomodoroPanel
+          timeLeft={timeLeft}
+          isActive={isActive}
+          mode={mode}
+          setMode={setModeAndUpdateTime}
+          cycles={cycles}
+          toggleTimer={toggleTimer}
+          resetTimer={resetTimer}
+          settings={settings}
+          handleSettingChange={handleSettingChange}
+        />;
       case 'eisenhower':
         return <EisenhowerMatrix />;
       case 'settings':
@@ -197,14 +369,24 @@ function DesktopApp() {
         <Sidebar
           onNavigate={setActivePanel}
           activePanel={activePanel}
-          pomodoroMode={pomodoroMode}
+          pomodoroMode={mode}
           navConfig={navConfig}
         />
 
-        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative' }}>
           <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
             {renderPanel()}
           </Box>
+
+          {/* Floating Pomodoro Bubble */}
+          <FloatingPomodoro
+            timeLeft={timeLeft}
+            isActive={isActive}
+            onToggle={toggleTimer}
+            mode={mode}
+            visible={isActive && activePanel !== 'pomodoro'}
+          />
+
           <Box sx={{
             py: 1.5,
             px: 3,

@@ -25,107 +25,23 @@ import {
 
 import { useFirestore } from '../hooks/useFirestore';
 
-function PomodoroPanel({ onModeChange }) {
-  const [timeLeft, setTimeLeft] = useState(30 * 60); // Default 30 minutes
-  const [isActive, setIsActive] = useState(false);
-  const [mode, setMode] = useState('pomodoro'); // 'pomodoro', 'shortBreak', 'longBreak'
-  const [cycles, setCycles] = useState(0);
+
+function PomodoroPanel({
+  timeLeft,
+  isActive,
+  mode,
+  setMode,
+  cycles,
+  toggleTimer,
+  resetTimer,
+  settings,
+  handleSettingChange
+}) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Create audio contexts only once
-  const [audioContext] = useState(() => {
-    try {
-      return new (window.AudioContext || window.webkitAudioContext)();
-    } catch (e) {
-      console.warn('Web Audio API is not supported in this browser');
-      return null;
-    }
-  });
-
-  // Keep track of active sound intervals
-  const [tickInterval, setTickInterval] = useState(null);
-
-  const defaultSettings = {
-    pomodoro: 30,
-    shortBreak: 5,
-    longBreak: 15,
-    autoStartBreaks: false,
-    autoStartPomodoros: false,
-    longBreakInterval: 4,
-    autoCheckTasks: false,
-    autoSwitchTasks: true,
-    alarmSound: 'Kitchen',
-    alarmVolume: 50,
-    alarmRepeat: 1,
-    tickingSound: 'Ticking Slow',
-    tickingVolume: 50,
-    darkMode: false,
-    hourFormat: '24-hour',
-  };
-
-  const [settings, setSettings] = useFirestore('pomodoroSettings', defaultSettings);
-
+  // Stats handling (keeping this locally for now as it reads from firestore mostly)
   const defaultStats = { total: 0, today: 0, lastDate: new Date().toDateString() };
-  const [stats, setStats] = useFirestore('pomodoroStats', defaultStats);
-
-  // Stats date check logic (optional here, might be better inside the update function or a useEffect to reset today if date changed)
-  // For simplicity, we check date when updating stats (already implemented in setStats update logic below)
-
-  // Simple beep sound function
-  const playBeep = () => {
-    if (!audioContext) return;
-
-    try {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-
-      gainNode.gain.setValueAtTime(settings.alarmVolume / 100, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
-    } catch (e) {
-      console.warn('Error playing sound:', e);
-    }
-  };
-
-  // Ticking sound function
-  const playTick = () => {
-    if (!audioContext) return;
-
-    try {
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-
-      gainNode.gain.setValueAtTime(settings.tickingVolume / 400, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
-    } catch (e) {
-      console.warn('Error playing tick:', e);
-    }
-  };
-
-  // Clean up function for tick interval
-  const cleanupTick = () => {
-    if (tickInterval) {
-      clearInterval(tickInterval);
-      setTickInterval(null);
-    }
-  };
+  const [stats] = useFirestore('pomodoroStats', defaultStats);
 
   const modeColors = {
     pomodoro: '#b74b4b',
@@ -133,161 +49,16 @@ function PomodoroPanel({ onModeChange }) {
     longBreak: '#457ca3'
   };
 
-  const handleModeChange = (event, newMode) => {
+  const handleModeChangeInternal = (event, newMode) => {
     if (newMode !== null) {
       setMode(newMode);
-      onModeChange(newMode);
-      setIsActive(false);
-      cleanupTick();
-      switch (newMode) {
-        case 'pomodoro':
-          setTimeLeft(settings.pomodoro * 60);
-          break;
-        case 'shortBreak':
-          setTimeLeft(settings.shortBreak * 60);
-          break;
-        case 'longBreak':
-          setTimeLeft(settings.longBreak * 60);
-          break;
-      }
-    }
-  };
-
-  useEffect(() => {
-    let interval = null;
-    if (isActive && timeLeft > 0) {
-      // Start ticking sound when timer is active
-      if (settings.tickingVolume > 0) {
-        if (!tickInterval) {
-          const newTickInterval = setInterval(playTick, 1000);
-          setTickInterval(newTickInterval);
-        }
-      }
-
-      interval = setInterval(() => {
-        setTimeLeft(timeLeft => timeLeft - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      cleanupTick();
-
-      // Play alarm sound
-      if (settings.alarmVolume > 0) {
-        let alarmCount = 0;
-        const alarmInterval = setInterval(() => {
-          if (alarmCount < settings.alarmRepeat) {
-            playBeep();
-            alarmCount++;
-          } else {
-            clearInterval(alarmInterval);
-          }
-        }, 1500);
-      }
-
-      // Analytics: Timer Complete
-      import("../firebase").then(({ logAnalyticsEvent }) => {
-        logAnalyticsEvent('timer_complete', {
-          mode,
-          cycles_count: cycles + 1
-        });
-      });
-
-      setCycles(c => c + 1);
-      setStats(prev => {
-        const isNewDay = prev.lastDate !== new Date().toDateString();
-        return {
-          ...prev,
-          total: prev.total + 1,
-          today: isNewDay ? 1 : prev.today + 1,
-          lastDate: new Date().toDateString()
-        };
-      });
-
-      // Handle auto-start features
-      if (mode === 'pomodoro') {
-        if (cycles + 1 >= settings.longBreakInterval) {
-          setMode('longBreak');
-          setTimeLeft(settings.longBreak * 60);
-          setCycles(0);
-        } else {
-          setMode('shortBreak');
-          setTimeLeft(settings.shortBreak * 60);
-        }
-        if (settings.autoStartBreaks) {
-          setIsActive(true);
-        } else {
-          setIsActive(false);
-        }
-      } else {
-        setMode('pomodoro');
-        setTimeLeft(settings.pomodoro * 60);
-        if (settings.autoStartPomodoros) {
-          setIsActive(true);
-        } else {
-          setIsActive(false);
-        }
-      }
-    }
-    return () => {
-      clearInterval(interval);
-      cleanupTick();
-    };
-  }, [isActive, timeLeft, settings, mode, cycles, onModeChange]);
-
-  const toggleTimer = () => {
-    if (isActive) {
-      cleanupTick();
-    }
-    const nextState = !isActive;
-    setIsActive(nextState);
-
-    import("../firebase").then(({ logAnalyticsEvent }) => {
-      if (nextState) {
-        logAnalyticsEvent('timer_start', { mode, duration: timeLeft });
-      } else {
-        logAnalyticsEvent('timer_pause', { mode, duration: timeLeft });
-      }
-    });
-  };
-
-  const resetTimer = () => {
-    setIsActive(false);
-    cleanupTick();
-    // Cycle through modes: pomodoro -> shortBreak -> longBreak -> pomodoro
-    if (mode === 'pomodoro') {
-      setMode('shortBreak');
-      onModeChange('shortBreak');
-      setTimeLeft(settings.shortBreak * 60);
-    } else if (mode === 'shortBreak') {
-      setMode('longBreak');
-      onModeChange('longBreak');
-      setTimeLeft(settings.longBreak * 60);
-    } else {
-      setMode('pomodoro');
-      onModeChange('pomodoro');
-      setTimeLeft(settings.pomodoro * 60);
-    }
-  };
-
-  const handleSettingChange = (key, value) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value
-    }));
-
-    // Apply immediate changes where necessary
-    if (key === 'pomodoro' && mode === 'pomodoro') {
-      setTimeLeft(value * 60);
-    } else if (key === 'shortBreak' && mode === 'shortBreak') {
-      setTimeLeft(value * 60);
-    } else if (key === 'longBreak' && mode === 'longBreak') {
-      setTimeLeft(value * 60);
     }
   };
 
   return (
     <Box
       sx={{
-        height: '100vh',
+        height: '100%',
         bgcolor: modeColors[mode],
         color: 'white',
         display: 'flex',
@@ -355,7 +126,7 @@ function PomodoroPanel({ onModeChange }) {
         <ToggleButtonGroup
           value={mode}
           exclusive
-          onChange={handleModeChange}
+          onChange={handleModeChangeInternal}
           sx={{
             bgcolor: 'rgba(255, 255, 255, 0.1)',
             borderRadius: 2,
