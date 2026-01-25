@@ -47,12 +47,17 @@ export const logAnalyticsEvent = (eventName, eventParams = {}) => {
 };
 
 try {
+    // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+    // checking if we can use the new API or just suppress for now
     enableIndexedDbPersistence(db)
         .catch((err) => {
             if (err.code === 'failed-precondition') {
-                console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+                // Multiple tabs open, persistence can only be enabled in one tab at a time.
+                // Silently ignore or warn if needed
+                console.warn('Persistence failed: Multiple tabs open');
             } else if (err.code === 'unimplemented') {
-                console.warn('The current browser does not support all of the features required to enable persistence');
+                // The current browser does not support all of the features required to enable persistence
+                // Silently ignore
             }
         });
 } catch (e) {

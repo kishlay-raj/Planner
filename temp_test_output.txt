@@ -1,0 +1,1779 @@
+
+> flow-planner@0.1.1 test
+> react-scripts test --coverage --watchAll=false --watchAll=false
+
+PASS src/components/__tests__/CalendarView.test.js
+  ● Console
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      82 |
+      83 |   const renderCalendar = (tasks = scheduledTasks) => {
+    > 84 |     return render(
+         |                  ^
+      85 |       <CalendarView
+      86 |         scheduledTasks={tasks}
+      87 |         onTaskSchedule={mockOnTaskSchedule}
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at renderCalendar (src/components/__tests__/CalendarView.test.js:84:18)
+      at Object.<anonymous> (src/components/__tests__/CalendarView.test.js:97:5)
+
+PASS src/components/__tests__/DragDropBug.test.js
+  ● Console
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      67 |     ];
+      68 |
+    > 69 |     render(
+         |           ^
+      70 |         <ThemeProvider theme={theme}>
+      71 |             <TaskList
+      72 |                 tasks={tasks}
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/DragDropBug.test.js:69:11)
+
+PASS src/components/__tests__/PlannerScreen.test.js
+  ● Console
+
+    console.warn
+      [2026-01-25T10:44:29.467Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at Object.<anonymous> (src/contexts/AuthContext.js:2:1)
+      at Object.<anonymous> (src/components/PlannerScreen.js:11:1)
+      at Object.<anonymous> (src/components/__tests__/PlannerScreen.test.js:4:1)
+
+    console.warn
+      [2026-01-25T10:44:29.508Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at Object.<anonymous> (src/contexts/AuthContext.js:2:1)
+      at Object.<anonymous> (src/components/PlannerScreen.js:11:1)
+      at Object.<anonymous> (src/components/__tests__/PlannerScreen.test.js:4:1)
+
+    console.warn
+      [2026-01-25T10:44:29.792Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at Object.<anonymous> (src/hooks/useFirestoreNew.js:3:1)
+      at Object.<anonymous> (src/components/PlannerScreen.js:12:1)
+      at Object.<anonymous> (src/components/__tests__/PlannerScreen.test.js:4:1)
+
+    console.warn
+      [2026-01-25T10:44:29.800Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at Object.<anonymous> (src/hooks/useFirestoreNew.js:3:1)
+      at Object.<anonymous> (src/components/PlannerScreen.js:12:1)
+      at Object.<anonymous> (src/components/__tests__/PlannerScreen.test.js:4:1)
+
+    console.warn
+      [2026-01-25T10:44:29.901Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at Object.<anonymous> (src/hooks/dataMigration.js:2:1)
+      at Object.<anonymous> (src/components/PlannerScreen.js:13:1)
+      at Object.<anonymous> (src/components/__tests__/PlannerScreen.test.js:4:1)
+
+    console.warn
+      [2026-01-25T10:44:29.907Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at Object.<anonymous> (src/hooks/dataMigration.js:2:1)
+      at Object.<anonymous> (src/components/PlannerScreen.js:13:1)
+      at Object.<anonymous> (src/components/__tests__/PlannerScreen.test.js:4:1)
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      59 |
+      60 |   const renderPlannerScreen = () => {
+    > 61 |     return render(
+         |                  ^
+      62 |       <ThemeProvider theme={theme}>
+      63 |         <DragDropContext onDragEnd={() => { }}>
+      64 |           <PlannerScreen />
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at renderPlannerScreen (src/components/__tests__/PlannerScreen.test.js:61:18)
+      at Object.<anonymous> (src/components/__tests__/PlannerScreen.test.js:88:5)
+
+    console.warn
+      [2026-01-25T10:44:30.026Z]  @firebase/firestore: Firestore (12.6.0): Error using user provided cache. Falling back to memory cache: FirebaseError: [code=unimplemented]: This platform is either missing IndexedDB or is known to have an incomplete implementation. Offline persistence has been disabled.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at ensureOfflineComponents (node_modules/@firebase/firestore/src/core/firestore_client.ts:321:9)
+      at setOnlineComponentProvider (node_modules/@firebase/firestore/src/core/firestore_client.ts:249:29)
+      at ensureOnlineComponents (node_modules/@firebase/firestore/src/core/firestore_client.ts:349:7)
+      at getEventManager (node_modules/@firebase/firestore/src/core/firestore_client.ts:385:35)
+      at node_modules/@firebase/firestore/src/core/firestore_client.ts:486:26
+
+PASS src/components/__tests__/QuickTaskDialog.test.js
+  ● Console
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      15 |
+      16 |   const renderDialog = (open = true) => {
+    > 17 |     return render(
+         |                  ^
+      18 |       <QuickTaskDialog
+      19 |         open={open}
+      20 |         selectedTime={selectedTime}
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at renderDialog (src/components/__tests__/QuickTaskDialog.test.js:17:18)
+      at Object.<anonymous> (src/components/__tests__/QuickTaskDialog.test.js:29:5)
+
+PASS src/contexts/__tests__/AuthContext.test.js
+PASS src/hooks/__tests__/useFirestoreNew.test.js
+  ● Console
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      32 |
+      33 |     it('should initialize with default value and loading true', () => {
+    > 34 |         const { result } = renderHook(() => useFirestoreDoc('test/path', { foo: 'bar' }));
+         |                                      ^
+      35 |
+      36 |         expect(result.current[0]).toEqual({ foo: 'bar' }); // data
+      37 |         expect(result.current[2]).toBe(true); // loading state
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at renderHook (node_modules/@testing-library/react/dist/pure.js:293:7)
+      at Object.<anonymous> (src/hooks/__tests__/useFirestoreNew.test.js:34:38)
+
+PASS src/__tests__/journalConsistency.test.js
+PASS src/components/__tests__/TaskList.test.js
+  ● Console
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      61 |
+      62 |   const renderTaskList = () => {
+    > 63 |     return render(
+         |                  ^
+      64 |       <ThemeProvider theme={theme}>
+      65 |         <DragDropContext onDragEnd={() => { }}>
+      66 |           <TaskList
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at renderTaskList (src/components/__tests__/TaskList.test.js:63:18)
+      at Object.<anonymous> (src/components/__tests__/TaskList.test.js:79:5)
+
+    console.error
+      Warning: An update to Transition inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+          at Transition (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/react-transition-group/cjs/Transition.js:135:30)
+          at Collapse (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@mui/material/node/Collapse/Collapse.js:104:59)
+          at div
+          at /Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@emotion/react/dist/emotion-element-a1829a1e.cjs.js:58:23
+          at Paper (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@mui/material/node/Paper/Paper.js:70:59)
+          at /Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@emotion/react/dist/emotion-element-a1829a1e.cjs.js:58:23
+          at Accordion (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@mui/material/node/Accordion/Accordion.js:132:59)
+          at DragDropContext (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/src/setupTests.js:14:23)
+          at div
+          at div
+          at /Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@emotion/react/dist/emotion-element-a1829a1e.cjs.js:58:23
+          at Paper (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@mui/material/node/Paper/Paper.js:70:59)
+          at TaskList (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/src/components/TaskList.js:29:21)
+          at DragDropContext (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/src/setupTests.js:14:23)
+          at DefaultPropsProvider (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@mui/system/DefaultPropsProvider/DefaultPropsProvider.js:18:3)
+          at RtlProvider (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@mui/system/RtlProvider/index.js:19:7)
+          at ThemeProvider (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@mui/private-theming/node/ThemeProvider/ThemeProvider.js:39:5)
+          at ThemeProvider (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@mui/system/ThemeProvider/ThemeProvider.js:52:5)
+          at ThemeProvider (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@mui/material/node/styles/ThemeProvider.js:21:14)
+
+      224 |
+      225 |     // Fast-forward time for the 100ms delay in TaskList.js
+    > 226 |     jest.advanceTimersByTime(110);
+          |          ^
+      227 |
+      228 |     // Check if scrollIntoView was called
+      229 |     expect(scrollIntoViewMock).toHaveBeenCalledWith({
+
+      at printWarning (node_modules/react-dom/cjs/react-dom.development.js:86:30)
+      at error (node_modules/react-dom/cjs/react-dom.development.js:60:7)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom.development.js:27628:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom.development.js:25547:5)
+      at Object.enqueueSetState (node_modules/react-dom/cjs/react-dom.development.js:17925:7)
+      at Transition.Object.<anonymous>.Component.setState (node_modules/react/cjs/react.development.js:354:16)
+      at Transition.safeSetState (node_modules/react-transition-group/cjs/Transition.js:353:10)
+      at node_modules/react-transition-group/cjs/Transition.js:300:16
+      at nextCallback (node_modules/react-transition-group/cjs/Transition.js:365:9)
+      at node_modules/@mui/utils/useTimeout/useTimeout.js:35:7
+      at callTimer (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:729:24)
+      at doTickInner (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1289:29)
+      at doTick (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1370:20)
+      at Object.tick (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1378:20)
+      at FakeTimers.advanceTimersByTime (node_modules/@jest/fake-timers/build/modernFakeTimers.js:101:19)
+      at Object.<anonymous> (src/components/__tests__/TaskList.test.js:226:10)
+
+FAIL src/components/__tests__/NotesPanel.test.js (7.564 s)
+  ● Console
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      83 |
+      84 |     it('renders with correct date header', () => {
+    > 85 |         render(
+         |               ^
+      86 |             <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} />
+      87 |         );
+      88 |         expect(screen.getByText(/Notes for January 1, 2026/i)).toBeInTheDocument();
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:85:15)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:85:15)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:92:15)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:100:15)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:125:36)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:154:15)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:170:15)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:184:43)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:221:19)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:231:19)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:241:19)
+
+    console.error
+      Error fetching available dates: [FirebaseError: Expected first argument to collection() to be a CollectionReference, a DocumentReference or FirebaseFirestore] {
+        code: 'invalid-argument',
+        customData: undefined,
+        toString: [Function (anonymous)]
+      }
+
+      172 |         setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      173 |       } catch (error) {
+    > 174 |         console.error('Error fetching available dates:', error);
+          |                 ^
+      175 |       }
+      176 |     }
+      177 |
+
+      at fetchAvailableDates (src/components/NotesPanel.js:174:17)
+      at src/components/NotesPanel.js:178:5
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26115:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26998:3)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at finishConcurrentRender (node_modules/react-dom/cjs/react-dom.development.js:26020:9)
+      at performConcurrentWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:25848:7)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:251:19)
+
+  ● NotesPanel Component › renders with correct date header
+
+    TestingLibraryElementError: Unable to find an element with the text: /Notes for January 1, 2026/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+    Ignored nodes: comments, script, style
+    [36m<body>[39m
+      [36m<div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 notes-panel css-2e8mfu-MuiPaper-root"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-wgllds"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-69i1ev"[39m
+            [36m>[39m
+              [36m<h6[39m
+                [33mclass[39m=[32m"MuiTypography-root MuiTypography-h6 css-1y8v3j7-MuiTypography-root"[39m
+              [36m>[39m
+                [0mNotes[0m
+              [36m</h6>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-kjzuw8"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mid[39m=[32m"notes-toolbar"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"ql-formats"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Bold (Cmd+B)"[39m
+                  [33mclass[39m=[32m"ql-bold"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Italic (Cmd+I)"[39m
+                  [33mclass[39m=[32m"ql-italic"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Strike (Cmd+Shift+S)"[39m
+                  [33mclass[39m=[32m"ql-strike"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Clear Formatting"[39m
+                  [33mclass[39m=[32m"ql-clean"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"ql-formats"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Heading 1"[39m
+                  [33mclass[39m=[32m"ql-header"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                  [33mvalue[39m=[32m"1"[39m
+                [36m>[39m
+                  [0mH1[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Heading 2"[39m
+                  [33mclass[39m=[32m"ql-header"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                  [33mvalue[39m=[32m"2"[39m
+                [36m>[39m
+                  [0mH2[0m
+                [36m</button>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"ql-formats"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Ordered List"[39m
+                  [33mclass[39m=[32m"ql-list"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                  [33mvalue[39m=[32m"ordered"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Bullet List"[39m
+                  [33mclass[39m=[32m"ql-list"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                  [33mvalue[39m=[32m"bullet"[39m
+                [36m/>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"ql-formats"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Link"[39m
+                  [33mclass[39m=[32m"ql-link"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mdata-testid[39m=[32m"react-quill"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"mock-select-all"[39m
+              [36m>[39m
+                [0mMock Select All[0m
+              [36m</button>[39m
+              [36m<textarea[39m
+                [33maria-label[39m=[32m"Editor"[39m
+                [33mdata-testid[39m=[32m"quill-textarea"[39m
+                [33mplaceholder[39m=[32m"Start writing your notes for today..."[39m
+              [36m>[39m
+                [0mNotes for Jan 1[0m
+              [36m</textarea>[39m
+              [36m<div[39m
+                [33mdata-testid[39m=[32m"content-display"[39m
+              [36m>[39m
+                [0mNotes for Jan 1[0m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</body>[39m
+
+      86 |             <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} />
+      87 |         );
+    > 88 |         expect(screen.getByText(/Notes for January 1, 2026/i)).toBeInTheDocument();
+         |                       ^
+      89 |     });
+      90 |
+      91 |     it('loads content from Firestore for the specific date', () => {
+
+      at Object.getElementError (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:37:19)
+      at node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+      at node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+      at getByText (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:88:23)
+
+  ● NotesPanel Component › changes content when date changes
+
+    TestingLibraryElementError: Unable to find an element with the text: /Notes for January 2, 2026/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+    Ignored nodes: comments, script, style
+    [36m<body>[39m
+      [36m<div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 notes-panel css-2e8mfu-MuiPaper-root"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-wgllds"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"MuiBox-root css-69i1ev"[39m
+            [36m>[39m
+              [36m<h6[39m
+                [33mclass[39m=[32m"MuiTypography-root MuiTypography-h6 css-1y8v3j7-MuiTypography-root"[39m
+              [36m>[39m
+                [0mNotes[0m
+              [36m</h6>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"MuiBox-root css-kjzuw8"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mid[39m=[32m"notes-toolbar"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"ql-formats"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Bold (Cmd+B)"[39m
+                  [33mclass[39m=[32m"ql-bold"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Italic (Cmd+I)"[39m
+                  [33mclass[39m=[32m"ql-italic"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Strike (Cmd+Shift+S)"[39m
+                  [33mclass[39m=[32m"ql-strike"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Clear Formatting"[39m
+                  [33mclass[39m=[32m"ql-clean"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"ql-formats"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Heading 1"[39m
+                  [33mclass[39m=[32m"ql-header"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                  [33mvalue[39m=[32m"1"[39m
+                [36m>[39m
+                  [0mH1[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Heading 2"[39m
+                  [33mclass[39m=[32m"ql-header"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                  [33mvalue[39m=[32m"2"[39m
+                [36m>[39m
+                  [0mH2[0m
+                [36m</button>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"ql-formats"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Ordered List"[39m
+                  [33mclass[39m=[32m"ql-list"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                  [33mvalue[39m=[32m"ordered"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Bullet List"[39m
+                  [33mclass[39m=[32m"ql-list"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                  [33mvalue[39m=[32m"bullet"[39m
+                [36m/>[39m
+              [36m</span>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"ql-formats"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Link"[39m
+                  [33mclass[39m=[32m"ql-link"[39m
+                  [33mdata-mui-internal-clone-element[39m=[32m"true"[39m
+                [36m/>[39m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mdata-testid[39m=[32m"react-quill"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mdata-testid[39m=[32m"mock-select-all"[39m
+              [36m>[39m
+                [0mMock Select All[0m
+              [36m</button>[39m
+              [36m<textarea[39m
+                [33maria-label[39m=[32m"Editor"[39m
+                [33mdata-testid[39m=[32m"quill-textarea"[39m
+                [33mplaceholder[39m=[32m"Start writing your notes for today..."[39m
+              [36m>[39m
+                [0mNotes for Jan 2[0m
+              [36m</textarea>[39m
+              [36m<div[39m
+                [33mdata-testid[39m=[32m"content-display"[39m
+              [36m>[39m
+                [0mNotes for Jan 2[0m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</body>[39m
+
+      133 |         );
+      134 |
+    > 135 |         expect(screen.getByText(/Notes for January 2, 2026/i)).toBeInTheDocument();
+          |                       ^
+      136 |         // Since we mocked the hook to return 'Notes for Jan 2' for this path
+      137 |         expect(screen.getByTestId('content-display')).toHaveTextContent('Notes for Jan 2');
+      138 |     });
+
+      at Object.getElementError (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:37:19)
+      at node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+      at node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+      at getByText (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+      at Object.<anonymous> (src/components/__tests__/NotesPanel.test.js:135:23)
+
+PASS src/components/__tests__/PomodoroPanel.test.js (7.707 s)
+  ● Console
+
+    console.warn
+      [2026-01-25T10:44:34.261Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at Object.<anonymous> (src/hooks/useFirestore.js:3:1)
+      at Object.<anonymous> (src/components/PomodoroPanel.js:26:1)
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:4:1)
+
+    console.warn
+      [2026-01-25T10:44:34.300Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at Object.<anonymous> (src/hooks/useFirestore.js:3:1)
+      at Object.<anonymous> (src/components/PomodoroPanel.js:26:1)
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:4:1)
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      62 |
+      63 |     const renderPanel = () => {
+    > 64 |         return render(<PomodoroPanel onModeChange={mockOnModeChange} />);
+         |                      ^
+      65 |     };
+      66 |
+      67 |     it('renders with default pomodoro state', () => {
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at renderPanel (src/components/__tests__/PomodoroPanel.test.js:64:22)
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:68:9)
+
+    console.warn
+      Error playing tick: TypeError: audioContext.createOscillator is not a function
+          at playTick (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/src/components/PomodoroPanel.js:103:39)
+          at callTimer (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:729:24)
+          at doTickInner (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1289:29)
+          at doTick (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1370:20)
+          at Object.tick (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1378:20)
+          at FakeTimers.advanceTimersByTime (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@jest/fake-timers/build/modernFakeTimers.js:101:19)
+          at Object.advanceTimersByTime (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-runtime/build/index.js:2228:26)
+          at /Users/kishlayraj/Documents/Projects/others/ToDoProj2/src/components/__tests__/PomodoroPanel.test.js:96:18
+          at /Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@testing-library/react/dist/act-compat.js:64:24
+          at act (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/react/cjs/react.development.js:2512:16)
+          at actWithWarning (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+          at /Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/@testing-library/react/dist/act-compat.js:63:25
+          at Object.<anonymous> (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/src/components/__tests__/PomodoroPanel.test.js:95:12)
+          at Promise.then.completed (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-circus/build/utils.js:391:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-circus/build/utils.js:316:10)
+          at _callCircusTest (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-circus/build/run.js:218:40)
+          at processTicksAndRejections (node:internal/process/task_queues:95:5)
+          at _runTest (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-circus/build/run.js:155:3)
+          at _runTestsForDescribeBlock (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-circus/build/run.js:66:9)
+          at _runTestsForDescribeBlock (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-circus/build/run.js:60:9)
+          at run (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-circus/build/run.js:25:3)
+          at runAndTransformResultsToJestFormat (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+          at jestAdapter (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+          at runTestInternal (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-runner/build/runTest.js:389:16)
+          at runTest (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-runner/build/runTest.js:475:34)
+          at Object.worker (/Users/kishlayraj/Documents/Projects/others/ToDoProj2/node_modules/jest-runner/build/testWorker.js:133:12)
+
+      116 |       oscillator.stop(audioContext.currentTime + 0.1);
+      117 |     } catch (e) {
+    > 118 |       console.warn('Error playing tick:', e);
+          |               ^
+      119 |     }
+      120 |   };
+      121 |
+
+      at playTick (src/components/PomodoroPanel.js:118:15)
+      at callTimer (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:729:24)
+      at doTickInner (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1289:29)
+      at doTick (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1370:20)
+      at Object.tick (node_modules/@sinonjs/fake-timers/src/fake-timers-src.js:1378:20)
+      at FakeTimers.advanceTimersByTime (node_modules/@jest/fake-timers/build/modernFakeTimers.js:101:19)
+      at src/components/__tests__/PomodoroPanel.test.js:96:18
+      at node_modules/@testing-library/react/dist/act-compat.js:64:24
+      at act (node_modules/react/cjs/react.development.js:2512:16)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:95:12)
+
+    console.warn
+      [2026-01-25T10:44:35.586Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at src/components/PomodoroPanel.js:243:5
+
+    console.warn
+      [2026-01-25T10:44:35.586Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at src/components/PomodoroPanel.js:243:5
+
+    console.warn
+      MUI: You have provided an out-of-range value `undefined` for the select component.
+      Consider providing a value that matches one of the available options or ''.
+      The available values are `Kitchen`, `Bell`, `Birds`.
+
+      121 |         // Use the aria-label we added
+      122 |         const settingsButton = screen.getByLabelText('Settings');
+    > 123 |         fireEvent.click(settingsButton);
+          |                   ^
+      124 |
+      125 |         expect(screen.getByText('Timer Settings')).toBeInTheDocument();
+      126 |         // Check for specific input
+
+      at node_modules/@mui/material/node/Select/SelectInput.js:402:17
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26974:5)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26156:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at Object.eventWrapper (node_modules/@testing-library/react/dist/pure.js:78:28)
+      at fireEvent (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:12:35)
+      at Function.fireEvent.<computed> [as click] (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:110:36)
+      at Function.click (node_modules/@testing-library/react/dist/fire-event.js:18:52)
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:123:19)
+
+    console.warn
+      MUI: You have provided an out-of-range value `undefined` for the select component.
+      Consider providing a value that matches one of the available options or ''.
+      The available values are `Ticking Slow`, `Ticking Fast`.
+
+      121 |         // Use the aria-label we added
+      122 |         const settingsButton = screen.getByLabelText('Settings');
+    > 123 |         fireEvent.click(settingsButton);
+          |                   ^
+      124 |
+      125 |         expect(screen.getByText('Timer Settings')).toBeInTheDocument();
+      126 |         // Check for specific input
+
+      at node_modules/@mui/material/node/Select/SelectInput.js:402:17
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26974:5)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26156:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at Object.eventWrapper (node_modules/@testing-library/react/dist/pure.js:78:28)
+      at fireEvent (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:12:35)
+      at Function.fireEvent.<computed> [as click] (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:110:36)
+      at Function.click (node_modules/@testing-library/react/dist/fire-event.js:18:52)
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:123:19)
+
+    console.warn
+      MUI: You have provided an out-of-range value `undefined` for the select component.
+      Consider providing a value that matches one of the available options or ''.
+      The available values are `24-hour`, `12-hour`.
+
+      121 |         // Use the aria-label we added
+      122 |         const settingsButton = screen.getByLabelText('Settings');
+    > 123 |         fireEvent.click(settingsButton);
+          |                   ^
+      124 |
+      125 |         expect(screen.getByText('Timer Settings')).toBeInTheDocument();
+      126 |         // Check for specific input
+
+      at node_modules/@mui/material/node/Select/SelectInput.js:402:17
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26974:5)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26156:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at Object.eventWrapper (node_modules/@testing-library/react/dist/pure.js:78:28)
+      at fireEvent (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:12:35)
+      at Function.fireEvent.<computed> [as click] (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:110:36)
+      at Function.click (node_modules/@testing-library/react/dist/fire-event.js:18:52)
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:123:19)
+
+    console.warn
+      MUI: You have provided an out-of-range value `undefined` for the select component.
+      Consider providing a value that matches one of the available options or ''.
+      The available values are `Kitchen`, `Bell`, `Birds`.
+
+      121 |         // Use the aria-label we added
+      122 |         const settingsButton = screen.getByLabelText('Settings');
+    > 123 |         fireEvent.click(settingsButton);
+          |                   ^
+      124 |
+      125 |         expect(screen.getByText('Timer Settings')).toBeInTheDocument();
+      126 |         // Check for specific input
+
+      at node_modules/@mui/material/node/Select/SelectInput.js:402:17
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26974:5)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26156:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at Object.eventWrapper (node_modules/@testing-library/react/dist/pure.js:78:28)
+      at fireEvent (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:12:35)
+      at Function.fireEvent.<computed> [as click] (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:110:36)
+      at Function.click (node_modules/@testing-library/react/dist/fire-event.js:18:52)
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:123:19)
+
+    console.warn
+      MUI: You have provided an out-of-range value `undefined` for the select component.
+      Consider providing a value that matches one of the available options or ''.
+      The available values are `Ticking Slow`, `Ticking Fast`.
+
+      121 |         // Use the aria-label we added
+      122 |         const settingsButton = screen.getByLabelText('Settings');
+    > 123 |         fireEvent.click(settingsButton);
+          |                   ^
+      124 |
+      125 |         expect(screen.getByText('Timer Settings')).toBeInTheDocument();
+      126 |         // Check for specific input
+
+      at node_modules/@mui/material/node/Select/SelectInput.js:402:17
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26974:5)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26156:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at Object.eventWrapper (node_modules/@testing-library/react/dist/pure.js:78:28)
+      at fireEvent (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:12:35)
+      at Function.fireEvent.<computed> [as click] (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:110:36)
+      at Function.click (node_modules/@testing-library/react/dist/fire-event.js:18:52)
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:123:19)
+
+    console.warn
+      MUI: You have provided an out-of-range value `undefined` for the select component.
+      Consider providing a value that matches one of the available options or ''.
+      The available values are `24-hour`, `12-hour`.
+
+      121 |         // Use the aria-label we added
+      122 |         const settingsButton = screen.getByLabelText('Settings');
+    > 123 |         fireEvent.click(settingsButton);
+          |                   ^
+      124 |
+      125 |         expect(screen.getByText('Timer Settings')).toBeInTheDocument();
+      126 |         // Check for specific input
+
+      at node_modules/@mui/material/node/Select/SelectInput.js:402:17
+      at commitHookEffectListMount (node_modules/react-dom/cjs/react-dom.development.js:23189:26)
+      at commitPassiveMountOnFiber (node_modules/react-dom/cjs/react-dom.development.js:24970:11)
+      at commitPassiveMountEffects_complete (node_modules/react-dom/cjs/react-dom.development.js:24930:9)
+      at commitPassiveMountEffects_begin (node_modules/react-dom/cjs/react-dom.development.js:24917:7)
+      at commitPassiveMountEffects (node_modules/react-dom/cjs/react-dom.development.js:24905:3)
+      at flushPassiveEffectsImpl (node_modules/react-dom/cjs/react-dom.development.js:27078:3)
+      at flushPassiveEffects (node_modules/react-dom/cjs/react-dom.development.js:27023:14)
+      at commitRootImpl (node_modules/react-dom/cjs/react-dom.development.js:26974:5)
+      at commitRoot (node_modules/react-dom/cjs/react-dom.development.js:26721:5)
+      at performSyncWorkOnRoot (node_modules/react-dom/cjs/react-dom.development.js:26156:3)
+      at flushSyncCallbacks (node_modules/react-dom/cjs/react-dom.development.js:12042:22)
+      at flushActQueue (node_modules/react/cjs/react.development.js:2667:24)
+      at act (node_modules/react/cjs/react.development.js:2582:11)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1740:10)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at Object.eventWrapper (node_modules/@testing-library/react/dist/pure.js:78:28)
+      at fireEvent (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:12:35)
+      at Function.fireEvent.<computed> [as click] (node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/events.js:110:36)
+      at Function.click (node_modules/@testing-library/react/dist/fire-event.js:18:52)
+      at Object.<anonymous> (src/components/__tests__/PomodoroPanel.test.js:123:19)
+
+PASS src/components/__tests__/Settings.test.js (7.756 s)
+  ● Console
+
+    console.warn
+      [2026-01-25T10:44:34.259Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at Object.<anonymous> (src/hooks/useFirestore.js:3:1)
+      at Object.<anonymous> (src/components/Settings.js:33:1)
+      at Object.<anonymous> (src/components/__tests__/Settings.test.js:4:1)
+
+    console.warn
+      [2026-01-25T10:44:34.290Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at Object.<anonymous> (src/hooks/useFirestore.js:3:1)
+      at Object.<anonymous> (src/components/Settings.js:33:1)
+      at Object.<anonymous> (src/components/__tests__/Settings.test.js:4:1)
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      34 |
+      35 |     const renderSettings = () => {
+    > 36 |         return render(
+         |                      ^
+      37 |             <ThemeProvider theme={mockTheme}>
+      38 |                 <Settings navConfig={defaultNavConfig} onUpdate={mockOnUpdate} />
+      39 |             </ThemeProvider>
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at renderSettings (src/components/__tests__/Settings.test.js:36:22)
+      at Object.<anonymous> (src/components/__tests__/Settings.test.js:44:9)
+
+PASS src/mobile/__tests__/MobileApp.test.js (7.975 s)
+  ● Console
+
+    console.warn
+      [2026-01-25T10:44:34.418Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at Object.<anonymous> (src/hooks/useFirestoreNew.js:3:1)
+      at Object.<anonymous> (src/components/NotesPanel.js:8:1)
+      at Object.<anonymous> (src/mobile/MobileApp.js:4:1)
+      at Object.<anonymous> (src/mobile/__tests__/MobileApp.test.js:3:1)
+
+    console.warn
+      [2026-01-25T10:44:34.482Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at Object.<anonymous> (src/hooks/useFirestoreNew.js:3:1)
+      at Object.<anonymous> (src/components/NotesPanel.js:8:1)
+      at Object.<anonymous> (src/mobile/MobileApp.js:4:1)
+      at Object.<anonymous> (src/mobile/__tests__/MobileApp.test.js:3:1)
+
+    console.warn
+      [2026-01-25T10:44:34.644Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at Object.<anonymous> (src/contexts/AuthContext.js:2:1)
+      at Object.<anonymous> (src/hooks/useFirestoreNew.js:4:1)
+      at Object.<anonymous> (src/components/NotesPanel.js:8:1)
+      at Object.<anonymous> (src/mobile/MobileApp.js:4:1)
+      at Object.<anonymous> (src/mobile/__tests__/MobileApp.test.js:3:1)
+
+    console.warn
+      [2026-01-25T10:44:34.645Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at Object.<anonymous> (src/contexts/AuthContext.js:2:1)
+      at Object.<anonymous> (src/hooks/useFirestoreNew.js:4:1)
+      at Object.<anonymous> (src/components/NotesPanel.js:8:1)
+      at Object.<anonymous> (src/mobile/MobileApp.js:4:1)
+      at Object.<anonymous> (src/mobile/__tests__/MobileApp.test.js:3:1)
+
+    console.warn
+      [2026-01-25T10:44:34.701Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at Object.<anonymous> (src/hooks/useFirestore.js:3:1)
+      at Object.<anonymous> (src/hooks/useFirestoreNew.js:328:1)
+      at Object.<anonymous> (src/components/NotesPanel.js:8:1)
+      at Object.<anonymous> (src/mobile/MobileApp.js:4:1)
+      at Object.<anonymous> (src/mobile/__tests__/MobileApp.test.js:3:1)
+
+    console.warn
+      [2026-01-25T10:44:34.706Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at Object.<anonymous> (src/hooks/useFirestore.js:3:1)
+      at Object.<anonymous> (src/hooks/useFirestoreNew.js:328:1)
+      at Object.<anonymous> (src/components/NotesPanel.js:8:1)
+      at Object.<anonymous> (src/mobile/MobileApp.js:4:1)
+      at Object.<anonymous> (src/mobile/__tests__/MobileApp.test.js:3:1)
+
+    console.warn
+      [2026-01-25T10:44:34.760Z]  @firebase/analytics: Analytics: IndexedDB unavailable or restricted in this environment. Wrap initialization of analytics in analytics.isSupported() to prevent initialization in unsupported environments. Details: IndexedDB is not available in this environment. (analytics/indexeddb-unavailable).
+
+      33 | if (typeof window !== 'undefined' && firebaseConfig.measurementId) {
+      34 |     try {
+    > 35 |         analytics = getAnalytics(app);
+         |                                 ^
+      36 |     } catch (error) {
+      37 |         console.warn("Firebase Analytics failed to initialize", error);
+      38 |     }
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at validateIndexedDB (node_modules/@firebase/analytics/src/initialize-analytics.ts:40:12)
+      at _initializeAnalytics (node_modules/@firebase/analytics/src/initialize-analytics.ts:107:51)
+      at factory (node_modules/@firebase/analytics/src/factory.ts:224:38)
+      at Component.instanceFactory (node_modules/@firebase/analytics/src/index.ts:58:16)
+      at Provider.getOrInitializeService (node_modules/@firebase/component/src/provider.ts:318:33)
+      at Provider.initialize (node_modules/@firebase/component/src/provider.ts:242:27)
+      at initializeAnalytics (node_modules/@firebase/analytics/src/api.ts:112:47)
+      at getAnalytics (node_modules/@firebase/analytics/src/api.ts:85:10)
+      at Object.<anonymous> (src/firebase.js:35:33)
+      at Object.<anonymous> (src/components/NotesPanel.js:11:1)
+      at Object.<anonymous> (src/mobile/MobileApp.js:4:1)
+      at Object.<anonymous> (src/mobile/__tests__/MobileApp.test.js:3:1)
+
+    console.warn
+      [2026-01-25T10:44:34.760Z]  @firebase/firestore: Firestore (12.6.0): enableIndexedDbPersistence() will be deprecated in the future, you can use `FirestoreSettings.cache` instead.
+
+      50 |     // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
+      51 |     // checking if we can use the new API or just suppress for now
+    > 52 |     enableIndexedDbPersistence(db)
+         |                               ^
+      53 |         .catch((err) => {
+      54 |             if (err.code === 'failed-precondition') {
+      55 |                 // Multiple tabs open, persistence can only be enabled in one tab at a time.
+
+      at Logger.defaultLogHandler [as _logHandler] (node_modules/@firebase/logger/src/logger.ts:115:57)
+      at Logger.warn (node_modules/@firebase/logger/src/logger.ts:206:10)
+      at logWarn (node_modules/@firebase/firestore/src/util/log.ts:69:15)
+      at enableIndexedDbPersistence (node_modules/@firebase/firestore/src/api/database.ts:375:3)
+      at Object.<anonymous> (src/firebase.js:52:31)
+      at Object.<anonymous> (src/components/NotesPanel.js:11:1)
+      at Object.<anonymous> (src/mobile/MobileApp.js:4:1)
+      at Object.<anonymous> (src/mobile/__tests__/MobileApp.test.js:3:1)
+
+    console.error
+      Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+      88 |
+      89 |     test('renders Today view by default with tasks', () => {
+    > 90 |         render(<MobileApp />);
+         |               ^
+      91 |         const todayLabels = screen.getAllByText('Today');
+      92 |         expect(todayLabels.length).toBeGreaterThan(0);
+      93 |         expect(screen.getByText('Task 1')).toBeInTheDocument();
+
+      at printWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:71:30)
+      at error (node_modules/react-dom/cjs/react-dom-test-utils.development.js:45:7)
+      at actWithWarning (node_modules/react-dom/cjs/react-dom-test-utils.development.js:1736:7)
+      at node_modules/@testing-library/react/dist/act-compat.js:63:25
+      at renderRoot (node_modules/@testing-library/react/dist/pure.js:159:26)
+      at render (node_modules/@testing-library/react/dist/pure.js:246:10)
+      at Object.<anonymous> (src/mobile/__tests__/MobileApp.test.js:90:15)
+
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+-------------------------|---------|----------|---------|---------|-------------------------------------------------------------------------------------------------------------------------
+File                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                                       
+-------------------------|---------|----------|---------|---------|-------------------------------------------------------------------------------------------------------------------------
+All files                |   24.85 |    18.63 |   19.08 |   25.84 |                                                                                                                         
+ src                     |   32.07 |    12.82 |    12.5 |   32.07 |                                                                                                                         
+  App.js                 |       0 |        0 |       0 |       0 | 8-13                                                                                                                    
+  DesktopApp.js          |       0 |        0 |       0 |       0 | 17-186                                                                                                                  
+  firebase.js            |   72.72 |    33.33 |      50 |   72.72 | 19,37,54-64                                                                                                             
+  theme.js               |     100 |      100 |     100 |     100 |                                                                                                                         
+ src/components          |   23.86 |    17.59 |   16.53 |    24.6 |                                                                                                                         
+  Calendar.js            |       0 |      100 |       0 |       0 | 7-42                                                                                                                    
+  CalendarContextMenu.js |       0 |        0 |       0 |       0 |                                                                                                                         
+  CalendarView.js        |   35.71 |    14.28 |   30.43 |   37.36 | 65-78,83-84,95,100-117,121-150,156-157,162-163,168-179,214-215,234-335                                                  
+  DailyJournal.js        |       0 |        0 |       0 |       0 | 57-690                                                                                                                  
+  EisenhowerMatrix.js    |       0 |        0 |       0 |       0 | 25-384                                                                                                                  
+  EnhancedDatePicker.js  |       0 |        0 |       0 |       0 | 17-64                                                                                                                   
+  MonthlyPlanner.js      |       0 |        0 |       0 |       0 | 35-408                                                                                                                  
+  NotesPanel.js          |      75 |    79.59 |   58.82 |   75.24 | 19-20,159-172,190,194,198-201,206,226-241,256-257,261,338-344,380                                                       
+  PlannerScreen.js       |   48.33 |    39.28 |   29.41 |   48.27 | 30-33,41,45,49-52,57-61,82-85,104-108,115-127,205-302                                                                   
+  PomodoroPanel.js       |   42.58 |    38.46 |   38.23 |   43.33 | 40-41,76-94,104-116,144-145,150-151,171-226,260-267,272-283,485-623                                                     
+  PricingPanel.js        |       0 |        0 |       0 |       0 | 23-163                                                                                                                  
+  QuickTaskDialog.js     |      60 |       50 |   42.85 |      60 | 64-93                                                                                                                   
+  ReportPanel.js         |       0 |        0 |       0 |       0 | 32-190                                                                                                                  
+  RoutinePlanner.js      |       0 |        0 |       0 |       0 | 28-423                                                                                                                  
+  Settings.js            |   57.69 |       50 |   58.33 |      60 | 55-61,65-68,115,182                                                                                                     
+  Sidebar.js             |       0 |        0 |       0 |       0 | 27-165                                                                                                                  
+  TaskCreationButton.js  |       0 |        0 |       0 |       0 | 20-145                                                                                                                  
+  TaskDump.js            |       0 |        0 |       0 |       0 | 34-219                                                                                                                  
+  TaskEditDialog.js      |   18.42 |    28.26 |      10 |   19.44 | 40,63-65,81-249                                                                                                         
+  TaskList.js            |    63.2 |    60.75 |   63.15 |   64.28 | 83,93,99,106,112-129,146-152,156,164,185,204-206,230-241,337-392,477,548                                                
+  TaskNotes.js           |       0 |        0 |       0 |       0 | 17-98                                                                                                                   
+  TaskPanel.js           |       0 |        0 |       0 |       0 |                                                                                                                         
+  Tasks.js               |       0 |        0 |       0 |       0 | 28-153                                                                                                                  
+  WeeklyPlanner.js       |       0 |        0 |       0 |       0 | 35-463                                                                                                                  
+  YearlyPlanner.js       |       0 |        0 |       0 |       0 | 8-152                                                                                                                   
+ src/contexts            |    4.34 |        0 |       0 |    4.34 |                                                                                                                         
+  AuthContext.js         |    4.34 |        0 |       0 |    4.34 | 8-53                                                                                                                    
+ src/hooks               |   11.44 |     6.74 |      20 |   12.33 |                                                                                                                         
+  dataMigration.js       |    2.27 |        0 |      50 |     2.4 | 9-150,160                                                                                                               
+  useFirestore.js        |     1.4 |        0 |       0 |    1.61 | 10-142                                                                                                                  
+  useFirestoreNew.js     |   20.23 |    17.91 |   24.13 |   21.93 | 40-42,64-77,82-83,102-103,120-146,163-324                                                                               
+ src/mobile              |   61.78 |    61.84 |   39.13 |   71.77 |                                                                                                                         
+  MobileApp.js           |   61.78 |    61.84 |   39.13 |   71.77 | 131,134,141,144,147,151-153,186-191,203,212,225,248-267,272,283,298,312-327,339-344,360-367,375-383,397,410-411,432,438 
+-------------------------|---------|----------|---------|---------|-------------------------------------------------------------------------------------------------------------------------
+Jest: "global" coverage threshold for statements (80%) not met: 24.85%
+Jest: "global" coverage threshold for branches (80%) not met: 18.63%
+Jest: "global" coverage threshold for lines (80%) not met: 25.84%
+Jest: "global" coverage threshold for functions (80%) not met: 19.08%
+
+Test Suites: 1 failed, 11 passed, 12 total
+Tests:       2 failed, 64 passed, 66 total
+Snapshots:   0 total
+Time:        10.014 s, estimated 12 s
+Ran all test suites.

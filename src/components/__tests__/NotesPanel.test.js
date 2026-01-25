@@ -9,13 +9,29 @@ import * as FirestoreHooks from '../../hooks/useFirestoreNew';
 jest.mock('../../contexts/AuthContext');
 jest.mock('../../hooks/useFirestoreNew');
 jest.mock('../../firebase', () => ({
-    logAnalyticsEvent: jest.fn()
+    logAnalyticsEvent: jest.fn(),
+    db: {}
+}));
+
+// Mock Firestore SDK
+jest.mock('firebase/firestore', () => ({
+    getFirestore: jest.fn(),
+    collection: jest.fn(),
+    query: jest.fn(),
+    orderBy: jest.fn(),
+    limit: jest.fn(),
+    getDocs: jest.fn(() => Promise.resolve({
+        docs: [],
+        forEach: (cb) => [].forEach(cb)
+    })),
+    // Add other used functions if needed
 }));
 
 // Mock ReactQuill to support ref and toolbar simulation
 jest.mock('react-quill', () => {
     const React = require('react');
     return React.forwardRef(({ value = '', onChange, placeholder, modules }, ref) => {
+        // ... existing mock code ...
         // Internal state for mock selection
         const [selection, setSelection] = React.useState({ index: 0, length: 0 });
 
@@ -83,9 +99,11 @@ describe('NotesPanel Component', () => {
 
     it('renders with correct date header', () => {
         render(
-            <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} />
+            <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} onDateChange={jest.fn()} />
         );
-        expect(screen.getByText(/Notes for January 1, 2026/i)).toBeInTheDocument();
+        // Updated expectation for split header UI
+        expect(screen.getByText('Notes', { selector: 'h6' })).toBeInTheDocument();
+        expect(screen.getByText(/Jan 1, 2026/)).toBeInTheDocument();
     });
 
     it('loads content from Firestore for the specific date', () => {
@@ -123,16 +141,17 @@ describe('NotesPanel Component', () => {
 
     it('changes content when date changes', () => {
         const { rerender } = render(
-            <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} />
+            <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} onDateChange={jest.fn()} />
         );
         expect(screen.getByTestId('content-display')).toHaveTextContent('Notes for Jan 1');
 
         // Change date
         rerender(
-            <NotesPanel selectedDate={new Date('2026-01-02T12:00:00')} />
+            <NotesPanel selectedDate={new Date('2026-01-02T12:00:00')} onDateChange={jest.fn()} />
         );
 
-        expect(screen.getByText(/Notes for January 2, 2026/i)).toBeInTheDocument();
+        expect(screen.getByText('Notes', { selector: 'h6' })).toBeInTheDocument();
+        expect(screen.getByText(/Jan 2, 2026/)).toBeInTheDocument();
         // Since we mocked the hook to return 'Notes for Jan 2' for this path
         expect(screen.getByTestId('content-display')).toHaveTextContent('Notes for Jan 2');
     });
