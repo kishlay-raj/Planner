@@ -247,6 +247,15 @@ function DailyJournal() {
         }
     };
 
+    const getSectionDescription = (sectionName) => {
+        switch (sectionName) {
+            case 'Digital Minimalism':
+                return "Don't have to use electronics and devices much. Technology is a powerful tool, but I will only use it for high-value activities. Every 5 mins scroll takes away your focus, every browser tab you add to your life brings a cognitive tax.";
+            default:
+                return null;
+        }
+    };
+
     const [collapsedSections, setCollapsedSections] = useState([]);
     const [historyMenuAnchor, setHistoryMenuAnchor] = useState(null);
 
@@ -325,6 +334,14 @@ function DailyJournal() {
 
                 <Collapse in={!isCollapsed}>
                     <Box sx={{ px: 4, pb: 4 }}>
+                        {getSectionDescription(sectionName) && (
+                            <Paper sx={{ p: 2, mb: 3, bgcolor: `${config.color}08`, border: `1px solid ${config.borderColor}30`, borderRadius: 2 }}>
+                                <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontStyle: 'italic', lineHeight: 1.6 }}>
+                                    {getSectionDescription(sectionName)}
+                                </Typography>
+                            </Paper>
+                        )}
+
                         {sectionPrompts.length === 0 && (
                             <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontStyle: 'italic', opacity: 0.7 }}>
                                 No prompts configured for this section.
