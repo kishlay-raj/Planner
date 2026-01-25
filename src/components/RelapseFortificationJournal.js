@@ -12,8 +12,10 @@ import {
     useTheme,
     Divider,
     Stack,
-    Container
+    Container,
+    Popover
 } from '@mui/material';
+import EnhancedDatePicker from './EnhancedDatePicker';
 import {
     NavigateBefore,
     NavigateNext,
@@ -115,17 +117,80 @@ function RelapseFortificationJournal() {
         return () => clearTimeout(handler);
     }, [currentEntry, dateKey]);
 
-    const getDatesWithEntries = () => {
+    const getSortedDates = () => {
         return Object.keys(journalData)
             .filter(d => journalData[d] && Object.values(journalData[d]).some(v => v && v.trim()))
-            .sort((a, b) => new Date(b) - new Date(a))
-            .slice(0, 20);
+            .sort((a, b) => new Date(a) - new Date(b)); // Ascending for logic
     };
 
-    const handleDateSelect = (d) => {
-        setCurrentDate(new Date(d));
-        setHistoryMenuAnchor(null);
+    const handlePrevious = () => {
+        const sorted = getSortedDates();
+        const currentIndex = sorted.indexOf(dateKey);
+
+        // If current date is in the list and has a previousone
+        if (currentIndex > 0) {
+            setCurrentDate(new Date(sorted[currentIndex - 1]));
+        }
+        // If current date is not in list (e.g. today new entry), find the last entry overall
+        else if (currentIndex === -1 && sorted.length > 0) {
+            // Find valid dates before current
+            const before = sorted.filter(d => new Date(d) < currentDate);
+            if (before.length > 0) {
+                setCurrentDate(new Date(before[before.length - 1]));
+            } else {
+                setCurrentDate(subDays(currentDate, 1));
+            }
+        } else {
+            setCurrentDate(subDays(currentDate, 1));
+        }
     };
+
+    const handleNext = () => {
+        const sorted = getSortedDates();
+        const currentIndex = sorted.indexOf(dateKey);
+
+        if (currentIndex !== -1 && currentIndex < sorted.length - 1) {
+            setCurrentDate(new Date(sorted[currentIndex + 1]));
+        } else {
+            // Check if we are already at "Today" or future
+            const today = new Date();
+            if (format(currentDate, 'yyyy-MM-dd') !== format(today, 'yyyy-MM-dd')) {
+                // Try to find next existing
+                const after = sorted.filter(d => new Date(d) > currentDate);
+                if (after.length > 0) {
+                    setCurrentDate(new Date(after[0]));
+                } else {
+                    // Jump to Today to allow creating new entry
+                    setCurrentDate(today);
+                }
+            }
+        }
+    };
+
+    const [calendarAnchor, setCalendarAnchor] = useState(null);
+
+    const handleCalendarOpen = (event) => {
+        setCalendarAnchor(event.currentTarget);
+    };
+
+    const handleCalendarClose = () => {
+        setCalendarAnchor(null);
+    };
+
+    const handleDateChange = (newDate) => {
+        setCurrentDate(newDate);
+        handleCalendarClose();
+    };
+
+    // Prepare entries map for the calendar dots
+    const entriesMap = Object.keys(journalData).reduce((acc, date) => {
+        const entry = journalData[date];
+        const hasContent = entry && Object.values(entry).some(v => v && v.trim());
+        if (hasContent) {
+            acc[date] = { hasJournal: true };
+        }
+        return acc;
+    }, {});
 
     return (
         <Box sx={{
@@ -149,7 +214,7 @@ function RelapseFortificationJournal() {
                             display: 'flex', alignItems: 'center', gap: 1, p: 0.5, px: 2,
                             borderRadius: 10, bgcolor: '#fff', border: '1px solid rgba(0,0,0,0.1)'
                         }}>
-                            <IconButton onClick={() => setCurrentDate(subDays(currentDate, 1))} size="small">
+                            <IconButton onClick={handlePrevious} size="small" title="Previous Entry">
                                 <NavigateBefore />
                             </IconButton>
                             <Box sx={{ textAlign: 'center', minWidth: 100 }}>
@@ -157,7 +222,7 @@ function RelapseFortificationJournal() {
                                     {format(currentDate, 'MMM d, yyyy')}
                                 </Typography>
                             </Box>
-                            <IconButton onClick={() => setCurrentDate(addDays(currentDate, 1))} size="small">
+                            <IconButton onClick={handleNext} size="small" title="Next Entry">
                                 <NavigateNext />
                             </IconButton>
                             <Divider orientation="vertical" flexItem sx={{ height: 16, my: 'auto', mx: 1 }} />
@@ -281,11 +346,11 @@ function RelapseFortificationJournal() {
                 open={Boolean(historyMenuAnchor)}
                 onClose={() => setHistoryMenuAnchor(null)}
             >
-                {getDatesWithEntries().length === 0 ? (
+                {getSortedDates().length === 0 ? (
                     <MenuItem disabled>No history found</MenuItem>
                 ) : (
-                    getDatesWithEntries().map(d => (
-                        <MenuItem key={d} onClick={() => handleDateSelect(d)}>
+                    getSortedDates().reverse().slice(0, 20).map(d => (
+                        <MenuItem key={d} onClick={() => { setCurrentDate(new Date(d)); setHistoryMenuAnchor(null); }}>
                             {format(new Date(d), 'MMM d, yyyy')}
                         </MenuItem>
                     ))
