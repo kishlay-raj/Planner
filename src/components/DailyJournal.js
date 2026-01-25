@@ -248,9 +248,20 @@ function DailyJournal() {
     };
 
     const getSectionDescription = (sectionName) => {
+        if (sectionName === 'Dopamine detox phase 1: Awareness') {
+            return "Acknowledge Life is Painful: Dr. Anna Lembke, suggests recalibrating expectations and accepting that life is inherently painful and unpleasant. This perspective can reduce the constant pursuit of comfort and pleasure that often leads to addiction. Desires, ambitions, anger, and greed heat up your system and make life miserable.";
+        }
+        if (sectionName === 'Dopamine detox phase 2: The Struggle') {
+            return "Simulation Trap: Trick 1: Returning to work is easy. Trick 2: You can do it later.";
+        }
+        if (sectionName === 'Dopamine detox phase 3: Maintenance') {
+            return "Simulation Trap: Trick 3: Excitement is not the same thing as fulfillment. Trick 4: You are missing out.";
+        }
         switch (sectionName) {
             case 'Digital Minimalism':
                 return "Don't have to use electronics and devices much. Technology is a powerful tool, but I will only use it for high-value activities. Every 5 mins scroll takes away your focus, every browser tab you add to your life brings a cognitive tax.";
+            case 'Deep Work':
+                return "One hour of deep work beats ten hours of distracted effort. Small focused sessions, repeated daily, create extraordinary results. Consistency compounds faster than intensity.";
             default:
                 return null;
         }
