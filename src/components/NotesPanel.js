@@ -84,7 +84,7 @@ const CustomToolbar = () => (
   </div>
 );
 
-function NotesPanel({ selectedDate }) {
+function NotesPanel({ selectedDate, sx = {} }) {
   const { currentUser } = useAuth();
   const currentDate = format(selectedDate, 'yyyy-MM-dd');
 
@@ -259,6 +259,7 @@ function NotesPanel({ selectedDate }) {
         overflow: 'hidden',
         borderRadius: 0,
         boxShadow: 'none',
+        ...sx,
       }}
     >
       <Box sx={{

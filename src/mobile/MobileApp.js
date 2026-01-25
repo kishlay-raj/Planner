@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout } from '@mui/icons-material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote } from '@mui/icons-material';
+import NotesPanel from '../components/NotesPanel';
 import packageJson from '../../package.json';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestoreCollection, useFirestoreDoc } from '../hooks/useFirestoreNew';
@@ -63,13 +64,14 @@ function MobileApp() {
     const [weekDate, setWeekDate] = useState(new Date());
     const [monthDate, setMonthDate] = useState(new Date());
     const [journalDate, setJournalDate] = useState(new Date());
+    const [notesDate, setNotesDate] = useState(new Date());
 
     // --- IDS ---
     const weekId = `${getYear(weekDate)}-${getISOWeek(weekDate)}`;
     const monthId = `${getYear(monthDate)}-${getMonth(monthDate) + 1}`;
 
     // Context IDs (Cascading)
-    const todayWeekId = `${getYear(new Date())}-${getISOWeek(new Date())}`; // For Today View Context
+    const todayWeekId = `${getYear(currentDate)}-${getISOWeek(currentDate)}`; // For Today View Context
     const weekMonthId = `${getYear(weekDate)}-${getMonth(weekDate) + 1}`; // For Weekly View Context
     const monthYearId = `${getYear(monthDate)}`; // For Monthly View Context
 
@@ -107,7 +109,7 @@ function MobileApp() {
         if (!newTaskName.trim()) return;
         await addTask({
             name: newTaskName, completed: false, createdAt: Date.now(), priority: 'P4',
-            date: new Date().toISOString(), isToday: true
+            date: currentDate.toISOString(), isToday: isSameDay(currentDate, new Date())
         });
         setNewTaskName(''); setOpenAddDialog(false);
     };
@@ -139,10 +141,11 @@ function MobileApp() {
     };
 
     const renderTodayView = () => {
+        const isToday = isSameDay(currentDate, new Date());
         const todayTasks = tasks.filter(task => {
             if (!task.date) return false;
             const taskDate = typeof task.date === 'string' ? parseISO(task.date) : new Date(task.date);
-            return isSameDay(taskDate, new Date());
+            return isSameDay(taskDate, currentDate);
         });
         const activeTasks = todayTasks.filter(t => !t.completed);
         const completedTasks = todayTasks.filter(t => t.completed);
@@ -150,10 +153,14 @@ function MobileApp() {
         return (
             <Box sx={{ pb: 10 }}>
                 <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box>
-                        <Typography variant="h5" fontWeight="800" color="primary">Today</Typography>
-                        <Typography variant="body2" color="text.secondary" fontWeight="500">{format(new Date(), 'EEE, MMM d')}</Typography>
+                    <IconButton onClick={() => setCurrentDate(d => subDays(d, 1))}><ChevronLeft /></IconButton>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="h5" fontWeight="800" color="primary">{isToday ? 'Today' : format(currentDate, 'EEEE')}</Typography>
+                        <Typography variant="body2" color="text.secondary" fontWeight="500">{format(currentDate, 'MMM d, yyyy')}</Typography>
                     </Box>
+                    <IconButton onClick={() => setCurrentDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
+                </Box>
+                <Box sx={{ px: 2, display: 'flex', justifyContent: 'flex-end' }}>
                     <IconButton onClick={handleLogout} size="small" sx={{ opacity: 0.7 }} aria-label="Logout"><Logout fontSize="small" /></IconButton>
                 </Box>
 
@@ -171,7 +178,7 @@ function MobileApp() {
                     ))}
                     {activeTasks.length === 0 && (
                         <Box sx={{ py: 6, textAlign: 'center', opacity: 0.6 }}>
-                            <Typography variant="body2">No tasks using your energy today.</Typography>
+                            <Typography variant="body2">No tasks using your energy {isToday ? 'today' : 'on this day'}.</Typography>
                             <Button size="small" sx={{ mt: 1 }} onClick={() => setOpenAddDialog(true)}>Add Task</Button>
                         </Box>
                     )}
@@ -327,6 +334,27 @@ function MobileApp() {
         );
     };
 
+    const renderNotesView = () => {
+        return (
+            <Box sx={{ pb: 10, height: '100%' }}>
+                <Paper elevation={0} sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 10, borderRadius: 0 }}>
+                    <IconButton onClick={() => setNotesDate(d => subDays(d, 1))}><ChevronLeft /></IconButton>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="body1" fontWeight="700">{format(notesDate, 'MMMM d')}</Typography>
+                        <Typography variant="caption" color="text.secondary">{format(notesDate, 'EEEE')}</Typography>
+                    </Box>
+                    <IconButton onClick={() => setNotesDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
+                </Paper>
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <NotesPanel
+                        selectedDate={notesDate}
+                        sx={{ height: 'calc(100vh - 140px)', border: 'none' }}
+                    />
+                </Box>
+            </Box>
+        );
+    };
+
     const renderContent = () => {
         if (!currentUser) {
             return (
@@ -342,6 +370,7 @@ function MobileApp() {
             case 1: return renderWeeklyView();
             case 2: return renderMonthlyView();
             case 3: return renderJournalView();
+            case 4: return renderNotesView();
             default: return null;
         }
     };
@@ -358,6 +387,7 @@ function MobileApp() {
                         <BottomNavigationAction label="Weekly" icon={<ViewWeek />} />
                         <BottomNavigationAction label="Monthly" icon={<CalendarViewMonth />} />
                         <BottomNavigationAction label="Journal" icon={<MenuBook />} />
+                        <BottomNavigationAction label="Notes" icon={<EditNote />} />
                     </BottomNavigation>
                 )}
             </Box>
