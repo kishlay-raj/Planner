@@ -47,7 +47,8 @@ import {
     Terrain,
     Build,
     Notes,
-    History as HistoryIcon
+    History as HistoryIcon,
+    PhoneAndroid
 } from '@mui/icons-material';
 import { format, addDays, subDays } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
@@ -58,16 +59,14 @@ const DEFAULT_PROMPTS = [
     { id: '2', section: 'Morning', text: 'The "Big Rock": What is the one thing I must accomplish today to feel satisfied?' },
     { id: '3', section: 'Morning', text: 'The Obstacle: What is most likely to distract me today, and how will I handle it?' },
     { id: '4', section: 'Deep Work', text: 'The Depth Ratio: How many hours of actual Deep Work did I achieve today versus "Shallow Work" (emails, meetings, admin)? Was this ratio acceptable?' },
-    { id: '5', section: 'Deep Work', text: 'The Distraction Analysis: When I lost focus today, what was the trigger? Was it internal (boredom, anxiety) or external (notifications, physical cues like phone on desk)? What specific environmental or mental pattern hijacked my attention?' },
+    { id: '5', section: 'Deep Work', text: 'Distraction Deep Dive: When I lost focus today, what was the trigger (internal emotion or external app/site)? What was I trying to avoid or numb?' },
     { id: '6', section: 'Deep Work', text: 'Skill Growth & Value: What specifically did I do today to become better at my craft? Am I building skills that are rare and valuable, or am I doing work that is easy to replicate?' },
     { id: '7', section: 'Deep Work', text: 'The Roosevelt Dash: If I had to finish my work in half the time today, what would I have ignored?' },
     { id: '8', section: 'Digital Minimalism', text: 'The Solitude Check: Did I spend any time today alone with my own thoughts, free from inputs (no podcasts, no music, no scrolling)?' },
-    { id: '9', section: 'Digital Minimalism', text: 'The Tech Audit: Did I use technology as a tool to support my values today, or did I use it as a pacifier to avoid boredom?' },
-    { id: '10', section: 'Digital Minimalism', text: 'The Avoidance Pattern: Which apps or sites did I open unconsciously today? What feeling was I trying to numb or avoid? (Anxiety, boredom, fear of a hard task, loneliness?) What lies did my brain tell me to get that dopamine hit?' },
+    { id: '9', section: 'Digital Minimalism', text: 'Technology Mindfulness: Did I use technology as a tool to support my values, or was I driven by distraction/boredom avoidance? How mindful was my usage?' },
     { id: '12', section: 'Behavioral Triggers', text: 'The Transition Trap: Did I lose time during a task, or between tasks? (Most time is wasted in the "transition moments" just after finishing one thing and before starting the next).' },
-    { id: '13', section: 'Evening', text: 'Review: What is one system I can tweak to make tomorrow 1% easier?' },
+    { id: '13', section: 'Evening', text: 'Daily Improvement: What is one system I can tweak or change to make tomorrow 1% better than today?' },
     { id: '14', section: 'Evening', text: '3 Amazing things that happened today.' },
-    { id: '15', section: 'Evening', text: 'How could I have made today even better?' },
     // Phase 1: Awareness Audit
     { id: 'detox-1', section: 'Dopamine detox phase 1: Awareness', text: 'The "One Thing" Analysis: If I eliminated just one distraction, which one would have the biggest impact? Why haven\'t I cut it yet?' },
     { id: 'detox-2', section: 'Dopamine detox phase 1: Awareness', text: 'Excitement vs. Fulfillment: List 3 stimulating things I did today. Did they leave me fulfilling or empty?' },
@@ -78,7 +77,11 @@ const DEFAULT_PROMPTS = [
     // Phase 3: Maintenance
     { id: 'detox-6', section: 'Dopamine detox phase 3: Maintenance', text: 'The Morning Audit: Did I start with High Stimulation or Low Stimulation? How did it dictate my focus?' },
     { id: 'detox-7', section: 'Dopamine detox phase 3: Maintenance', text: 'Friction Review: Did I make bad habits harder and good habits easier today?' },
-    { id: 'detox-8', section: 'Dopamine detox phase 3: Maintenance', text: 'The "Closed System" Check: Did I close out loops (emails, tabs) or leave them draining attention?' }
+    { id: 'detox-8', section: 'Dopamine detox phase 3: Maintenance', text: 'The "Closed System" Check: Did I close out loops (emails, tabs) or leave them draining attention?' },
+    // Daily Digital Audit
+    { id: 'digital-3', section: 'Daily Digital Audit', text: 'The "Junk internet" Limit: Total minutes spent on Insta/Twitter/News: ______ (Target: <10 mins)' },
+    { id: 'digital-4', section: 'Daily Digital Audit', text: 'Fortress Protocol: Did I actively block websites or use a "single-purpose" device during work hours? (Yes/No)' },
+    { id: 'digital-5', section: 'Daily Digital Audit', text: 'Trend Line: Did I use less internet today than yesterday? (Yes/No)' }
 ];
 
 function DailyJournal() {
@@ -239,6 +242,7 @@ function DailyJournal() {
             case 'Dopamine detox phase 1: Awareness': return { icon: Visibility, color: '#7E57C2', borderColor: '#7E57C2' }; // Deep Purple
             case 'Dopamine detox phase 2: The Struggle': return { icon: Terrain, color: '#FF7043', borderColor: '#FF7043' }; // Deep Orange
             case 'Dopamine detox phase 3: Maintenance': return { icon: Build, color: '#66BB6A', borderColor: '#66BB6A' }; // Green
+            case 'Daily Digital Audit': return { icon: PhoneAndroid, color: '#AB47BC', borderColor: '#AB47BC' }; // Purple
             default: return { icon: Notes, color: theme.palette.text.secondary, borderColor: theme.palette.divider };
         }
     };
