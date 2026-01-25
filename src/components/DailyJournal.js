@@ -25,7 +25,9 @@ import {
     Select,
     MenuItem,
     ListItemIcon,
-    Collapse
+    Collapse,
+    Tooltip,
+    Menu
 } from '@mui/material';
 import {
     NavigateBefore,
@@ -44,7 +46,8 @@ import {
     Visibility,
     Terrain,
     Build,
-    Notes
+    Notes,
+    History as HistoryIcon
 } from '@mui/icons-material';
 import { format, addDays, subDays } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
@@ -241,6 +244,7 @@ function DailyJournal() {
     };
 
     const [collapsedSections, setCollapsedSections] = useState([]);
+    const [historyMenuAnchor, setHistoryMenuAnchor] = useState(null);
 
     const handleToggleCollapse = (sectionName) => {
         if (collapsedSections.includes(sectionName)) {
@@ -248,6 +252,32 @@ function DailyJournal() {
         } else {
             setCollapsedSections([...collapsedSections, sectionName]);
         }
+    };
+
+    // Get all dates with journal entries
+    const getDatesWithEntries = () => {
+        return Object.keys(journalData)
+            .filter(dateKey => {
+                const entry = journalData[dateKey];
+                const hasResponses = entry.responses && Object.values(entry.responses).some(r => r && r.trim());
+                const hasNotes = entry.notes && entry.notes.trim();
+                return hasResponses || hasNotes;
+            })
+            .sort((a, b) => new Date(b) - new Date(a)) // Sort in descending order (most recent first)
+            .slice(0, 20); // Limit to 20 most recent dates
+    };
+
+    const handleHistoryMenuOpen = (event) => {
+        setHistoryMenuAnchor(event.currentTarget);
+    };
+
+    const handleHistoryMenuClose = () => {
+        setHistoryMenuAnchor(null);
+    };
+
+    const handleDateSelect = (dateKey) => {
+        setCurrentDate(new Date(dateKey));
+        handleHistoryMenuClose();
     };
 
     const renderSection = (sectionName) => {
@@ -388,7 +418,57 @@ function DailyJournal() {
                         <IconButton onClick={() => setCurrentDate(addDays(currentDate, 1))} size="small">
                             <NavigateNext sx={{ color: theme.palette.text.secondary }} />
                         </IconButton>
+                        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+                        <Tooltip title="Jump to date">
+                            <IconButton
+                                onClick={handleHistoryMenuOpen}
+                                size="small"
+                                sx={{
+                                    color: theme.palette.text.secondary,
+                                    '&:hover': { color: theme.palette.primary.main }
+                                }}
+                            >
+                                <HistoryIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
                     </Paper>
+                    <Menu
+                        anchorEl={historyMenuAnchor}
+                        open={Boolean(historyMenuAnchor)}
+                        onClose={handleHistoryMenuClose}
+                        PaperProps={{
+                            sx: {
+                                maxHeight: 400,
+                                width: 250,
+                                mt: 1
+                            }
+                        }}
+                    >
+                        {getDatesWithEntries().length === 0 ? (
+                            <MenuItem disabled>
+                                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontStyle: 'italic' }}>
+                                    No entries yet
+                                </Typography>
+                            </MenuItem>
+                        ) : (
+                            getDatesWithEntries().map(dateKey => (
+                                <MenuItem
+                                    key={dateKey}
+                                    onClick={() => handleDateSelect(dateKey)}
+                                    selected={dateKey === format(currentDate, 'yyyy-MM-dd')}
+                                >
+                                    <Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                            {format(new Date(dateKey), 'MMMM d, yyyy')}
+                                        </Typography>
+                                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                                            {format(new Date(dateKey), 'EEEE')}
+                                        </Typography>
+                                    </Box>
+                                </MenuItem>
+                            ))
+                        )}
+                    </Menu>
                 </Box>
             </Box>
 

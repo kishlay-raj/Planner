@@ -284,7 +284,7 @@ function PlannerScreen() {
           backgroundColor: '#e5e5e5'
         }} />
         <Grid item xs={12} md={3}>
-          <NotesPanel selectedDate={selectedDate} />
+          <NotesPanel selectedDate={selectedDate} onDateChange={setSelectedDate} />
         </Grid>
       </Grid>
 

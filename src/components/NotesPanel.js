@@ -1,11 +1,14 @@
 import React from 'react';
-import { Paper, Typography, Box, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
-import { format } from 'date-fns';
+import { Paper, Typography, Box, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, IconButton, Menu, MenuItem, Divider } from '@mui/material';
+import { format, addDays, subDays } from 'date-fns';
+import { History as HistoryIcon, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './NotesPanel.css';
 import { useFirestoreDoc } from '../hooks/useFirestoreNew';
 import { useAuth } from '../contexts/AuthContext';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { db } from '../firebase';
 
 // Import markdown shortcuts if available
 // eslint-disable-next-line no-unused-vars
@@ -84,7 +87,7 @@ const CustomToolbar = () => (
   </div>
 );
 
-function NotesPanel({ selectedDate, sx = {} }) {
+function NotesPanel({ selectedDate, onDateChange, sx = {} }) {
   const { currentUser } = useAuth();
   const currentDate = format(selectedDate, 'yyyy-MM-dd');
 
@@ -140,6 +143,63 @@ function NotesPanel({ selectedDate, sx = {} }) {
   // State for delete confirmation dialog
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const quillRef = React.useRef(null);
+  const [historyMenuAnchor, setHistoryMenuAnchor] = React.useState(null);
+  const [availableDates, setAvailableDates] = React.useState([]);
+
+  // Load available dates with notes from Firestore
+  React.useEffect(() => {
+    if (!currentUser) {
+      setAvailableDates([]);
+      return;
+    }
+
+    async function fetchAvailableDates() {
+      try {
+        const dailyPlannerRef = collection(db, 'users', currentUser.uid, 'planner', 'daily');
+        const q = query(dailyPlannerRef, orderBy('__name__', 'desc'), limit(50));
+        const snapshot = await getDocs(q);
+
+        const dates = [];
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          // Only include dates with actual content
+          if (data.content && data.content.trim() && data.content !== '<p><br></p>') {
+            dates.push(doc.id); // doc.id is the date in yyyy-MM-dd format
+          }
+        });
+
+        // Sort in descending order and limit to 20
+        setAvailableDates(dates.sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+      } catch (error) {
+        console.error('Error fetching available dates:', error);
+      }
+    }
+
+    fetchAvailableDates();
+  }, [currentUser]);
+
+  // Refresh available dates when content changes
+  React.useEffect(() => {
+    const hasContent = editorContent && editorContent.trim() && editorContent !== '<p><br></p>';
+    if (currentUser && hasContent && !availableDates.includes(currentDate)) {
+      setAvailableDates(prev => [currentDate, ...prev].sort((a, b) => new Date(b) - new Date(a)).slice(0, 20));
+    }
+  }, [editorContent, currentDate, currentUser, availableDates]);
+
+  const handleHistoryMenuOpen = (event) => {
+    setHistoryMenuAnchor(event.currentTarget);
+  };
+
+  const handleHistoryMenuClose = () => {
+    setHistoryMenuAnchor(null);
+  };
+
+  const handleDateSelect = (dateKey) => {
+    if (onDateChange) {
+      onDateChange(new Date(dateKey));
+    }
+    handleHistoryMenuClose();
+  };
 
   // Helper to open dialog
   const promptDeleteAll = () => {
@@ -268,10 +328,70 @@ function NotesPanel({ selectedDate, sx = {} }) {
         borderColor: 'divider',
         backgroundColor: 'white',
       }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          Notes for {format(selectedDate, 'MMMM d, yyyy')}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Notes
+          </Typography>
+
+          {onDateChange && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <IconButton onClick={() => onDateChange(subDays(selectedDate, 1))} size="small">
+                <NavigateBefore fontSize="small" />
+              </IconButton>
+              <Typography variant="caption" sx={{ minWidth: 100, textAlign: 'center', fontSize: '0.75rem' }}>
+                {format(selectedDate, 'MMM d, yyyy')}
+              </Typography>
+              <IconButton onClick={() => onDateChange(addDays(selectedDate, 1))} size="small">
+                <NavigateNext fontSize="small" />
+              </IconButton>
+              <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 20 }} />
+              <Tooltip title="Jump to date">
+                <IconButton onClick={handleHistoryMenuOpen} size="small">
+                  <HistoryIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          )}
+        </Box>
       </Box>
+
+      <Menu
+        anchorEl={historyMenuAnchor}
+        open={Boolean(historyMenuAnchor)}
+        onClose={handleHistoryMenuClose}
+        PaperProps={{
+          sx: {
+            maxHeight: 350,
+            width: 220,
+            mt: 1
+          }
+        }}
+      >
+        {availableDates.length === 0 ? (
+          <MenuItem disabled>
+            <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic', fontSize: '0.875rem' }}>
+              No notes yet
+            </Typography>
+          </MenuItem>
+        ) : (
+          availableDates.map(dateKey => (
+            <MenuItem
+              key={dateKey}
+              onClick={() => handleDateSelect(dateKey)}
+              selected={dateKey === currentDate}
+            >
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+                  {format(new Date(dateKey), 'MMM d, yyyy')}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                  {format(new Date(dateKey), 'EEEE')}
+                </Typography>
+              </Box>
+            </MenuItem>
+          ))
+        )}
+      </Menu>
 
       <Box
         sx={{
