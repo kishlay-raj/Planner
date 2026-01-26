@@ -93,6 +93,21 @@ function MobileApp() {
         setGhRepo(githubSettings.repo || '');
     }, [githubSettings]);
 
+    // Auto-save GitHub credentials to Firestore when they change (debounced)
+    React.useEffect(() => {
+        const timer = setTimeout(() => {
+            if (ghToken || ghOwner || ghRepo) {
+                setGithubSettings({
+                    token: ghToken,
+                    owner: ghOwner,
+                    repo: ghRepo,
+                    lastSyncTime: githubSettings.lastSyncTime // preserve last sync time
+                });
+            }
+        }, 1000); // 1 second debounce
+        return () => clearTimeout(timer);
+    }, [ghToken, ghOwner, ghRepo]); // Only depend on the input values, not githubSettings to avoid loops
+
     // --- NAVIGATION DATES ---
     const [weekDate, setWeekDate] = useState(new Date());
     const [monthDate, setMonthDate] = useState(new Date());
@@ -476,7 +491,7 @@ function MobileApp() {
                 alert('Please fill in all GitHub details');
                 return;
             }
-            setGithubSettings({ token: ghToken, owner: ghOwner, repo: ghRepo });
+            // Credentials are already saved via auto-save effect
             syncToGitHub(ghToken, ghOwner, ghRepo);
         };
 

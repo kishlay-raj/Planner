@@ -186,6 +186,20 @@ export function useGitHubSync(onSyncComplete) {
                 treeItems.push({ path, mode: '100644', type: 'blob', content });
             }
 
+            // IMPORTANT: Re-fetch the latest commit right before creating tree
+            // This ensures we always use the most recent commit as parent (fast-forward)
+            if (!isInitialCommit) {
+                try {
+                    const { data: refData } = await octokit.git.getRef({ owner, repo, ref: `heads/${branch}` });
+                    latestCommitSha = refData.object.sha;
+                    const { data: commitData } = await octokit.git.getCommit({ owner, repo, commit_sha: latestCommitSha });
+                    baseTreeSha = commitData.tree.sha;
+                } catch (refetchErr) {
+                    console.warn('Could not re-fetch latest commit, using cached version:', refetchErr);
+                    // Continue with cached values
+                }
+            }
+
             // Create Tree
             // For empty repos, we must NOT include base_tree at all (not even undefined)
             // For existing repos, we include base_tree to preserve other files
