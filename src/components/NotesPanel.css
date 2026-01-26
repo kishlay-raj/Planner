@@ -10,6 +10,7 @@
   flex: 1;
   overflow-y: auto;
   line-height: 1.6;
+  color: inherit;
 }
 
 .notes-panel .ql-editor {
@@ -25,7 +26,7 @@
   font-size: 1.5em;
   margin: 1em 0 0.5em;
   font-weight: 600;
-  color: #1a1a1a;
+  color: inherit;
   line-height: 1.2;
 }
 
@@ -33,7 +34,7 @@
   font-size: 1.25em;
   margin: 0.83em 0 0.5em;
   font-weight: 600;
-  color: #1a1a1a;
+  color: inherit;
   line-height: 1.2;
 }
 
@@ -41,8 +42,8 @@
   border-top: none;
   border-left: none;
   border-right: none;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #f9f9f9;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+  background-color: transparent;
   padding: 6px 8px;
   display: flex;
   flex-wrap: nowrap;
@@ -52,9 +53,7 @@
   min-height: 42px;
   /* Hide scrollbar for cleaner look */
   scrollbar-width: none;
-  /* Firefox */
   -ms-overflow-style: none;
-  /* IE/Edge */
   white-space: nowrap;
   max-width: 100%;
 }
@@ -66,7 +65,7 @@
 
 .notes-panel .ql-editor.ql-blank::before {
   font-style: italic;
-  color: #aaa;
+  color: rgba(128, 128, 128, 0.5);
 }
 
 /* Improve button styling */
@@ -83,16 +82,19 @@
   margin: 0 1px;
   font-size: 13px;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.7);
+  color: inherit;
+  opacity: 0.7;
 }
 
 .notes-panel .ql-toolbar button:hover {
   background-color: rgba(0, 0, 0, 0.04);
+  opacity: 1;
 }
 
 .notes-panel .ql-toolbar button.ql-active {
   background-color: rgba(25, 118, 210, 0.12);
   color: rgb(25, 118, 210);
+  opacity: 1;
 }
 
 /* Style heading buttons */
@@ -116,6 +118,7 @@
 .notes-panel .ql-toolbar .ql-picker {
   height: 28px;
   margin: 0 2px;
+  color: inherit;
 }
 
 .notes-panel .ql-toolbar .ql-picker-label {
@@ -125,6 +128,7 @@
   align-items: center;
   height: 28px;
   font-size: 13px;
+  color: inherit;
 }
 
 /* Add separator styling */
@@ -142,7 +146,7 @@
   top: 4px;
   height: 20px;
   width: 1px;
-  background-color: #e0e0e0;
+  background-color: rgba(128, 128, 128, 0.2);
 }
 
 /* Adjust editor height to account for compact toolbar */
@@ -153,14 +157,15 @@
 /* Add markdown hint */
 .notes-panel .markdown-hint {
   font-size: 12px;
-  color: #888;
+  color: inherit;
+  opacity: 0.6;
   padding: 4px 12px;
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
 }
 
 .notes-panel .markdown-hint code {
-  background-color: #eee;
+  background-color: rgba(128, 128, 128, 0.1);
   padding: 2px 4px;
   border-radius: 3px;
   font-family: monospace;
@@ -197,4 +202,12 @@
   font-size: 1.25em;
   margin: 0.83em 0 0.5em;
   font-weight: 600;
+}
+
+.notes-panel .ql-stroke {
+  stroke: currentColor;
+}
+
+.notes-panel .ql-fill {
+  fill: currentColor;
 }

@@ -28,7 +28,9 @@ import {
     SelfImprovement,
     ViewQuilt,
     Timer,
-    DeleteForever
+    DeleteForever,
+    WbSunny,
+    NightsStay
 } from '@mui/icons-material';
 import { useFirestore } from '../hooks/useFirestore';
 import packageJson from '../../package.json';
@@ -45,7 +47,7 @@ const iconMap = {
     timer: <Timer />
 };
 
-function Settings({ navConfig, onUpdate }) {
+function Settings({ navConfig, onUpdate, darkMode, onToggleDarkMode }) {
     const theme = useTheme();
 
     const [tasks, setTasks] = useFirestore('allTasks', []);
@@ -81,6 +83,32 @@ function Settings({ navConfig, onUpdate }) {
             <Typography variant="body1" sx={{ color: theme.palette.text.secondary, mb: 4 }}>
                 Customize your workspace navigation.
             </Typography>
+
+            {/* Appearance Section */}
+            <Paper elevation={0} sx={{ p: 0, mb: 4, borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
+                <Box sx={{ p: 3, bgcolor: theme.palette.action.hover }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        Appearance
+                    </Typography>
+                </Box>
+                <Divider />
+                <List>
+                    <ListItem>
+                        <ListItemIcon>
+                            {darkMode ? <NightsStay /> : <WbSunny />}
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Dark Mode"
+                            secondary="Switch between light and dark themes"
+                        />
+                        <Switch
+                            edge="end"
+                            checked={darkMode}
+                            onChange={onToggleDarkMode}
+                        />
+                    </ListItem>
+                </List>
+            </Paper>
 
             <Paper elevation={0} sx={{ p: 0, borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
                 <Box sx={{ p: 3, bgcolor: theme.palette.action.hover }}>

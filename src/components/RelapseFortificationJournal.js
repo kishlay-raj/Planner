@@ -69,15 +69,15 @@ const SimpleInput = ({ label, value, onChange, placeholder, icon, minRows = 2, a
             size="small"
             sx={{
                 '& .MuiOutlinedInput-root': {
-                    bgcolor: '#fff',
+                    bgcolor: 'background.paper',
                     borderRadius: 2,
                     fontSize: '0.95rem',
                     lineHeight: 1.6,
                     '& fieldset': {
-                        borderColor: 'rgba(0,0,0,0.1)',
+                        borderColor: 'divider',
                     },
                     '&:hover fieldset': {
-                        borderColor: 'rgba(0,0,0,0.2)',
+                        borderColor: 'text.secondary',
                     },
                     '&.Mui-focused fieldset': {
                         borderColor: accentColor,
@@ -196,23 +196,24 @@ function RelapseFortificationJournal() {
         <Box sx={{
             height: '100vh',
             overflowY: 'auto',
-            bgcolor: '#FAFAFA',
+            bgcolor: 'background.default',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            color: 'text.primary'
         }}>
             <Container maxWidth="md" sx={{ py: 6, flexGrow: 1 }}>
 
                 {/* --- HEADER --- */}
                 <Box sx={{ mb: 6 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
-                        <Typography variant="h4" sx={{ fontWeight: 800, color: '#1a2332', letterSpacing: '-0.5px' }}>
+                        <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.5px' }}>
                             Relapse Journal
                         </Typography>
 
                         {/* Date Nav */}
                         <Paper elevation={0} sx={{
                             display: 'flex', alignItems: 'center', gap: 1, p: 0.5, px: 2,
-                            borderRadius: 10, bgcolor: '#fff', border: '1px solid rgba(0,0,0,0.1)'
+                            borderRadius: 10, bgcolor: 'background.paper', border: 1, borderColor: 'divider'
                         }}>
                             <IconButton onClick={handlePrevious} size="small" title="Previous Entry">
                                 <NavigateBefore />
@@ -226,7 +227,7 @@ function RelapseFortificationJournal() {
                                 <NavigateNext />
                             </IconButton>
                             <Divider orientation="vertical" flexItem sx={{ height: 16, my: 'auto', mx: 1 }} />
-                            <IconButton onClick={(e) => setHistoryMenuAnchor(e.currentTarget)} size="small" sx={{ color: theme.palette.primary.main }}>
+                            <IconButton onClick={(e) => setHistoryMenuAnchor(e.currentTarget)} size="small" sx={{ color: 'primary.main' }}>
                                 <HistoryIcon fontSize="small" />
                             </IconButton>
                         </Paper>
@@ -247,7 +248,7 @@ function RelapseFortificationJournal() {
                             <Box sx={{ p: 1, borderRadius: 2, bgcolor: `${THEME_COLORS.CRASH}10`, color: THEME_COLORS.CRASH }}>
                                 <Timeline />
                             </Box>
-                            <Typography variant="h6" sx={{ color: '#333', fontWeight: 700 }}>
+                            <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 700 }}>
                                 The Incident
                             </Typography>
                         </Box>
@@ -270,7 +271,7 @@ function RelapseFortificationJournal() {
                             <Box sx={{ p: 1, borderRadius: 2, bgcolor: `${THEME_COLORS.FORTRESS}10`, color: THEME_COLORS.FORTRESS }}>
                                 <Security />
                             </Box>
-                            <Typography variant="h6" sx={{ color: '#333', fontWeight: 700 }}>
+                            <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 700 }}>
                                 Fortress Report (Wins)
                             </Typography>
                         </Box>
@@ -294,7 +295,7 @@ function RelapseFortificationJournal() {
                             <Box sx={{ p: 1, borderRadius: 2, bgcolor: `${THEME_COLORS.ANALYSIS}10`, color: THEME_COLORS.ANALYSIS }}>
                                 <Psychology />
                             </Box>
-                            <Typography variant="h6" sx={{ color: '#333', fontWeight: 700 }}>
+                            <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 700 }}>
                                 Root Cause
                             </Typography>
                         </Box>
@@ -320,7 +321,7 @@ function RelapseFortificationJournal() {
                             <Box sx={{ p: 1, borderRadius: 2, bgcolor: `${THEME_COLORS.PATCH}10`, color: THEME_COLORS.PATCH }}>
                                 <Build />
                             </Box>
-                            <Typography variant="h6" sx={{ color: '#333', fontWeight: 700 }}>
+                            <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 700 }}>
                                 The Patch
                             </Typography>
                         </Box>

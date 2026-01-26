@@ -14,6 +14,8 @@ import {
   Typography,
   InputBase,
   Tooltip,
+  useTheme,
+  alpha
 } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
@@ -23,10 +25,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import './TaskList.css';
 import TaskEditDialog from './TaskEditDialog';
-import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 
 function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedDate }) {
+  const theme = useTheme();
   const taskList = Array.isArray(tasks) ? tasks : [];
   const [editDialog, setEditDialog] = useState({ open: false, task: null });
   const [newTaskTexts, setNewTaskTexts] = useState({
@@ -44,24 +46,6 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
     const selectedDateString = selectedDate.toDateString();
     return taskDate === selectedDateString;
   });
-
-  /*
-  const priorityTasksByLevel = {
-    P1: filteredTasks.filter(task => task.priority === 'P1' && !task.completed),
-    P2: filteredTasks.filter(task => task.priority === 'P2' && !task.completed),
-    P3: filteredTasks.filter(task => task.priority === 'P3' && !task.completed),
-    P4: filteredTasks.filter(task => task.priority === 'P4' && !task.completed)
-  };
-  */
-
-  /*
-  const priorityTasksByLevel = {
-    P1: filteredTasks.filter(task => task.priority === 'P1' && !task.completed),
-    P2: filteredTasks.filter(task => task.priority === 'P2' && !task.completed),
-    P3: filteredTasks.filter(task => task.priority === 'P3' && !task.completed),
-    P4: filteredTasks.filter(task => task.priority === 'P4' && !task.completed)
-  };
-  */
 
   // Tasks for priority sections (active only)
   const priorityTasksByLevel = {
@@ -130,24 +114,41 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
     });
   };
 
-  const theme = useTheme();
-
   const getPriorityColor = (priority) => {
-    const colors = {
-      P1: theme.palette.priority.p1,
-      P2: theme.palette.priority.p2,
-      P3: theme.palette.priority.p3,
-      P4: theme.palette.priority.p4
+    // Fallback colors if theme palette not fully populated, or use standard MUI colors
+    if (theme.palette.priority) {
+      const colors = {
+        P1: theme.palette.priority.p1,
+        P2: theme.palette.priority.p2,
+        P3: theme.palette.priority.p3,
+        P4: theme.palette.priority.p4
+      };
+      return colors[priority] || colors.P4;
+    }
+    // Default Material Colors fallback
+    const fallback = {
+      P1: '#f44336',
+      P2: '#ff9800',
+      P3: '#2196f3',
+      P4: '#4caf50'
     };
-    return colors[priority] || colors.P4;
+    return fallback[priority] || fallback.P4;
+  };
+
+  const getPriorityBgColor = (priority) => {
+    // Use alpha blending for background
+    const color = getPriorityColor(priority);
+    // Dark mode: slightly stronger opacity?
+    const opacity = theme.palette.mode === 'dark' ? 0.2 : 0.1;
+    return alpha(color, opacity);
   };
 
   const getTagColor = (tag) => {
     const colors = {
-      work: theme.palette.tag.work,
-      personal: theme.palette.tag.personal,
-      study: theme.palette.tag.study,
-      health: theme.palette.tag.health
+      work: theme.palette.info.main,
+      personal: theme.palette.success.main,
+      study: theme.palette.warning.main,
+      health: theme.palette.error.main
     };
     return colors[tag.toLowerCase()] || theme.palette.grey[500];
   };
@@ -166,9 +167,6 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
 
   const handleQuickAdd = (priority, section) => {
     if (newTaskTexts[section]?.trim()) {
-      // Create new task object WITHOUT custom ID (let Firestore/hook handle it if possible,
-      // or if handleTaskCreate uses Date.now(), that's fine too).
-      // Ideally, we just pass the data.
       const newTask = {
         name: newTaskTexts[section],
         priority,
@@ -176,7 +174,6 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
         completed: false,
         todoLater: section === 'todoLater',
         date: format(selectedDate, 'yyyy-MM-dd'),
-        // ID and createdAt will be assigned by create handler
       };
 
       if (onTaskCreate) {
@@ -231,7 +228,20 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                     handleDragStart(e, task);
                   }}
                   onClick={() => handleTaskEdit(task)}
-                  sx={{ cursor: 'pointer' }}
+                  sx={{
+                    cursor: 'pointer',
+                    bgcolor: snapshot.isDragging ? 'action.selected' :
+                      task.scheduledTime ? alpha(theme.palette.primary.main, 0.08) : 'background.paper',
+                    color: 'text.primary',
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    '&:hover': {
+                      bgcolor: 'action.hover'
+                    },
+                    ...(task.scheduledTime && {
+                      borderLeft: `3px solid ${theme.palette.primary.main}`,
+                      bgcolor: alpha(theme.palette.primary.main, 0.04)
+                    })
+                  }}
                 >
                   <div
                     {...provided.dragHandleProps}
@@ -241,6 +251,7 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                         e.stopPropagation();
                       }
                     }}
+                    style={{ color: theme.palette.text.disabled }}
                   >
                     <DragIndicatorIcon sx={{ fontSize: '1.2rem' }} />
                   </div>
@@ -261,12 +272,12 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                     sx={{
                       padding: '4px',
                       marginRight: '8px',
-                      color: 'rgba(0, 0, 0, 0.3)',
+                      color: 'text.disabled',
                       '&.Mui-checked': {
-                        color: theme.palette.success.main
+                        color: 'success.main'
                       },
                       '&:hover': {
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                        backgroundColor: 'action.hover'
                       }
                     }}
                   />
@@ -282,7 +293,8 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                               opacity: task.completed ? 0.7 : 1,
                               fontWeight: 500,
                               fontSize: '0.85rem',
-                              marginRight: '8px'
+                              marginRight: '8px',
+                              color: 'text.primary'
                             }}
                           >
                             {task.name}
@@ -293,19 +305,19 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                               size="small"
                               variant="outlined"
                               sx={{
-                                backgroundColor: 'rgba(33, 150, 243, 0.08)',
-                                color: theme.palette.primary.main,
-                                fontWeight: 500
+                                backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                                color: 'primary.main',
+                                fontWeight: 500,
+                                borderColor: alpha(theme.palette.primary.main, 0.3)
                               }}
                             />
                             <Chip
                               label={task.priority}
                               size="small"
                               sx={{
-                                backgroundColor: `${getPriorityColor(task.priority)}15`,
+                                backgroundColor: alpha(getPriorityColor(task.priority), 0.15),
                                 color: getPriorityColor(task.priority),
                                 fontWeight: 500,
-                                borderColor: getPriorityColor(task.priority)
                               }}
                             />
                             {task.tag && (
@@ -314,10 +326,10 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                                 size="small"
                                 variant="outlined"
                                 sx={{
-                                  backgroundColor: `${getTagColor(task.tag)}15`,
+                                  backgroundColor: alpha(getTagColor(task.tag), 0.15),
                                   color: getTagColor(task.tag),
                                   fontWeight: 500,
-                                  borderColor: getTagColor(task.tag)
+                                  borderColor: alpha(getTagColor(task.tag), 0.3)
                                 }}
                               />
                             )}
@@ -326,8 +338,8 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                                 label="Urgent"
                                 size="small"
                                 sx={{
-                                  backgroundColor: `${theme.palette.error.main}15`,
-                                  color: theme.palette.error.main,
+                                  backgroundColor: alpha(theme.palette.error.main, 0.15),
+                                  color: 'error.main',
                                   fontWeight: 500
                                 }}
                               />
@@ -339,7 +351,7 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                                 variant="outlined"
                                 icon={<Box component="span" sx={{ fontSize: '10px', mr: 0.5 }}>✓</Box>}
                                 sx={{
-                                  backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                  backgroundColor: 'action.hover',
                                   color: 'text.secondary',
                                   fontWeight: 500,
                                   borderColor: 'transparent',
@@ -380,7 +392,7 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                       handleTaskEdit(task);
                     }}
                     className="edit-button"
-                    sx={{ padding: '4px' }}
+                    sx={{ padding: '4px', color: 'text.secondary' }}
                   >
                     <EditIcon fontSize="small" />
                   </IconButton>
@@ -392,7 +404,7 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                         onTaskSchedule(task.id, new Date());
                       }}
                       className="schedule-button"
-                      sx={{ padding: '4px' }}
+                      sx={{ padding: '4px', color: 'text.secondary' }}
                     >
                       <ScheduleIcon fontSize="small" />
                     </IconButton>
@@ -409,14 +421,14 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
   );
 
   return (
-    <Paper className="task-list">
+    <Paper className="task-list" sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
       <Box sx={{
         p: 2,
         borderBottom: 1,
         borderColor: 'divider',
         bgcolor: 'background.paper'
       }}>
-        <Typography variant="h6" sx={{ fontWeight: 500 }}>
+        <Typography variant="h6" sx={{ fontWeight: 500, color: 'text.primary' }}>
           Task Priorities
         </Typography>
       </Box>
@@ -428,13 +440,15 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
               key={priority}
               defaultExpanded
               className={`priority-section`}
+              sx={{ bgcolor: 'transparent', boxShadow: 'none' }}
             >
               <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
+                expandIcon={<ExpandMoreIcon sx={{ color: 'text.secondary' }} />}
                 className={`priority-header-${priority.toLowerCase()}`}
                 sx={{
-                  borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+                  borderBottom: `1px solid ${theme.palette.divider}`,
                   minHeight: '40px !important',
+                  bgcolor: getPriorityBgColor(priority) + ' !important',
                   '& .MuiAccordionSummary-content': {
                     margin: '4px 0 !important'
                   }
@@ -444,20 +458,26 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                   <div className="priority-header-text">
                     {/* Indicator removed as background now serves this purpose, but can keep if desired. Keeping for now for extra clarity */}
                     <div className={`priority-indicator priority-${priority.toLowerCase()}`} style={{ display: 'none' }} />
-                    <Typography className="priority-title">
+                    <Typography className="priority-title" sx={{
+                      color: theme.palette.mode === 'dark' ? getPriorityColor(priority) : theme.palette.text.primary,
+                      fontWeight: 600
+                    }}>
                       {priority === 'P1' ? 'P1 - Critical' :
                         priority === 'P2' ? 'P2 - High' :
                           priority === 'P3' ? 'P3 - Medium' :
                             'P4 - Low (To-Do Later)'}
                     </Typography>
-                    <Typography className="priority-count">
+                    <Typography className="priority-count" sx={{ color: 'text.secondary' }}>
                       {priorityTasksByLevel[priority].length} tasks
                     </Typography>
                   </div>
                 </div>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: 0 }}>
-                <Box className="quick-add-task">
+                <Box className="quick-add-task" sx={{
+                  bgcolor: 'background.paper',
+                  borderBottom: `1px solid ${theme.palette.divider}`
+                }}>
                   <InputBase
                     placeholder="Add a task..."
                     value={newTaskTexts[priority] || ''}
@@ -471,10 +491,12 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                       }
                     }}
                     fullWidth
+                    sx={{ color: 'text.primary', fontSize: '0.875rem' }}
                   />
                   <IconButton
                     size="small"
                     onClick={() => handleQuickAdd(priority, priority)}
+                    sx={{ color: 'text.secondary' }}
                   >
                     <AddIcon fontSize="small" />
                   </IconButton>
@@ -486,8 +508,6 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
               </AccordionDetails>
             </Accordion>
           ))}
-
-
 
           {/* Completed Tasks Section */}
           <Accordion
@@ -501,20 +521,22 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                     behavior: 'smooth',
                     block: 'start'
                   });
-                }, 100); // Small delay to allow accordion animation to start
+                }, 100);
               }
             }}
             sx={{
               mt: 2,
               opacity: 0.8,
-              '&:before': { display: 'none' }
+              '&:before': { display: 'none' },
+              bgcolor: 'transparent',
+              boxShadow: 'none'
             }}
           >
             <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
+              expandIcon={<ExpandMoreIcon sx={{ color: 'text.secondary' }} />}
               sx={{
-                backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
+                backgroundColor: 'action.hover',
+                borderBottom: `1px solid ${theme.palette.divider}`,
                 minHeight: '40px !important',
                 '& .MuiAccordionSummary-content': {
                   margin: '4px 0 !important'
@@ -527,7 +549,7 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                   <Typography className="priority-title" sx={{ color: 'text.secondary' }}>
                     Completed
                   </Typography>
-                  <Typography className="priority-count">
+                  <Typography className="priority-count" sx={{ color: 'text.secondary' }}>
                     {completedSectionTasks.length} tasks
                   </Typography>
                 </div>
@@ -552,4 +574,4 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
   );
 }
 
-export default TaskList; 
+export default TaskList;

@@ -8,13 +8,12 @@ import {
   Grid,
   TextField,
   Tooltip,
-  Divider
+  Divider,
+  useTheme
 } from '@mui/material';
 import {
   NavigateBefore,
   NavigateNext,
-  Brightness4,
-  Brightness7,
   Add as AddIcon,
   Delete as DeleteIcon
 } from '@mui/icons-material';
@@ -47,8 +46,8 @@ const defaultMonthData = {
 };
 
 function MonthlyPlanner() {
+  const theme = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [isDark, setIsDark] = useState(false);
 
   const monthId = `${getYear(currentDate)}-${getMonth(currentDate) + 1}`;
   const monthStart = startOfMonth(currentDate);
@@ -148,25 +147,10 @@ function MonthlyPlanner() {
     updateMonthData({ days: { ...currentMonthData.days, [dateKey]: val } });
   };
 
-  const theme = {
-    bg: isDark ? '#121212' : '#f0f2f5',
-    paper: isDark ? '#1e1e1e' : '#ffffff',
-    text: isDark ? '#e0e0e0' : '#2d3748',
-    textSecondary: isDark ? '#a0a0a0' : '#718096',
-    inputBg: isDark ? 'rgba(255,255,255,0.05)' : '#f7fafc',
-    divider: isDark ? '#333333' : '#e2e8f0',
-    border: isDark ? '1px solid #333' : '1px solid #e2e8f0',
-    shadow: isDark ? '0 4px 6px -1px rgba(0, 0, 0, 0.5)' : '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-    primary: isDark ? '#90caf9' : '#3182ce',
-    accent1: isDark ? '#ce93d8' : '#9f7aea',
-    accent2: isDark ? '#a5d6a7' : '#38a169',
-    accent3: isDark ? '#ffcc80' : '#dd6b20',
-  };
-
   const planningPrompts = [
-    { label: "Comfort Zone Challenge: What scares me but helps me grow?", key: 'comfortZone', color: theme.accent1 },
-    { label: "Top Priority: The one major goal for this month.", key: 'topPriority', color: theme.primary },
-    { label: "The Boundary: What must I say 'no' to?", key: 'boundary', color: theme.accent3 },
+    { label: "Comfort Zone Challenge: What scares me but helps me grow?", key: 'comfortZone', color: 'secondary.main' },
+    { label: "Top Priority: The one major goal for this month.", key: 'topPriority', color: 'primary.main' },
+    { label: "The Boundary: What must I say 'no' to?", key: 'boundary', color: 'warning.main' },
   ];
 
   const sscPrompts = [
@@ -191,49 +175,43 @@ function MonthlyPlanner() {
   const yearFocus = yearlyData?.yearFocus || '';
 
   return (
-    <Box sx={{ p: 3, height: '100vh', overflow: 'auto', bgcolor: theme.bg, color: theme.text }}>
+    <Box sx={{ p: 3, height: '100vh', overflow: 'auto', bgcolor: 'background.default', color: 'text.primary' }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
-        <Box sx={{ width: 40 }} />
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton onClick={() => handleNavigate('prev')}>
+          <IconButton onClick={() => handleNavigate('prev')} sx={{ color: 'text.secondary' }}>
             <NavigateBefore />
           </IconButton>
           <Typography variant="h4" sx={{ mx: 3, fontWeight: 'bold' }}>
             {format(currentDate, 'MMMM yyyy')}
           </Typography>
-          <IconButton onClick={() => handleNavigate('next')}>
+          <IconButton onClick={() => handleNavigate('next')} sx={{ color: 'text.secondary' }}>
             <NavigateNext />
           </IconButton>
         </Box>
-        <Tooltip title={isDark ? "Light Mode" : "Dark Mode"}>
-          <IconButton onClick={() => setIsDark(!isDark)}>
-            {isDark ? <Brightness7 /> : <Brightness4 />}
-          </IconButton>
-        </Tooltip>
       </Box>
 
       {/* YEAR FOCUS (From Yearly Planner) */}
       {yearFocus && (
-        <Paper sx={{ p: 1.5, mb: 2, bgcolor: 'rgba(49, 130, 206, 0.08)', borderRadius: 2, border: `1px solid ${theme.primary}` }}>
-          <Typography variant="caption" sx={{ color: theme.primary, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', mb: 0.5, fontSize: '0.75rem' }}>
+        <Paper sx={{ p: 1.5, mb: 2, bgcolor: 'rgba(49, 130, 206, 0.08)', borderRadius: 2, border: 1, borderColor: 'primary.main' }}>
+          <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', mb: 0.5, fontSize: '0.75rem' }}>
             Year Focus ({getYear(currentDate)})
           </Typography>
-          <Typography variant="body2" sx={{ color: theme.text, fontSize: '0.9rem' }}>
+          <Typography variant="body2" sx={{ color: 'text.primary', fontSize: '0.9rem' }}>
             {yearFocus}
           </Typography>
         </Paper>
       )}
 
       {/* MONTHLY FOCUS */}
-      <Paper sx={{ p: 3, mb: 3, bgcolor: theme.paper, borderRadius: 2, boxShadow: theme.shadow }}>
-        <Typography variant="h6" sx={{ mb: 2, color: theme.accent3, fontWeight: 700 }}>Monthly Focus</Typography>
+      <Paper sx={{ p: 3, mb: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
+        <Typography variant="h6" sx={{ mb: 2, color: 'warning.main', fontWeight: 700 }}>Monthly Focus</Typography>
         <TextField
           fullWidth multiline minRows={2}
           placeholder="Enter your main focus for the month..."
           value={currentMonthData.monthlyFocus}
           onChange={(e) => handleMonthlyFocusChange(e.target.value)}
-          sx={{ bgcolor: theme.inputBg, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: theme.divider } } }}
+          sx={{ bgcolor: 'action.hover', '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'divider' } } }}
         />
       </Paper>
       {/* JOURNALING SECTION (TOP) */}
@@ -241,8 +219,8 @@ function MonthlyPlanner() {
         <Grid container spacing={3}>
           <Grid item xs={12} lg={6}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Paper sx={{ p: 3, bgcolor: theme.paper, borderRadius: 2, boxShadow: theme.shadow }}>
-                <Typography variant="h6" sx={{ mb: 2, color: theme.primary, fontWeight: 700 }}>
+              <Paper sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
+                <Typography variant="h6" sx={{ mb: 2, color: 'primary.main', fontWeight: 700 }}>
                   Month's Rules & System
                 </Typography>
                 <TextField
@@ -250,11 +228,11 @@ function MonthlyPlanner() {
                   placeholder="Define the rules and system for this month..."
                   value={currentMonthData.rules}
                   onChange={(e) => handleRulesChange(e.target.value)}
-                  sx={{ bgcolor: theme.inputBg, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: theme.divider } } }}
+                  sx={{ bgcolor: 'action.hover', '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'divider' } } }}
                 />
               </Paper>
 
-              <Paper sx={{ p: 3, bgcolor: theme.paper, borderRadius: 2, boxShadow: theme.shadow }}>
+              <Paper sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Intention Setting</Typography>
                 {planningPrompts.map(prompt => (
                   <Box key={prompt.key} sx={{ mb: 3 }}>
@@ -264,20 +242,20 @@ function MonthlyPlanner() {
                       value={currentMonthData.journal[prompt.key]}
                       onChange={(e) => handleJournalChange(prompt.key, e.target.value)}
                       InputProps={{ disableUnderline: true }}
-                      sx={{ bgcolor: theme.inputBg, p: 1.5, borderRadius: 1 }}
+                      sx={{ bgcolor: 'action.hover', p: 1.5, borderRadius: 1 }}
                     />
                   </Box>
                 ))}
 
                 {sscPrompts.map(p => (
                   <Box key={p.key} sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" sx={{ color: theme.textSecondary, mb: 0.5 }}>{p.label}</Typography>
+                    <Typography variant="subtitle2" sx={{ color: 'text.secondary', mb: 0.5 }}>{p.label}</Typography>
                     <TextField
                       fullWidth multiline minRows={2}
                       placeholder={p.placeholder}
                       value={currentMonthData.journal[p.key]}
                       onChange={(e) => handleJournalChange(p.key, e.target.value)}
-                      sx={{ bgcolor: theme.inputBg, '& fieldset': { border: 'none' }, borderRadius: 1 }}
+                      sx={{ bgcolor: 'action.hover', '& fieldset': { border: 'none' }, borderRadius: 1 }}
                     />
                   </Box>
                 ))}
@@ -286,11 +264,11 @@ function MonthlyPlanner() {
           </Grid>
 
           <Grid item xs={12} lg={6}>
-            <Paper sx={{ p: 3, bgcolor: theme.paper, borderRadius: 2, boxShadow: theme.shadow, height: '100%' }}>
-              <Typography variant="h6" sx={{ mb: 2, color: theme.accent3, fontWeight: 700 }}>Deep Reflection</Typography>
+            <Paper sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1, height: '100%' }}>
+              <Typography variant="h6" sx={{ mb: 2, color: 'warning.main', fontWeight: 700 }}>Deep Reflection</Typography>
               {reflectionPrompts.map(p => (
                 <Box key={p.key} sx={{ mb: 2 }}>
-                  <Typography variant="caption" sx={{ color: theme.textSecondary, fontWeight: 600, display: 'block', mb: 0.5 }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, display: 'block', mb: 0.5 }}>
                     {p.label}
                   </Typography>
                   <TextField
@@ -298,20 +276,20 @@ function MonthlyPlanner() {
                     value={currentMonthData.journal[p.key]}
                     onChange={(e) => handleJournalChange(p.key, e.target.value)}
                     size="small"
-                    sx={{ bgcolor: theme.inputBg, '& fieldset': { borderColor: theme.divider } }}
+                    sx={{ bgcolor: 'action.hover', '& fieldset': { borderColor: 'divider' } }}
                   />
                 </Box>
               ))}
 
               <Divider sx={{ my: 3 }} />
 
-              <Typography variant="h6" sx={{ mb: 2, color: theme.text, fontWeight: 700 }}>Notes & Brain Dump</Typography>
+              <Typography variant="h6" sx={{ mb: 2, color: 'text.primary', fontWeight: 700 }}>Notes & Brain Dump</Typography>
               <TextField
                 fullWidth multiline minRows={6}
                 placeholder="Capture thoughts, ideas, or reminders for this month..."
                 value={currentMonthData.notes}
                 onChange={(e) => handleNotesChange(e.target.value)}
-                sx={{ bgcolor: theme.inputBg, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: theme.divider } } }}
+                sx={{ bgcolor: 'action.hover', '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'divider' } } }}
               />
 
             </Paper>
@@ -321,20 +299,20 @@ function MonthlyPlanner() {
 
 
 
-      <Divider sx={{ my: 5, borderColor: theme.divider, borderWidth: 2 }} />
+      <Divider sx={{ my: 5, borderColor: 'divider', borderWidth: 2 }} />
 
       {/* BOTTOM SECTION: Habit Tracker then Calendar */}
       <Box>
         <Grid container spacing={3} direction="column">
           {/* Habit Tracker */}
           <Grid item xs={12}>
-            <Paper sx={{ p: 3, bgcolor: theme.paper, borderRadius: 2, boxShadow: theme.shadow, overflowX: 'auto' }}>
+            <Paper sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1, overflowX: 'auto' }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6" sx={{ color: theme.accent2, fontWeight: 700 }}>Habit Tracker</Typography>
+                  <Typography variant="h6" sx={{ color: 'success.main', fontWeight: 700 }}>Habit Tracker</Typography>
                   <IconButton size="small" onClick={addHabit}><AddIcon /></IconButton>
                 </Box>
-                <Typography variant="caption" sx={{ color: theme.textSecondary, fontStyle: 'italic', mt: 0.5 }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontStyle: 'italic', mt: 0.5 }}>
                   Every action you take is a vote for the person you wish to become
                 </Typography>
               </Box>
@@ -342,7 +320,7 @@ function MonthlyPlanner() {
                 <Box sx={{ display: 'flex', mb: 1 }}>
                   <Box sx={{ width: 150, flexShrink: 0, fontWeight: 'bold', fontSize: '0.8rem' }}>Habit</Box>
                   {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
-                    <Box key={d} sx={{ width: 32, textAlign: 'center', fontSize: '0.7rem', color: theme.textSecondary }}>{d}</Box>
+                    <Box key={d} sx={{ width: 32, textAlign: 'center', fontSize: '0.7rem', color: 'text.secondary' }}>{d}</Box>
                   ))}
                 </Box>
                 {currentMonthData.habits.map(habit => (
@@ -363,7 +341,7 @@ function MonthlyPlanner() {
                         onClick={() => handleHabitToggle(habit.id, d)}
                         sx={{
                           width: 28, height: 28, mx: '2px',
-                          bgcolor: habit.days[d] ? theme.accent2 : theme.inputBg,
+                          bgcolor: habit.days[d] ? 'success.main' : 'action.hover',
                           borderRadius: '4px', cursor: 'pointer',
                           '&:hover': { opacity: 0.7 }
                         }}
@@ -374,15 +352,15 @@ function MonthlyPlanner() {
               </Box>
             </Paper>
           </Grid>
-          <Divider sx={{ my: 3, borderColor: theme.divider }} />
+          <Divider sx={{ my: 3, borderColor: 'divider' }} />
 
           {/* Monthly Calendar */}
           <Grid item xs={12}>
-            <Paper sx={{ p: 3, bgcolor: theme.paper, borderRadius: 2, boxShadow: theme.shadow }}>
+            <Paper sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Monthly Calendar</Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: 2 }}>
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                  <Typography key={day} variant="subtitle2" align="center" sx={{ color: theme.textSecondary, fontWeight: 'bold' }}>
+                  <Typography key={day} variant="subtitle2" align="center" sx={{ color: 'text.secondary', fontWeight: 'bold' }}>
                     {day}
                   </Typography>
                 ))}
@@ -394,12 +372,13 @@ function MonthlyPlanner() {
                   const isToday = isSameDay(day, new Date());
                   return (
                     <Box key={dateKey} sx={{
-                      bgcolor: theme.bg, borderRadius: 1, p: 1,
+                      bgcolor: 'background.default', borderRadius: 1, p: 1,
                       display: 'flex', flexDirection: 'column',
-                      border: isToday ? `2px solid ${theme.primary}` : `1px solid ${theme.divider}`,
+                      border: isToday ? 2 : 1,
+                      borderColor: isToday ? 'primary.main' : 'divider',
                       minHeight: 90, overflow: 'hidden'
                     }}>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold', color: isToday ? theme.primary : theme.textSecondary, mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold', color: isToday ? 'primary.main' : 'text.secondary', mb: 0.5 }}>
                         {format(day, 'd')}
                       </Typography>
                       <TextField

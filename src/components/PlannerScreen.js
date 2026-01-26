@@ -133,10 +133,14 @@ function PlannerScreen() {
 
   return (
     <div className="planner-screen">
-      <div className="planner-header">
+      <Box className="planner-header" sx={{
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'background.paper'
+      }}>
         <div className="planner-nav" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <TimelineIcon sx={{ color: '#1976d2', fontSize: '32px' }} />
-          <span className="planner-title">Flow Planner</span>
+          <Typography className="planner-title" sx={{ color: 'text.primary' }}>Flow Planner</Typography>
         </div>
         <div className="planner-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {currentUser ? (
@@ -186,12 +190,12 @@ function PlannerScreen() {
               onClick={handleLogin}
               sx={{
                 textTransform: 'none',
-                backgroundColor: '#fff',
-                color: '#757575',
+                backgroundColor: 'background.paper',
+                color: 'text.secondary',
                 '&:hover': {
-                  backgroundColor: '#f5f5f5',
+                  backgroundColor: 'action.hover',
                 },
-                boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)'
+                boxShadow: 1
               }}
             >
               Sign in with Google
@@ -207,7 +211,7 @@ function PlannerScreen() {
                 color: 'text.secondary',
                 p: 0.5,
                 '&:hover': {
-                  backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                  backgroundColor: 'action.hover',
                   color: 'primary.main'
                 }
               }}
@@ -239,21 +243,28 @@ function PlannerScreen() {
             </Link>
           </Popover>
         </div>
-      </div>
+      </Box>
 
       {/* WEEKLY FOCUS (Cascading) */}
-      {weeklyFocus && (
-        <Box sx={{ px: 3, pt: 1, pb: 1 }}>
-          <Paper sx={{ p: 1.5, bgcolor: 'rgba(56, 178, 172, 0.08)', borderRadius: 2, border: '1px solid #38B2AC' }}>
-            <Typography variant="caption" sx={{ color: '#319795', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', mb: 0.5, fontSize: '0.75rem' }}>
-              WEEKLY FOCUS
-            </Typography>
-            <Typography variant="body2" sx={{ color: '#2C5282', fontSize: '0.9rem' }}>
-              {weeklyFocus}
-            </Typography>
-          </Paper>
-        </Box>
-      )}
+      {
+        weeklyFocus && (
+          <Box sx={{ px: 3, pt: 1, pb: 1 }}>
+            <Paper sx={{
+              p: 1.5,
+              bgcolor: 'rgba(56, 178, 172, 0.08)', // Keep tint as is, usually looks ok in dark mode too or change to alpha
+              borderRadius: 2,
+              border: '1px solid #38B2AC'
+            }}>
+              <Typography variant="caption" sx={{ color: '#319795', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', display: 'block', mb: 0.5, fontSize: '0.75rem' }}>
+                WEEKLY FOCUS
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.primary', fontSize: '0.9rem' }}>
+                {weeklyFocus}
+              </Typography>
+            </Paper>
+          </Box>
+        )
+      }
 
       <Grid container spacing={0} sx={{ display: 'flex', height: weeklyFocus ? 'calc(100vh - 200px)' : 'calc(100vh - 80px)' }}>
         <Grid item xs={12} md={6}>
@@ -281,7 +292,7 @@ function PlannerScreen() {
         </Grid>
         <Divider orientation="vertical" flexItem sx={{
           height: '100%',
-          backgroundColor: '#e5e5e5'
+          borderColor: 'divider'
         }} />
         <Grid item xs={12} md={3}>
           <NotesPanel selectedDate={selectedDate} onDateChange={setSelectedDate} />
@@ -309,7 +320,7 @@ function PlannerScreen() {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </div >
   );
 }
 

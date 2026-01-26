@@ -326,7 +326,7 @@ function NotesPanel({ selectedDate, onDateChange, sx = {} }) {
         p: 2,
         borderBottom: '1px solid',
         borderColor: 'divider',
-        backgroundColor: 'white',
+        backgroundColor: 'background.paper',
       }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -397,7 +397,7 @@ function NotesPanel({ selectedDate, onDateChange, sx = {} }) {
         sx={{
           flex: 1,
           overflow: 'hidden',
-          backgroundColor: '#ffffff',
+          backgroundColor: 'background.paper',
           display: 'flex',
           flexDirection: 'column',
         }}

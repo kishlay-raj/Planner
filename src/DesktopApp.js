@@ -16,104 +16,9 @@ import { useFirestore } from './hooks/useFirestore';
 import './App.css';
 import FloatingPomodoro from './components/FloatingPomodoro';
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0'
-    },
-    // ... (rest of palette is same, keeping it concise for replace)
-    secondary: {
-      main: '#7c4dff',
-      light: '#b47cff',
-      dark: '#3f1dcb'
-    },
-    priority: {
-      p1: '#d32f2f', // Deep Red
-      p2: '#ed6c02', // Deep Orange
-      p3: '#0288d1', // Light Blue
-      p4: '#546e7a'  // Blue Grey
-    },
-    tag: {
-      work: '#2e7d32',     // Dark Green
-      personal: '#7b1fa2', // Purple
-      study: '#e65100',    // Deep Orange
-      health: '#0097a7'    // Cyan
-    },
-    background: {
-      default: '#f8fafd',
-      paper: '#ffffff'
-    },
-    divider: 'rgba(0, 0, 0, 0.12)'
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h5: {
-      fontWeight: 600,
-      letterSpacing: '-0.5px'
-    },
-    h6: {
-      fontWeight: 600,
-      letterSpacing: '-0.25px'
-    },
-    subtitle1: {
-      fontWeight: 500
-    },
-    subtitle2: {
-      fontWeight: 500,
-      fontSize: '0.875rem'
-    }
-  },
-  shape: {
-    borderRadius: 8
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'none',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)'
-        }
-      }
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          fontWeight: 600,
-          padding: '6px 16px'
-        }
-      }
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          height: 24,
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          letterSpacing: '0.2px'
-        }
-      }
-    },
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          '&:hover': {
-            backgroundColor: 'rgba(0, 0, 0, 0.04)'
-          }
-        }
-      }
-    },
-    MuiListItem: {
-      styleOverrides: {
-        root: {
-          transition: 'all 0.2s ease'
-        }
-      }
-    }
-  }
-});
+// Moved theme creation inside component or useMemo to depend on mode
+// But since we need it in JSX, we will refactor to use a useMemo hook for theme creation.
+
 
 const defaultSettings = {
   pomodoro: 30,
@@ -138,6 +43,116 @@ function DesktopApp() {
   const [activePanel, setActivePanel] = useState('planner');
   // const [pomodoroMode, setPomodoroMode] = useState('pomodoro'); // Removed: managed in logic below
   const [supportAnchor, setSupportAnchor] = useState(null);
+
+  // --- DARK MODE STATE ---
+  const [darkMode, setDarkMode] = useFirestore('darkMode', false);
+
+  const theme = React.useMemo(() => createTheme({
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+      primary: {
+        main: '#1976d2',
+        light: '#42a5f5',
+        dark: '#1565c0'
+      },
+      secondary: {
+        main: '#7c4dff',
+        light: '#b47cff',
+        dark: '#3f1dcb'
+      },
+      priority: {
+        p1: '#d32f2f', // Deep Red
+        p2: '#ed6c02', // Deep Orange
+        p3: '#0288d1', // Light Blue
+        p4: '#546e7a'  // Blue Grey
+      },
+      tag: {
+        work: darkMode ? '#66bb6a' : '#2e7d32',     // Lighter green for dark mode
+        personal: '#ab47bc',
+        study: '#ffa726',
+        health: '#26c6da'
+      },
+      background: {
+        default: darkMode ? '#121212' : '#f8fafd',
+        paper: darkMode ? '#1e1e1e' : '#ffffff'
+      },
+      divider: darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
+      text: {
+        primary: darkMode ? '#fff' : 'rgba(0, 0, 0, 0.87)',
+        secondary: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'
+      }
+    },
+    typography: {
+      fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+      h5: {
+        fontWeight: 600,
+        letterSpacing: '-0.5px'
+      },
+      h6: {
+        fontWeight: 600,
+        letterSpacing: '-0.25px'
+      },
+      subtitle1: {
+        fontWeight: 500
+      },
+      subtitle2: {
+        fontWeight: 500,
+        fontSize: '0.875rem'
+      }
+    },
+    shape: {
+      borderRadius: 8
+    },
+    components: {
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)'
+          }
+        }
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            fontWeight: 600,
+            padding: '6px 16px'
+          }
+        }
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            height: 24,
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            letterSpacing: '0.2px'
+          }
+        }
+      },
+      MuiIconButton: {
+        styleOverrides: {
+          root: {
+            '&:hover': {
+              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+            }
+          }
+        }
+      },
+      MuiListItem: {
+        styleOverrides: {
+          root: {
+            transition: 'all 0.2s ease'
+          }
+        }
+      }
+    }
+  }), [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
 
   // --- GLOBAL POMODORO STATE ---
   const [timeLeft, setTimeLeft] = useState(30 * 60);
@@ -322,6 +337,7 @@ function DesktopApp() {
   //   setPomodoroMode(mode);
   // };
 
+
   const renderPanel = () => {
     switch (activePanel) {
       case 'planner':
@@ -353,7 +369,13 @@ function DesktopApp() {
       case 'eisenhower':
         return <EisenhowerMatrix />;
       case 'settings':
-        return <Settings navConfig={navConfig} onUpdate={handleNavUpdate} />;
+        // Pass darkMode and toggle handler to Settings
+        return <Settings
+          navConfig={navConfig}
+          onUpdate={handleNavUpdate}
+          darkMode={darkMode}
+          onToggleDarkMode={toggleDarkMode}
+        />;
       default:
         return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
     }
@@ -361,10 +383,13 @@ function DesktopApp() {
 
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Box sx={{
         display: 'flex',
         minHeight: '100vh',
-        transition: 'margin 0.2s ease-in-out'
+        transition: 'margin 0.2s ease-in-out',
+        bgcolor: 'background.default',
+        color: 'text.primary'
       }}>
         <Sidebar
           onNavigate={setActivePanel}
@@ -390,7 +415,8 @@ function DesktopApp() {
           <Box sx={{
             py: 1.5,
             px: 3,
-            borderTop: '1px solid rgba(0, 0, 0, 0.08)',
+            borderTop: '1px solid',
+            borderColor: 'divider',
             textAlign: 'center',
             bgcolor: 'background.paper',
             flexShrink: 0

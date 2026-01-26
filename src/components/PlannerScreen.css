@@ -1,7 +1,6 @@
 .planner-screen {
   padding: 0;
   height: 100%;
-  background-color: #ffffff;
   display: flex;
   flex-direction: column;
 }
@@ -16,7 +15,6 @@
   overflow-y: auto;
   box-shadow: none;
   border: none;
-  border-right: 1px solid #e5e5e5;
 }
 
 .task-list-container {
@@ -33,7 +31,6 @@
   align-items: center;
   padding: 12px 24px;
   margin-bottom: 0;
-  border-bottom: 1px solid #e5e5e5;
 }
 
 .planner-nav {
@@ -45,7 +42,6 @@
 .planner-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1a1a1a;
 }
 
 .planner-actions {

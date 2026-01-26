@@ -2,11 +2,11 @@
   height: 100%;
   position: relative;
   padding: 0;
-  background-color: #ffffff;
+  /* background-color removed */
 }
 
 .rbc-calendar {
-  background: white;
+  /* background: white; removed */
   border-radius: 0;
   box-shadow: none;
   padding: 0;
@@ -16,9 +16,11 @@
 
 .rbc-time-slot {
   transition: background-color 0.2s;
-  color: #666666;
+  color: inherit;
+  /* inherit from parent */
+  opacity: 0.6;
   font-size: 0.85rem;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
 }
 
 .rbc-time-slot.drag-over {
@@ -43,6 +45,7 @@
   align-items: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
+  color: white;
 }
 
 .rbc-event.rbc-selected {
@@ -91,8 +94,9 @@
   align-items: center;
   margin-bottom: 0;
   padding: 16px;
-  border-bottom: 1px solid #e5e5e5;
-  height: 64px; /* Match the height of other section headers */
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+  height: 64px;
+  /* Match the height of other section headers */
 }
 
 .rbc-toolbar .rbc-toolbar-label {
@@ -101,7 +105,7 @@
   text-align: center;
   font-weight: 500;
   font-size: 1.25rem;
-  color: #1a1a1a;
+  color: inherit;
 }
 
 .rbc-btn-group {
@@ -115,9 +119,10 @@
   min-width: 32px;
   height: 32px;
   background: transparent;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(128, 128, 128, 0.3);
   border-radius: 4px;
-  color: #666;
+  color: inherit;
+  opacity: 0.7;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -132,16 +137,17 @@
   background-color: #1976d2;
   color: white;
   border-color: #1976d2;
+  opacity: 1;
 }
 
 /* Time grid styles */
 .rbc-time-column {
-  background: #fafafa;
+  /* background: #fafafa; REMOVED */
 }
 
 .rbc-timeslot-group {
   min-height: 60px !important;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.1);
 }
 
 .rbc-time-content {
@@ -155,8 +161,10 @@
 
 /* Subtle scrollbar styling */
 .rbc-time-content {
-  scrollbar-width: none;  /* Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
   transition: all 0.3s ease;
 }
 
@@ -176,31 +184,34 @@
 
 /* Only show scrollbar on hover */
 .rbc-time-content:hover::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(128, 128, 128, 0.3);
   border-radius: 4px;
 }
 
 .rbc-time-content:hover::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(128, 128, 128, 0.5);
 }
 
 /* Smooth scroll behavior */
 .rbc-time-content {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  padding-right: 4px;  /* Prevent content shift when scrollbar appears */
+  padding-right: 4px;
+  /* Prevent content shift when scrollbar appears */
 }
 
 .rbc-time-header-content {
   border-left: none;
-  margin-right: 4px;  /* Align with content padding */
+  margin-right: 4px;
+  /* Align with content padding */
 }
 
 .rbc-time-gutter {
   font-size: 0.75rem;
-  color: rgba(0, 0, 0, 0.6);
+  color: inherit;
+  opacity: 0.6;
   font-weight: 500;
-  background: white;
+  background: transparent;
   position: sticky;
   left: 0;
   z-index: 2;
@@ -220,13 +231,14 @@
 .rbc-time-view {
   margin-right: 0;
   border-right: 4px solid transparent;
-  overflow: hidden;  /* Contain the scrollbar */
+  overflow: hidden;
+  /* Contain the scrollbar */
 }
 
 .rbc-time-header {
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
 }
 
 .rbc-events-container {
   margin-right: 0;
-} 
+}
