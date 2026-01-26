@@ -48,7 +48,10 @@ import {
     Build,
     Notes,
     History as HistoryIcon,
-    PhoneAndroid
+    PhoneAndroid,
+    CloudDone,
+    CloudUpload,
+    CloudOff
 } from '@mui/icons-material';
 import { format, addDays, subDays } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
@@ -101,9 +104,9 @@ function DailyJournal() {
     const [journalData, setJournalData, loading, saving] = useFirestore('dailyJournalData', {});
 
     const getSyncStatus = () => {
-        if (loading) return { text: 'Loading...', color: 'text.secondary' };
-        if (saving) return { text: 'Saving...', color: 'primary.main' };
-        return { text: 'Saved', color: 'success.main' };
+        if (loading) return { icon: <CloudUpload fontSize="small" sx={{ animation: 'spin 2s linear infinite' }} />, text: 'Loading...', color: 'text.secondary' };
+        if (saving) return { icon: <CloudUpload fontSize="small" sx={{ animation: 'spin 2s linear infinite' }} />, text: 'Saving...', color: 'primary.main' };
+        return { icon: <CloudDone fontSize="small" />, text: 'All changes saved', color: 'success.main' };
     };
     const status = getSyncStatus();
 
@@ -396,7 +399,6 @@ function DailyJournal() {
             </Paper>
         );
     };
-
     return (
         <Box sx={{ p: 4, height: '100vh', overflow: 'auto', bgcolor: theme.palette.background.default }}>
 
@@ -410,13 +412,17 @@ function DailyJournal() {
                         <Typography variant="subtitle1" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
                             Capture your day, shape your life.
                         </Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 600, color: status.color, opacity: 0.8, bgcolor: status.color + '15', px: 1, py: 0.2, borderRadius: 1 }}>
-                            {status.text}
-                        </Typography>
                     </Box>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    {/* Sync Status Icon */}
+                    <Tooltip title={status.text}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', color: status.color, opacity: 0.7 }}>
+                            {status.icon}
+                        </Box>
+                    </Tooltip>
+
                     <Button
                         startIcon={<EditIcon />}
                         variant="outlined"

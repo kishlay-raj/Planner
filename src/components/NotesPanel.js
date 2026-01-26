@@ -1,7 +1,14 @@
 import React from 'react';
 import { Paper, Typography, Box, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, IconButton, Menu, MenuItem, Divider } from '@mui/material';
 import { format, addDays, subDays } from 'date-fns';
-import { History as HistoryIcon, NavigateBefore, NavigateNext } from '@mui/icons-material';
+import {
+  History as HistoryIcon,
+  NavigateBefore,
+  NavigateNext,
+  CloudDone,
+  CloudUpload,
+  CloudOff
+} from '@mui/icons-material';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import './NotesPanel.css';
@@ -22,28 +29,28 @@ try {
 
 // Demo content for non-logged-in users
 const DEMO_CONTENT = `<h1>✨ Welcome to Flow Planner Demo</h1>
-<p><br></p>
-<p>This is your space for <strong>daily notes</strong> — and yes, it supports markdown! But for now, let's get you started:</p>
-<p><br></p>
-<h2>🧠 Main Focus</h2>
-<ul>
-  <li>Create some new to-dos</li>
-  <li>Drag and re-order your to-dos</li>
-  <li>Drop a to-do in the <strong>timebox scheduler</strong></li>
-  <li>Check off a to-do to complete it!</li>
-</ul>
-<p><br></p>
-<h2>🚀 What Else Does Flow Planner Offer?</h2>
-<p>Click on the <strong>left panel</strong> to discover:</p>
-<ul>
-  <li>📅 Weekly, Monthly & Yearly Planners</li>
-  <li>📓 Daily Journal</li>
-  <li>🔄 Routine Builder</li>
-  <li>🍅 Pomodoro Timer</li>
-  <li>...and more!</li>
-</ul>
-<p><br></p>
-<p><em>Sign in with Google to save your notes and access all features!</em></p>`;
+          <p><br></p>
+          <p>This is your space for <strong>daily notes</strong> — and yes, it supports markdown! But for now, let's get you started:</p>
+          <p><br></p>
+          <h2>🧠 Main Focus</h2>
+          <ul>
+            <li>Create some new to-dos</li>
+            <li>Drag and re-order your to-dos</li>
+            <li>Drop a to-do in the <strong>timebox scheduler</strong></li>
+            <li>Check off a to-do to complete it!</li>
+          </ul>
+          <p><br></p>
+          <h2>🚀 What Else Does Flow Planner Offer?</h2>
+          <p>Click on the <strong>left panel</strong> to discover:</p>
+          <ul>
+            <li>📅 Weekly, Monthly & Yearly Planners</li>
+            <li>📓 Daily Journal</li>
+            <li>🔄 Routine Builder</li>
+            <li>🍅 Pomodoro Timer</li>
+            <li>...and more!</li>
+          </ul>
+          <p><br></p>
+          <p><em>Sign in with Google to save your notes and access all features!</em></p>`;
 
 const initialNoteData = { content: '' };
 
@@ -128,10 +135,10 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
   // ... (rest of the component)
 
   const getSyncStatus = () => {
-    if (loading) return { text: 'Loading...', color: 'text.secondary' };
-    if (error) return { text: 'Error saving', color: 'error.main' };
-    if (saving) return { text: 'Saving...', color: 'primary.main' };
-    return { text: 'Saved', color: 'success.main' };
+    if (loading) return { icon: <CloudUpload fontSize="small" sx={{ animation: 'spin 2s linear infinite' }} />, text: 'Loading...', color: 'text.secondary' };
+    if (error) return { icon: <CloudOff fontSize="small" />, text: 'Error saving', color: 'error.main' };
+    if (saving) return { icon: <CloudUpload fontSize="small" sx={{ animation: 'spin 2s linear infinite' }} />, text: 'Saving...', color: 'primary.main' };
+    return { icon: <CloudDone fontSize="small" />, text: 'All changes saved', color: 'success.main' };
   };
 
   const status = getSyncStatus();
@@ -349,34 +356,43 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
         backgroundColor: 'background.paper',
       }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            {title}
-          </Typography>
-          {currentUser && (
-            <Typography variant="caption" sx={{ fontWeight: 600, color: status.color, opacity: 0.8 }}>
-              {status.text}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              {title}
             </Typography>
-          )}
+          </Box>
 
-          {!customPath && onDateChange && selectedDate && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <IconButton onClick={() => onDateChange(subDays(selectedDate, 1))} size="small">
-                <NavigateBefore fontSize="small" />
-              </IconButton>
-              <Typography variant="caption" sx={{ minWidth: 100, textAlign: 'center', fontSize: '0.75rem' }}>
-                {format(selectedDate, 'MMM d, yyyy')}
-              </Typography>
-              <IconButton onClick={() => onDateChange(addDays(selectedDate, 1))} size="small">
-                <NavigateNext fontSize="small" />
-              </IconButton>
-              <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 20 }} />
-              <Tooltip title="Jump to date">
-                <IconButton onClick={handleHistoryMenuOpen} size="small">
-                  <HistoryIcon fontSize="small" />
-                </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {/* Sync Status Icon */}
+            {currentUser && (
+              <Tooltip title={status.text}>
+                <Box sx={{ display: 'flex', alignItems: 'center', color: status.color, opacity: 0.7 }}>
+                  {status.icon}
+                </Box>
               </Tooltip>
-            </Box>
-          )}
+            )}
+
+            {/* Date Navigation */}
+            {!customPath && onDateChange && selectedDate && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <IconButton onClick={() => onDateChange(subDays(selectedDate, 1))} size="small">
+                  <NavigateBefore fontSize="small" />
+                </IconButton>
+                <Typography variant="caption" sx={{ minWidth: 100, textAlign: 'center', fontSize: '0.75rem' }}>
+                  {format(selectedDate, 'MMM d, yyyy')}
+                </Typography>
+                <IconButton onClick={() => onDateChange(addDays(selectedDate, 1))} size="small">
+                  <NavigateNext fontSize="small" />
+                </IconButton>
+                <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 20 }} />
+                <Tooltip title="Jump to date">
+                  <IconButton onClick={handleHistoryMenuOpen} size="small">
+                    <HistoryIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            )}
+          </Box>
         </Box>
       </Box>
 
