@@ -151,6 +151,27 @@ function DesktopApp() {
     }
   }), [darkMode]);
 
+  // --- AUTOMATIC DARK MODE LOGIC ---
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const hour = new Date().getHours();
+      // Dark mode between 7 PM (19) and 6 AM (6)
+      const shouldBeDark = hour >= 19 || hour < 6;
+
+      // Only update if different to avoid unnecessary writes/renders
+      if (shouldBeDark !== darkMode) {
+        setDarkMode(shouldBeDark);
+      }
+    };
+
+    // Check on mount
+    checkDarkMode();
+
+    // Check every minute
+    const interval = setInterval(checkDarkMode, 60000);
+    return () => clearInterval(interval);
+  }, [darkMode, setDarkMode]);
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };

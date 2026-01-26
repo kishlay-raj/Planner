@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday } from '@mui/icons-material';
 import NotesPanel from '../components/NotesPanel';
@@ -11,37 +11,7 @@ import { useGitHubSync } from '../hooks/useGitHubSync';
 import GoogleIcon from '@mui/icons-material/Google';
 import { format, addDays, subDays, isSameDay, parseISO, startOfWeek, endOfWeek, getISOWeek, getYear, getMonth, addWeeks, subWeeks, addMonths, subMonths, eachDayOfInterval } from 'date-fns';
 
-const mobileTheme = createTheme({
-    palette: {
-        mode: 'light',
-        primary: { main: '#1976d2' },
-        secondary: { main: '#9c27b0' },
-        background: { default: '#f0f2f5', paper: '#ffffff' },
-    },
-    components: {
-        MuiBottomNavigation: {
-            styleOverrides: {
-                root: {
-                    height: 65,
-                    borderTop: '1px solid rgba(0,0,0,0.05)',
-                    position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    zIndex: 1000
-                }
-            }
-        },
-        MuiFab: {
-            styleOverrides: {
-                root: { position: 'fixed', bottom: 80, right: 20, zIndex: 1000 }
-            }
-        },
-        MuiPaper: {
-            styleOverrides: { root: { backgroundImage: 'none' } }
-        }
-    }
-});
+
 
 const MOBILE_JOURNAL_PROMPTS = [
     { id: '1', section: 'Morning', text: 'Who is the person I want to become today?' },
@@ -72,6 +42,63 @@ function MobileApp() {
 
     // Global State
     const [tasks, addTask, updateTask, deleteTask, tasksLoading] = useFirestoreCollection('tasks/active', 'createdAt');
+    const [darkMode, setDarkMode] = useFirestore('darkMode', false);
+
+    // --- AUTOMATIC DARK MODE LOGIC ---
+    useEffect(() => {
+        const checkDarkMode = () => {
+            const hour = new Date().getHours();
+            // Dark mode between 7 PM (19) and 6 AM (6)
+            const shouldBeDark = hour >= 19 || hour < 6;
+
+            // Only update if different to avoid unnecessary writes/renders
+            if (shouldBeDark !== darkMode) {
+                setDarkMode(shouldBeDark);
+            }
+        };
+
+        // Check on mount
+        checkDarkMode();
+
+        // Check every minute
+        const interval = setInterval(checkDarkMode, 60000);
+        return () => clearInterval(interval);
+    }, [darkMode, setDarkMode]);
+
+    const mobileTheme = useMemo(() => createTheme({
+        palette: {
+            mode: darkMode ? 'dark' : 'light',
+            primary: { main: '#1976d2' },
+            secondary: { main: '#9c27b0' },
+            background: {
+                default: darkMode ? '#121212' : '#f0f2f5',
+                paper: darkMode ? '#1e1e1e' : '#ffffff'
+            },
+        },
+        components: {
+            MuiBottomNavigation: {
+                styleOverrides: {
+                    root: {
+                        height: 65,
+                        borderTop: darkMode ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1000
+                    }
+                }
+            },
+            MuiFab: {
+                styleOverrides: {
+                    root: { position: 'fixed', bottom: 80, right: 20, zIndex: 1000 }
+                }
+            },
+            MuiPaper: {
+                styleOverrides: { root: { backgroundImage: 'none' } }
+            }
+        }
+    }), [darkMode]);
     const [currentDate, setCurrentDate] = useState(new Date()); // State for Today view navigation if we add it later
 
     // Task Dialog State
