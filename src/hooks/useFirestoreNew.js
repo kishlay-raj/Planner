@@ -107,48 +107,74 @@ export function useFirestoreDoc(path, initialValue) {
         return () => unsubscribe();
     }, [currentUser, path, getDocRef]);
 
-    // Cleanup timeout on unmount
-    useEffect(() => {
-        return () => {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        };
-    }, []);
+    // Keep track of pending data to save
+    const pendingDataRef = useRef(null);
+    const savePromiseRef = useRef(null);
+
+    // Internal function to perform the actual Firestore write
+    const performWrite = useCallback(async (dataToWrite) => {
+        if (!currentUser) {
+            const localKey = `firestore_${path}`;
+            localStorage.setItem(localKey, JSON.stringify(dataToWrite));
+            return;
+        }
+
+        const docRef = getDocRef();
+        if (!docRef || dataToWrite === undefined || dataToWrite === null) return;
+
+        try {
+            await setDoc(docRef, dataToWrite, { merge: true });
+            console.log(`✅ Saved: ${path}`);
+        } catch (e) {
+            console.error(`❌ Save failed for ${path}:`, e);
+            throw e; // Re-throw to be caught by saveData
+        }
+    }, [currentUser, path, getDocRef]);
+
+    const [error, setError] = useState(null);
+    const [saving, setSaving] = useState(false);
 
     // Save function with debounce
     const saveData = useCallback((newData) => {
         // Mark as typing immediately so incoming snapshots don't overwrite us
         isTyping.current = true;
+        setSaving(true);
+        setError(null);
         setData(newData);
+        pendingDataRef.current = newData;
 
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
         timeoutRef.current = setTimeout(async () => {
-            if (currentUser) {
-                const docRef = getDocRef();
-                if (!docRef || newData === undefined || newData === null) {
-                    isTyping.current = false;
-                    return;
-                }
+            const dataToWrite = pendingDataRef.current;
+            // Clear pending ref before writing to ensure we don't double write on cleanup if this finishes
+            pendingDataRef.current = null;
 
-                try {
-                    await setDoc(docRef, newData, { merge: true });
-                    console.log(`✅ Saved: ${path}`);
-                } catch (e) {
-                    console.error(`❌ Save failed for ${path}:`, e);
-                } finally {
-                    // Release the lock after write is confirmed
-                    isTyping.current = false;
-                }
-            } else {
-                // Save to localStorage as fallback
-                const localKey = `firestore_${path}`;
-                localStorage.setItem(localKey, JSON.stringify(newData));
+            try {
+                await performWrite(dataToWrite);
+                setSaving(false);
+            } catch (err) {
+                setError(err);
+                setSaving(false); // Or keep true to indicate retry needed? For now, just stop spinner.
+            } finally {
+                // Release lock only after write
                 isTyping.current = false;
             }
         }, 800);
-    }, [currentUser, path, getDocRef]);
+    }, [performWrite]);
 
-    return [data, saveData, loading];
+    // Cleanup: Flush any pending writes on unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            if (pendingDataRef.current) {
+                console.log(`⚠️ Flushing pending write for ${path} on unmount`);
+                performWrite(pendingDataRef.current).catch(err => console.error("Flush failed:", err));
+            }
+        };
+    }, [performWrite, path]);
+
+    return [data, saveData, loading, saving, error];
 }
 
 /**

@@ -89,6 +89,8 @@ export function useFirestore(location, initialValue, merge = true) {
         };
     }, []);
 
+    const [saving, setSaving] = useState(false);
+
     const saveData = (newDataOrFn) => {
         if (isDev) console.log("saveData called for:", location);
 
@@ -97,6 +99,7 @@ export function useFirestore(location, initialValue, merge = true) {
 
         // 1. Update local state immediately for responsiveness
         setData(newData);
+        setSaving(true);
 
         // 2. Debounce the write to Firestore
         if (timeoutRef.current) {
@@ -118,6 +121,7 @@ export function useFirestore(location, initialValue, merge = true) {
                     // Safety check for undefined/null data
                     if (dataToSave === undefined || dataToSave === null) {
                         if (isDev) console.warn("⚠️ Skipping Firestore write - data is undefined or null for:", location);
+                        setSaving(false);
                         return;
                     }
 
@@ -127,18 +131,21 @@ export function useFirestore(location, initialValue, merge = true) {
                     await setDoc(docRef, dataToSave, { merge });
                     const writeEndTime = Date.now();
                     if (isDev) console.log(`✅ Firestore write SUCCESS for "${location}" (took ${writeEndTime - writeStartTime}ms)`);
+                    setSaving(false);
                 } catch (e) {
                     console.error("❌ Error saving to Firestore:", e.code, e.message);
                     console.error("Full error:", e);
+                    setSaving(false); // Should expose error too but for now just stop spinner
                 }
             } else {
                 if (isDev) console.log("Writing to LocalStorage (No User):", location);
                 const localKey = Array.isArray(location) ? location.join('_') : location;
                 localStorage.setItem(localKey, JSON.stringify(newData));
+                setSaving(false);
             }
         }, 1000); // 1 second debounce
     };
 
-    return [data, saveData, loading];
+    return [data, saveData, loading, saving];
 }
 

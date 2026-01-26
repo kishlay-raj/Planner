@@ -97,7 +97,15 @@ function DailyJournal() {
     const [prompts, setPrompts] = useFirestore('journalPrompts', DEFAULT_PROMPTS);
 
     // State for journal entries (answers)
-    const [journalData, setJournalData] = useFirestore('dailyJournalData', {});
+    // State for journal entries (answers)
+    const [journalData, setJournalData, loading, saving] = useFirestore('dailyJournalData', {});
+
+    const getSyncStatus = () => {
+        if (loading) return { text: 'Loading...', color: 'text.secondary' };
+        if (saving) return { text: 'Saving...', color: 'primary.main' };
+        return { text: 'Saved', color: 'success.main' };
+    };
+    const status = getSyncStatus();
 
     // State for disabled (hidden) sections
     const [disabledSections, setDisabledSections] = useFirestore('journalDisabledSections', []);
@@ -398,9 +406,14 @@ function DailyJournal() {
                     <Typography variant="h3" sx={{ color: theme.palette.text.primary, fontWeight: 800, letterSpacing: '-1px', mb: 0.5 }}>
                         Daily Journal
                     </Typography>
-                    <Typography variant="subtitle1" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
-                        Capture your day, shape your life.
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="subtitle1" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
+                            Capture your day, shape your life.
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 600, color: status.color, opacity: 0.8, bgcolor: status.color + '15', px: 1, py: 0.2, borderRadius: 1 }}>
+                            {status.text}
+                        </Typography>
+                    </Box>
                 </Box>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

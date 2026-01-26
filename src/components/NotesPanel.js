@@ -93,48 +93,66 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
 
   // Use date-based document path - each day is a separate small document
   // If customPath is provided, use it directly. Otherwise use the date-based path.
+  // Use date-based document path - each day is a separate small document
+  // If customPath is provided, use it directly. Otherwise use the date-based path.
   const docPath = customPath || `planner/daily/${currentDate}`;
-  const [noteData, setNoteData] = useFirestoreDoc(docPath, initialNoteData);
+  const [noteData, setNoteData, loading, saving, error] = useFirestoreDoc(docPath, initialNoteData);
 
   // Local state for immediate editor responsiveness
   // Initialize with persisted content or empty string (or demo content if logged out)
   const [editorContent, setEditorContent] = React.useState('');
 
-  // Track initialization to prevent overwriting local edits with stale server data
-  const isInitialized = React.useRef(false);
-  const lastServerContent = React.useRef('');
+  // Track the last path we successfully synced from the server
+  // This prevents the "Echo Problem" where our own saves come back from the server
+  // and overwrite our more recent local typing.
+  const lastSyncedPath = React.useRef(null);
+  const lastServerContent = React.useRef(initialNoteData.content);
 
-  // Sync from server to local state ONLY on mount or when switching dates
+  // Sync from server to local state ONLY when loading a new path
   React.useEffect(() => {
-    // Determine what content to show
-    const contentToShow = currentUser
-      ? (noteData?.content || '')
-      : (noteData?.content || DEMO_CONTENT);
+    // Wait for the hook to finish loading the new path's data
+    if (loading) return;
 
-    // Simple approach: On date change (key), reset local state
-    setEditorContent(contentToShow);
-    lastServerContent.current = contentToShow;
+    // Only update local state if we haven't synced this path yet
+    if (docPath !== lastSyncedPath.current) {
+      const contentToShow = currentUser
+        ? (noteData?.content || '')
+        : (noteData?.content || DEMO_CONTENT);
 
-  }, [currentDate, currentUser, noteData?.content]); // Depend on currentDate to reset on day switch
+      setEditorContent(contentToShow);
+      lastServerContent.current = contentToShow;
+      lastSyncedPath.current = docPath;
+    }
+  }, [docPath, loading, noteData, currentUser]);
+
+  // ... (rest of the component)
+
+  const getSyncStatus = () => {
+    if (loading) return { text: 'Loading...', color: 'text.secondary' };
+    if (error) return { text: 'Error saving', color: 'error.main' };
+    if (saving) return { text: 'Saving...', color: 'primary.main' };
+    return { text: 'Saved', color: 'success.main' };
+  };
+
+  const status = getSyncStatus();
 
   // Debounced save to Firestore
   React.useEffect(() => {
     // Don't save if content hasn't changed from server version (prevents loops)
     if (editorContent === lastServerContent.current) return;
 
-    const handler = setTimeout(() => {
-      setNoteData({ content: editorContent });
+    // Direct call - useFirestoreDoc inside setNoteData handles the debouncing (800ms)
+    // We simply pass the new content immediately to the hook.
+    setNoteData({ content: editorContent });
 
-      // Analytics
-      import("../firebase").then(({ logAnalyticsEvent }) => {
-        logAnalyticsEvent('note_updated', {
-          length: editorContent.length,
-          date: currentDate
-        });
+    // Analytics
+    import("../firebase").then(({ logAnalyticsEvent }) => {
+      logAnalyticsEvent('note_updated', {
+        date: currentDate || 'general',
+        length: editorContent.length
       });
-    }, 1000); // 1-second debounce
+    });
 
-    return () => clearTimeout(handler);
   }, [editorContent, setNoteData, currentDate]);
 
   // Handle immediate local update
@@ -334,6 +352,11 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             {title}
           </Typography>
+          {currentUser && (
+            <Typography variant="caption" sx={{ fontWeight: 600, color: status.color, opacity: 0.8 }}>
+              {status.text}
+            </Typography>
+          )}
 
           {!customPath && onDateChange && selectedDate && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
