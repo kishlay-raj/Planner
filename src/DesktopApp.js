@@ -164,6 +164,7 @@ function DesktopApp() {
   const [stats, setStats] = useFirestore('pomodoroStats', defaultStats);
   const [tickInterval, setTickInterval] = useState(null);
   const [workType, setWorkType] = useFirestore('pomodoroWorkType', 'deep'); // 'deep' or 'shallow'
+  const [sessionHistory, setSessionHistory] = useFirestore('pomodoroSessionHistory', []); // Track all completed sessions
 
   // Audio Context
   const [audioContext] = useState(() => {
@@ -239,6 +240,18 @@ function DesktopApp() {
         const isNewDay = prev.lastDate !== new Date().toDateString();
         return { ...prev, total: prev.total + 1, today: isNewDay ? 1 : prev.today + 1, lastDate: new Date().toDateString() };
       });
+
+      // Save session to history if it was a pomodoro (focus session)
+      if (mode === 'pomodoro') {
+        const session = {
+          id: Date.now(),
+          workType: workType, // 'deep' or 'shallow'
+          duration: settings.pomodoro, // duration in minutes
+          timestamp: new Date().toISOString(),
+          date: new Date().toDateString()
+        };
+        setSessionHistory(prev => [...prev, session]);
+      }
 
       // Auto-switch logic
       if (mode === 'pomodoro') {
@@ -372,6 +385,7 @@ function DesktopApp() {
           handleSettingChange={handleSettingChange}
           workType={workType}
           onWorkTypeToggle={toggleWorkType}
+          sessionHistory={sessionHistory}
         />;
       case 'eisenhower':
         return <EisenhowerMatrix />;
