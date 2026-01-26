@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert } from '@mui/material';
+import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday } from '@mui/icons-material';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
@@ -523,22 +523,50 @@ function MobileApp() {
         );
     };
 
+    const [notesType, setNotesType] = useState('daily'); // 'daily' or 'general'
+
     const renderNotesView = () => {
         return (
             <Box sx={{ pb: 10, height: '100%' }}>
-                <Paper elevation={0} sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 10, borderRadius: 0 }}>
-                    <IconButton onClick={() => setNotesDate(d => subDays(d, 1))}><ChevronLeft /></IconButton>
-                    <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant="body1" fontWeight="700">{format(notesDate, 'MMMM d')}</Typography>
-                        <Typography variant="caption" color="text.secondary">{format(notesDate, 'EEEE')}</Typography>
-                    </Box>
-                    <IconButton onClick={() => setNotesDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
+                <Paper elevation={0} sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 10, borderRadius: 0, flexDirection: 'column', gap: 1 }}>
+                    {/* Toggle between Daily and General */}
+                    <ToggleButtonGroup
+                        color="primary"
+                        value={notesType}
+                        exclusive
+                        onChange={(e, newType) => { if (newType) setNotesType(newType); }}
+                        aria-label="Notes Type"
+                        size="small"
+                        sx={{ width: '100%', mb: 1 }}
+                    >
+                        <ToggleButton value="daily" sx={{ flex: 1 }}>Daily</ToggleButton>
+                        <ToggleButton value="general" sx={{ flex: 1 }}>General</ToggleButton>
+                    </ToggleButtonGroup>
+
+                    {notesType === 'daily' && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                            <IconButton onClick={() => setNotesDate(d => subDays(d, 1))}><ChevronLeft /></IconButton>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="body1" fontWeight="700">{format(notesDate, 'MMMM d')}</Typography>
+                                <Typography variant="caption" color="text.secondary">{format(notesDate, 'EEEE')}</Typography>
+                            </Box>
+                            <IconButton onClick={() => setNotesDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
+                        </Box>
+                    )}
                 </Paper>
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <NotesPanel
-                        selectedDate={notesDate}
-                        sx={{ height: 'calc(100vh - 140px)', border: 'none' }}
-                    />
+                    {notesType === 'daily' ? (
+                        <NotesPanel
+                            selectedDate={notesDate}
+                            sx={{ height: 'calc(100vh - 190px)', border: 'none' }}
+                        />
+                    ) : (
+                        <NotesPanel
+                            customPath="planner/notes/general"
+                            title="General Notes"
+                            sx={{ height: 'calc(100vh - 140px)', border: 'none' }}
+                        />
+                    )}
                 </Box>
             </Box>
         );

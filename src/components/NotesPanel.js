@@ -87,12 +87,14 @@ const CustomToolbar = () => (
   </div>
 );
 
-function NotesPanel({ selectedDate, onDateChange, sx = {} }) {
+function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, title = "Notes" }) {
   const { currentUser } = useAuth();
-  const currentDate = format(selectedDate, 'yyyy-MM-dd');
+  const currentDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
 
   // Use date-based document path - each day is a separate small document
-  const [noteData, setNoteData] = useFirestoreDoc(`planner/daily/${currentDate}`, initialNoteData);
+  // If customPath is provided, use it directly. Otherwise use the date-based path.
+  const docPath = customPath || `planner/daily/${currentDate}`;
+  const [noteData, setNoteData] = useFirestoreDoc(docPath, initialNoteData);
 
   // Local state for immediate editor responsiveness
   // Initialize with persisted content or empty string (or demo content if logged out)
@@ -330,10 +332,10 @@ function NotesPanel({ selectedDate, onDateChange, sx = {} }) {
       }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Notes
+            {title}
           </Typography>
 
-          {onDateChange && (
+          {!customPath && onDateChange && selectedDate && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <IconButton onClick={() => onDateChange(subDays(selectedDate, 1))} size="small">
                 <NavigateBefore fontSize="small" />

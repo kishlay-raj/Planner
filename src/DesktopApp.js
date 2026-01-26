@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, Box, Typography, IconButton, Tooltip, Popover, Link } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import PlannerScreen from './components/PlannerScreen';
+import NotesPanel from './components/NotesPanel';
 import PomodoroPanel from './components/PomodoroPanel';
 import WeeklyPlanner from './components/WeeklyPlanner';
 import MonthlyPlanner from './components/MonthlyPlanner';
@@ -322,6 +323,7 @@ function DesktopApp() {
     { id: 'planner-month', label: 'Monthly', iconKey: 'calendarMonth', visible: true },
     { id: 'planner-year', label: 'Yearly', iconKey: 'emojiEvents', visible: true },
     { id: 'daily-journal', label: 'Journal', iconKey: 'menuBook', visible: true },
+    { id: 'independent-notes', label: 'General Notes', iconKey: 'editNote', visible: true },
     { id: 'relapse-journal', label: 'Fortification', iconKey: 'security', visible: true },
     { id: 'routines', label: 'Routines', iconKey: 'selfImprovement', visible: true },
     { id: 'eisenhower', label: 'Matrix', iconKey: 'viewQuilt', visible: true },
@@ -368,6 +370,8 @@ function DesktopApp() {
         return <YearlyPlanner />;
       case 'daily-journal':
         return <DailyJournal />;
+      case 'independent-notes':
+        return <NotesPanel customPath="planner/notes/general" title="General Notes" />;
       case 'relapse-journal':
         return <RelapseFortificationJournal />;
       case 'routines':
