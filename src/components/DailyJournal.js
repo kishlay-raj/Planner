@@ -121,23 +121,13 @@ function DailyJournal() {
             let changed = false;
 
             // 1. Add missing sections/prompts
-            const hasDeepWork = updatedPrompts.some(p => p.section === 'Deep Work');
-            const hasDigitalMinimalism = updatedPrompts.some(p => p.section === 'Digital Minimalism');
-            const hasBehavioralTriggers = updatedPrompts.some(p => p.section === 'Behavioral Triggers');
+            // 1. Add missing prompts by ID (ensure new questions appear)
+            const existingIds = new Set(updatedPrompts.map(p => p.id));
+            const newDefaults = DEFAULT_PROMPTS.filter(dp => !existingIds.has(dp.id));
 
-            if (!hasDeepWork || !hasDigitalMinimalism || !hasBehavioralTriggers) {
-                const newDefaults = DEFAULT_PROMPTS.filter(dp =>
-                    (dp.section === 'Deep Work' && !hasDeepWork) ||
-                    (dp.section === 'Digital Minimalism' && !hasDigitalMinimalism) ||
-                    (dp.section === 'Behavioral Triggers' && !hasBehavioralTriggers) ||
-                    (dp.section === 'Dopamine detox phase 1: Awareness' && !updatedPrompts.some(p => p.section === 'Dopamine detox phase 1: Awareness')) ||
-                    (dp.section === 'Dopamine detox phase 2: The Struggle' && !updatedPrompts.some(p => p.section === 'Dopamine detox phase 2: The Struggle')) ||
-                    (dp.section === 'Dopamine detox phase 3: Maintenance' && !updatedPrompts.some(p => p.section === 'Dopamine detox phase 3: Maintenance'))
-                );
-                if (newDefaults.length > 0) {
-                    updatedPrompts = [...updatedPrompts, ...newDefaults];
-                    changed = true;
-                }
+            if (newDefaults.length > 0) {
+                updatedPrompts = [...updatedPrompts, ...newDefaults];
+                changed = true;
             }
 
             // 2. Remove duplicates
