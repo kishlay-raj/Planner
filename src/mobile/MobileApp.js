@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote } from '@mui/icons-material';
+import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert } from '@mui/material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore } from '@mui/icons-material';
 import NotesPanel from '../components/NotesPanel';
 import packageJson from '../../package.json';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestoreCollection, useFirestoreDoc } from '../hooks/useFirestoreNew';
 import { useFirestore } from '../hooks/useFirestore';
+import { useGitHubSync } from '../hooks/useGitHubSync';
 import GoogleIcon from '@mui/icons-material/Google';
 import { format, addDays, subDays, isSameDay, parseISO, startOfWeek, endOfWeek, getISOWeek, getYear, getMonth, addWeeks, subWeeks, addMonths, subMonths, eachDayOfInterval } from 'date-fns';
 
@@ -74,6 +75,24 @@ function MobileApp() {
     const [openAddDialog, setOpenAddDialog] = useState(false);
     const [newTaskName, setNewTaskName] = useState('');
 
+    // Settings State
+    const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
+    const [githubSettings, setGithubSettings] = useFirestore('githubSettings', { token: '', owner: '', repo: '' });
+    const [ghToken, setGhToken] = useState(githubSettings.token || '');
+    const [ghOwner, setGhOwner] = useState(githubSettings.owner || '');
+    const [ghRepo, setGhRepo] = useState(githubSettings.repo || '');
+
+    const { syncToGitHub, restoreFromGitHub, status: syncStatus, progress: syncProgress, error: syncError } = useGitHubSync((lastSyncTime) => {
+        setGithubSettings({ ...githubSettings, lastSyncTime });
+    });
+
+    // Sync local state with Firestore when it changes
+    React.useEffect(() => {
+        setGhToken(githubSettings.token || '');
+        setGhOwner(githubSettings.owner || '');
+        setGhRepo(githubSettings.repo || '');
+    }, [githubSettings]);
+
     // --- NAVIGATION DATES ---
     const [weekDate, setWeekDate] = useState(new Date());
     const [monthDate, setMonthDate] = useState(new Date());
@@ -94,6 +113,7 @@ function MobileApp() {
     // 1. Weekly Data (Active Editing)
     const [weekData, setWeekData] = useFirestoreDoc(`planner/weekly/${weekId}`, {
         focus: '',
+        goals: [],
         habit: { name: '', days: [false, false, false, false, false, false, false] },
         journal: { start: '', stop: '', continue: '', grateful: '' },
         days: {}
@@ -266,6 +286,58 @@ function MobileApp() {
                         <TextField fullWidth multiline variant="standard" placeholder="What matters most this week?" value={weekData?.focus || ''} onChange={(e) => setWeekData({ ...weekData, focus: e.target.value })} InputProps={{ disableUnderline: true, style: { fontSize: '1.1rem', fontWeight: 500 } }} />
                     </Paper>
 
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, fontSize: '1rem' }}>Weekly Goals</Typography>
+                    <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                        {(weekData?.goals || []).map((goal, idx) => (
+                            <Box key={goal.id || idx} sx={{ display: 'flex', alignItems: 'center', mb: idx === (weekData?.goals || []).length - 1 ? 0 : 1.5, gap: 1 }}>
+                                <Checkbox
+                                    checked={goal.completed || false}
+                                    onChange={() => {
+                                        const newGoals = [...(weekData?.goals || [])];
+                                        newGoals[idx] = { ...goal, completed: !goal.completed };
+                                        setWeekData({ ...weekData, goals: newGoals });
+                                    }}
+                                    size="small"
+                                    sx={{ p: 0, '&.Mui-checked': { color: '#38a169' } }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    variant="standard"
+                                    placeholder="Goal..."
+                                    value={goal.text || ''}
+                                    onChange={(e) => {
+                                        const newGoals = [...(weekData?.goals || [])];
+                                        newGoals[idx] = { ...goal, text: e.target.value };
+                                        setWeekData({ ...weekData, goals: newGoals });
+                                    }}
+                                    InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }}
+                                    sx={{ textDecoration: goal.completed ? 'line-through' : 'none', opacity: goal.completed ? 0.6 : 1 }}
+                                />
+                                <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                        const newGoals = (weekData?.goals || []).filter((_, i) => i !== idx);
+                                        setWeekData({ ...weekData, goals: newGoals });
+                                    }}
+                                    sx={{ opacity: 0.5 }}
+                                >
+                                    <Delete fontSize="small" />
+                                </IconButton>
+                            </Box>
+                        ))}
+                        <Button
+                            size="small"
+                            startIcon={<Add />}
+                            onClick={() => {
+                                const newGoal = { id: Date.now(), text: '', completed: false };
+                                setWeekData({ ...weekData, goals: [...(weekData?.goals || []), newGoal] });
+                            }}
+                            sx={{ mt: (weekData?.goals || []).length > 0 ? 1.5 : 0, textTransform: 'none' }}
+                        >
+                            Add Goal
+                        </Button>
+                    </Paper>
+
                     <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, fontSize: '1rem' }}>Habit Tracker</Typography>
                     <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                         <TextField fullWidth variant="standard" placeholder="Habit to build..." value={habit.name || ''} onChange={(e) => setWeekData({ ...weekData, habit: { ...habit, name: e.target.value } })} InputProps={{ disableUnderline: true, style: { fontSize: '1rem', marginBottom: '12px' } }} />
@@ -396,6 +468,161 @@ function MobileApp() {
         );
     };
 
+    const renderSettingsView = () => {
+        const isLoading = syncStatus === 'fetching' || syncStatus === 'pushing' || syncStatus === 'pulling' || syncStatus === 'restoring';
+
+        const handleGitHubSync = () => {
+            if (!ghToken || !ghOwner || !ghRepo) {
+                alert('Please fill in all GitHub details');
+                return;
+            }
+            setGithubSettings({ token: ghToken, owner: ghOwner, repo: ghRepo });
+            syncToGitHub(ghToken, ghOwner, ghRepo);
+        };
+
+        const handleGitHubRestore = () => {
+            setOpenRestoreDialog(false);
+            if (!ghToken || !ghOwner || !ghRepo) {
+                alert('Please fill in all GitHub details');
+                return;
+            }
+            restoreFromGitHub(ghToken, ghOwner, ghRepo);
+        };
+
+        const handleHardRefresh = async () => {
+            if (window.confirm('This will reload the app and clear cached data (but keep you logged in). Continue?')) {
+                try {
+                    // Clear all caches
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    }
+
+                    // Unregister service workers
+                    if ('serviceWorker' in navigator) {
+                        const registrations = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(registrations.map(reg => reg.unregister()));
+                    }
+
+                    // Reload without forcing cache bypass (preserves auth)
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Error during hard refresh:', error);
+                    // Fallback to simple reload
+                    window.location.reload();
+                }
+            }
+        };
+
+        return (
+            <Box sx={{ pb: 10 }}>
+                <Paper elevation={0} sx={{ p: 2, mb: 2, borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 10, borderRadius: 0 }}>
+                    <Typography variant="h6" fontWeight="700">Settings</Typography>
+                </Paper>
+
+                <Box sx={{ px: 2 }}>
+                    {/* GitHub Sync Section */}
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, fontSize: '1rem' }}>GitHub Backup</Typography>
+                    <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                        {syncError && <Alert severity="error" sx={{ mb: 2 }}>{syncError}</Alert>}
+                        {syncStatus === 'success' && <Alert severity="success" sx={{ mb: 2 }}>{syncProgress || 'Operation successful!'}</Alert>}
+
+                        <TextField
+                            fullWidth
+                            label="Token"
+                            type="password"
+                            value={ghToken}
+                            onChange={(e) => setGhToken(e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            label="Owner"
+                            value={ghOwner}
+                            onChange={(e) => setGhOwner(e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            sx={{ mb: 2 }}
+                        />
+                        <TextField
+                            fullWidth
+                            label="Repository"
+                            value={ghRepo}
+                            onChange={(e) => setGhRepo(e.target.value)}
+                            variant="outlined"
+                            size="small"
+                            sx={{ mb: 2 }}
+                        />
+
+                        <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                            <Button
+                                fullWidth
+                                variant="contained"
+                                startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <GitHub />}
+                                onClick={handleGitHubSync}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? syncProgress : 'Sync'}
+                            </Button>
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                color="warning"
+                                startIcon={<Restore />}
+                                onClick={() => setOpenRestoreDialog(true)}
+                                disabled={isLoading}
+                            >
+                                Restore
+                            </Button>
+                        </Box>
+
+                        {githubSettings.lastSyncTime && (
+                            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', textAlign: 'center' }}>
+                                Last synced: {new Date(githubSettings.lastSyncTime).toLocaleString()}
+                            </Typography>
+                        )}
+                    </Paper>
+
+                    {/* Hard Refresh Section */}
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, fontSize: '1rem' }}>App</Typography>
+                    <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            startIcon={<Refresh />}
+                            onClick={handleHardRefresh}
+                        >
+                            Hard Refresh
+                        </Button>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', textAlign: 'center', mt: 1 }}>
+                            Reload app and clear cache
+                        </Typography>
+                    </Paper>
+
+                    {/* Logout Section */}
+                    <Paper sx={{ p: 2, mb: 3, borderRadius: 3, border: '1px solid rgba(211, 47, 47, 0.3)' }}>
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            color="error"
+                            startIcon={<Logout />}
+                            onClick={handleLogout}
+                        >
+                            Logout
+                        </Button>
+                    </Paper>
+
+                    <Box sx={{ textAlign: 'center', mt: 4, mb: 2, opacity: 0.4 }}>
+                        <Typography variant="caption">v{packageJson.version}</Typography>
+                    </Box>
+                </Box>
+            </Box>
+        );
+    };
+
+
     const renderContent = () => {
         if (!currentUser) {
             return (
@@ -412,6 +639,7 @@ function MobileApp() {
             case 2: return renderMonthlyView();
             case 3: return renderJournalView();
             case 4: return renderNotesView();
+            case 5: return renderSettingsView();
             default: return null;
         }
     };
@@ -429,6 +657,7 @@ function MobileApp() {
                         <BottomNavigationAction label="Monthly" icon={<CalendarViewMonth />} />
                         <BottomNavigationAction label="Journal" icon={<MenuBook />} />
                         <BottomNavigationAction label="Notes" icon={<EditNote />} />
+                        <BottomNavigationAction label="Settings" icon={<SettingsIcon />} />
                     </BottomNavigation>
                 )}
             </Box>
@@ -441,6 +670,30 @@ function MobileApp() {
                 <DialogActions>
                     <Button onClick={() => setOpenAddDialog(false)}>Cancel</Button>
                     <Button onClick={handleAddTask} variant="contained">Add</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={openRestoreDialog} onClose={() => setOpenRestoreDialog(false)} fullWidth maxWidth="xs">
+                <DialogTitle sx={{ color: 'warning.main' }}>Confirm Restore?</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2">
+                        This will download data from your GitHub repository and <strong style={{ color: 'red' }}>OVERWRITE</strong> your local data for matching dates.
+                        <br /><br />
+                        This is intended for disaster recovery. Are you sure you want to proceed?
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenRestoreDialog(false)}>Cancel</Button>
+                    <Button onClick={() => {
+                        setOpenRestoreDialog(false);
+                        if (!ghToken || !ghOwner || !ghRepo) {
+                            alert('Please fill in all GitHub details');
+                            return;
+                        }
+                        restoreFromGitHub(ghToken, ghOwner, ghRepo);
+                    }} color="warning" autoFocus>
+                        Yes, Restore Data
+                    </Button>
                 </DialogActions>
             </Dialog>
         </ThemeProvider>
