@@ -72,6 +72,7 @@ const DEFAULT_PROMPTS = [
     // Phase 1: Awareness Audit
     { id: 'detox-0', section: 'Dopamine detox phase 1: Awareness', text: `"What exactly did I consume today, and in what quantity?" (Be precise: e.g., '2 hours of scrolling,' not 'a little while').` },
     { id: 'detox-0b', section: 'Dopamine detox phase 1: Awareness', text: "Am I feeling the 'Gremlins' on the pain side right now?" },
+    { id: 'detox-0c', section: 'Dopamine detox phase 1: Awareness', text: "Am I chasing 'new' right now to solve a real problem, or just to feed the dopamine loop?" },
     { id: 'detox-1', section: 'Dopamine detox phase 1: Awareness', text: 'The "One Thing" Analysis: If I eliminated just one distraction, which one would have the biggest impact? Why haven\'t I cut it yet?' },
     { id: 'detox-2', section: 'Dopamine detox phase 1: Awareness', text: 'Excitement vs. Fulfillment: List 3 stimulating things I did today. Did they leave me fulfilling or empty?' },
     // Phase 2: The Struggle

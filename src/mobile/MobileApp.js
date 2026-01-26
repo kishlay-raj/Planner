@@ -59,6 +59,7 @@ const MOBILE_JOURNAL_PROMPTS = [
     // Phase 1: Awareness Audit
     { id: 'detox-0', section: 'Dopamine detox phase 1: Awareness', text: `"What exactly did I consume today, and in what quantity?" (Be precise: e.g., '2 hours of scrolling,' not 'a little while').` },
     { id: 'detox-0b', section: 'Dopamine detox phase 1: Awareness', text: "Am I feeling the 'Gremlins' on the pain side right now?" },
+    { id: 'detox-0c', section: 'Dopamine detox phase 1: Awareness', text: "Am I chasing 'new' right now to solve a real problem, or just to feed the dopamine loop?" },
     // Daily Digital Audit
     { id: 'digital-3', section: 'Daily Digital Audit', text: 'The "Junk internet" Limit: Total minutes spent on Insta/Twitter/News: ______ (Target: <10 mins)' },
     { id: 'digital-4', section: 'Daily Digital Audit', text: 'Fortress Protocol: Did I actively block websites or use a "single-purpose" device during work hours? (Yes/No)' },
