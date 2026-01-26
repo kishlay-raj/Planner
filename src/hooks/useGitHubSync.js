@@ -5,7 +5,7 @@ import { Octokit } from '@octokit/rest';
 import { format, parseISO, isValid } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
 
-export function useGitHubSync() {
+export function useGitHubSync(onSyncComplete) {
     const { currentUser } = useAuth();
     const [status, setStatus] = useState('idle'); // idle, fetching, formatting, pushing, pulling, parsing, restoring, success, error
     const [progress, setProgress] = useState('');
@@ -230,7 +230,9 @@ export function useGitHubSync() {
 
             setStatus('success');
             setProgress('Synced successfully!');
-            localStorage.setItem('lastGitHubSync', new Date().toISOString());
+            if (onSyncComplete) {
+                onSyncComplete(new Date().toISOString());
+            }
 
         } catch (e) {
             console.error(e);

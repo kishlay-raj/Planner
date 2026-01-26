@@ -62,10 +62,22 @@ function Settings({ navConfig, onUpdate, darkMode, onToggleDarkMode }) {
     const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
 
     // GitHub Sync State
-    const { syncToGitHub, restoreFromGitHub, status: syncStatus, progress: syncProgress, error: syncError } = useGitHubSync();
-    const [ghToken, setGhToken] = useState(localStorage.getItem('gh_token') || '');
-    const [ghOwner, setGhOwner] = useState(localStorage.getItem('gh_owner') || '');
-    const [ghRepo, setGhRepo] = useState(localStorage.getItem('gh_repo') || '');
+    const { syncToGitHub, restoreFromGitHub, status: syncStatus, progress: syncProgress, error: syncError } = useGitHubSync((lastSyncTime) => {
+        // Update Firestore with last sync time
+        setGithubSettings({ ...githubSettings, lastSyncTime });
+    });
+    const [githubSettings, setGithubSettings] = useFirestore('githubSettings', { token: '', owner: '', repo: '' });
+
+    const [ghToken, setGhToken] = useState(githubSettings.token || '');
+    const [ghOwner, setGhOwner] = useState(githubSettings.owner || '');
+    const [ghRepo, setGhRepo] = useState(githubSettings.repo || '');
+
+    // Sync local state with Firestore when it changes
+    React.useEffect(() => {
+        setGhToken(githubSettings.token || '');
+        setGhOwner(githubSettings.owner || '');
+        setGhRepo(githubSettings.repo || '');
+    }, [githubSettings]);
 
     const handleDragEnd = (result) => {
         if (!result.destination) return;
@@ -94,9 +106,8 @@ function Settings({ navConfig, onUpdate, darkMode, onToggleDarkMode }) {
             alert('Please fill in all GitHub details');
             return;
         }
-        localStorage.setItem('gh_token', ghToken);
-        localStorage.setItem('gh_owner', ghOwner);
-        localStorage.setItem('gh_repo', ghRepo);
+        // Save to Firestore
+        setGithubSettings({ token: ghToken, owner: ghOwner, repo: ghRepo });
 
         syncToGitHub(ghToken, ghOwner, ghRepo);
     };
@@ -279,9 +290,9 @@ function Settings({ navConfig, onUpdate, darkMode, onToggleDarkMode }) {
                             </Button>
                         </Box>
 
-                        {localStorage.getItem('lastGitHubSync') && (
+                        {githubSettings.lastSyncTime && (
                             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                                Last synced: {new Date(localStorage.getItem('lastGitHubSync')).toLocaleString()}
+                                Last synced: {new Date(githubSettings.lastSyncTime).toLocaleString()}
                             </Typography>
                         )}
                     </Box>
