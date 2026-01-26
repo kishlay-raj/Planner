@@ -50,6 +50,8 @@ function PlannerScreen() {
       await loginWithGoogle();
     } catch (error) {
       console.error("Failed to log in", error);
+      // Show user-friendly error
+      alert(`Login failed: ${error.message}\n\nMake sure 'localhost' is added to Authorized Domains in Firebase Console.`);
     }
   };
 

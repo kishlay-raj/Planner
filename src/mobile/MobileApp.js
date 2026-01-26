@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore } from '@mui/icons-material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday } from '@mui/icons-material';
 import NotesPanel from '../components/NotesPanel';
+import CalendarView from '../components/CalendarView';
 import packageJson from '../../package.json';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestoreCollection, useFirestoreDoc } from '../hooks/useFirestoreNew';
@@ -174,6 +175,36 @@ function MobileApp() {
         setJournalData(prev => ({ ...prev, [journalDateKey]: { ...currentJournalEntry, notes: val } }));
     };
 
+    const handleTaskSchedule = async (taskId, timeSlot, newDuration) => {
+        const taskIdStr = String(taskId);
+        const task = tasks.find(t => String(t.id) === taskIdStr);
+        if (task) {
+            const scheduledTime = timeSlot instanceof Date ? timeSlot.toISOString() : timeSlot;
+            await updateTask(taskIdStr, {
+                scheduledTime: scheduledTime,
+                duration: newDuration || task.duration
+            });
+        }
+    };
+
+    const handleTaskUpdate = async (updatedTasks) => {
+        const tasksToUpdate = Array.isArray(updatedTasks) ? updatedTasks : [updatedTasks];
+        for (const taskUpdate of tasksToUpdate) {
+            if (taskUpdate.id) await updateTask(taskUpdate.id.toString(), taskUpdate);
+        }
+    };
+
+    // Wrapper for handleAddTask to match CalendarView signature if needed, 
+    // but CalendarView uses onTaskCreate which expects a task object.
+    // We'll Create a specific handler for CalendarView creation which often passes fully formed task objects
+    const handleCalendarTaskCreate = async (taskData) => {
+        await addTask({
+            completed: false,
+            createdAt: Date.now(),
+            ...taskData
+        });
+    };
+
     // --- RENDER HELPERS ---
 
     const getSectionDescription = (sectionName) => {
@@ -207,6 +238,35 @@ function MobileApp() {
                     {text}
                 </Typography>
             </Paper>
+        );
+    };
+
+    const renderScheduleView = () => {
+        // Filter for scheduled tasks
+        const scheduledTasks = tasks.filter(t => t.scheduledTime);
+
+        return (
+            <Box sx={{ pb: 10, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <Paper elevation={0} sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 10, borderRadius: 0 }}>
+                    <IconButton onClick={() => setCurrentDate(d => subDays(d, 1))}><ChevronLeft /></IconButton>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="body1" fontWeight="700">{format(currentDate, 'MMMM d')}</Typography>
+                        <Typography variant="caption" color="text.secondary">{format(currentDate, 'EEEE')}</Typography>
+                    </Box>
+                    <IconButton onClick={() => setCurrentDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
+                </Paper>
+
+                <Box sx={{ flex: 1, p: 1, overflow: 'hidden' }}>
+                    <CalendarView
+                        scheduledTasks={scheduledTasks}
+                        onTaskSchedule={handleTaskSchedule}
+                        onTaskCreate={handleCalendarTaskCreate}
+                        onTaskUpdate={handleTaskUpdate}
+                        selectedDate={currentDate}
+                        onDateChange={setCurrentDate}
+                    />
+                </Box>
+            </Box>
         );
     };
 
@@ -651,11 +711,12 @@ function MobileApp() {
         if (tasksLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
         switch (value) {
             case 0: return renderTodayView();
-            case 1: return renderWeeklyView();
-            case 2: return renderMonthlyView();
-            case 3: return renderJournalView();
-            case 4: return renderNotesView();
-            case 5: return renderSettingsView();
+            case 1: return renderScheduleView();
+            case 2: return renderWeeklyView();
+            case 3: return renderMonthlyView();
+            case 4: return renderJournalView();
+            case 5: return renderNotesView();
+            case 6: return renderSettingsView();
             default: return null;
         }
     };
@@ -667,13 +728,14 @@ function MobileApp() {
                     {renderContent()}
                 </Box>
                 {currentUser && (
-                    <BottomNavigation showLabels value={value} onChange={(event, newValue) => setValue(newValue)}>
-                        <BottomNavigationAction label="Today" icon={<FormatListBulleted />} />
-                        <BottomNavigationAction label="Weekly" icon={<ViewWeek />} />
-                        <BottomNavigationAction label="Monthly" icon={<CalendarViewMonth />} />
-                        <BottomNavigationAction label="Journal" icon={<MenuBook />} />
-                        <BottomNavigationAction label="Notes" icon={<EditNote />} />
-                        <BottomNavigationAction label="Settings" icon={<SettingsIcon />} />
+                    <BottomNavigation showLabels value={value} onChange={(event, newValue) => setValue(newValue)} sx={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
+                        <BottomNavigationAction label="Today" icon={<FormatListBulleted />} sx={{ minWidth: 'auto', px: 1 }} />
+                        <BottomNavigationAction label="Schedule" icon={<CalendarToday />} sx={{ minWidth: 'auto', px: 1 }} />
+                        <BottomNavigationAction label="Weekly" icon={<ViewWeek />} sx={{ minWidth: 'auto', px: 1 }} />
+                        <BottomNavigationAction label="Monthly" icon={<CalendarViewMonth />} sx={{ minWidth: 'auto', px: 1 }} />
+                        <BottomNavigationAction label="Journal" icon={<MenuBook />} sx={{ minWidth: 'auto', px: 1 }} />
+                        <BottomNavigationAction label="Notes" icon={<EditNote />} sx={{ minWidth: 'auto', px: 1 }} />
+                        <BottomNavigationAction label="Settings" icon={<SettingsIcon />} sx={{ minWidth: 'auto', px: 1 }} />
                     </BottomNavigation>
                 )}
             </Box>
