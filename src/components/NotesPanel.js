@@ -155,7 +155,7 @@ function NotesPanel({ selectedDate, onDateChange, sx = {} }) {
 
     async function fetchAvailableDates() {
       try {
-        const dailyPlannerRef = collection(db, 'users', currentUser.uid, 'planner', 'daily');
+        const dailyPlannerRef = collection(db, 'users', currentUser.uid, 'planner_daily');
         const q = query(dailyPlannerRef, orderBy('__name__', 'desc'), limit(50));
         const snapshot = await getDocs(q);
 
