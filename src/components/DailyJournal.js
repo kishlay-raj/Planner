@@ -72,6 +72,7 @@ const DEFAULT_PROMPTS = [
     { id: '12', section: 'Behavioral Triggers', text: 'The Transition Trap: Did I lose time during a task, or between tasks? (Most time is wasted in the "transition moments" just after finishing one thing and before starting the next).' },
     { id: '13', section: 'Evening', text: 'Daily Improvement: What is one system I can tweak or change to make tomorrow 1% better than today?' },
     { id: '14', section: 'Evening', text: '3 Amazing things that happened today.' },
+    { id: '17', section: 'Evening', text: 'Did I choose a public space instead of staying home alone?' },
     // Phase 1: Awareness Audit
     { id: 'detox-0', section: 'Dopamine detox phase 1: Awareness', text: `"What exactly did I consume today, and in what quantity?" (Be precise: e.g., '2 hours of scrolling,' not 'a little while').` },
     { id: 'detox-0b', section: 'Dopamine detox phase 1: Awareness', text: "Am I feeling the 'Gremlins' on the pain side right now?" },
