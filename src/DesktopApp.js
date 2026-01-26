@@ -163,6 +163,7 @@ function DesktopApp() {
   const defaultStats = { total: 0, today: 0, lastDate: new Date().toDateString() };
   const [stats, setStats] = useFirestore('pomodoroStats', defaultStats);
   const [tickInterval, setTickInterval] = useState(null);
+  const [workType, setWorkType] = useFirestore('pomodoroWorkType', 'deep'); // 'deep' or 'shallow'
 
   // Audio Context
   const [audioContext] = useState(() => {
@@ -295,6 +296,10 @@ function DesktopApp() {
     else if (newMode === 'longBreak') setTimeLeft(settings.longBreak * 60);
   };
 
+  const toggleWorkType = () => {
+    setWorkType(prev => prev === 'deep' ? 'shallow' : 'deep');
+  };
+
   // -------------------------
 
   // Navigation Configuration State
@@ -365,6 +370,8 @@ function DesktopApp() {
           resetTimer={resetTimer}
           settings={settings}
           handleSettingChange={handleSettingChange}
+          workType={workType}
+          onWorkTypeToggle={toggleWorkType}
         />;
       case 'eisenhower':
         return <EisenhowerMatrix />;
@@ -410,6 +417,8 @@ function DesktopApp() {
             onToggle={toggleTimer}
             mode={mode}
             visible={isActive && activePanel !== 'pomodoro'}
+            workType={workType}
+            onWorkTypeToggle={toggleWorkType}
           />
 
           <Box sx={{

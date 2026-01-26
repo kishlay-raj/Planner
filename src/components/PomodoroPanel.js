@@ -17,10 +17,13 @@ import {
   Select,
   MenuItem,
   Slider,
-  Divider
+  Divider,
+  Chip
 } from '@mui/material';
 import {
-  Settings
+  Settings,
+  Psychology,
+  WorkOutline
 } from '@mui/icons-material';
 
 import { useFirestore } from '../hooks/useFirestore';
@@ -35,7 +38,9 @@ function PomodoroPanel({
   toggleTimer,
   resetTimer,
   settings,
-  handleSettingChange
+  handleSettingChange,
+  workType = 'deep',
+  onWorkTypeToggle
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -246,6 +251,25 @@ function PomodoroPanel({
             </Typography>
           </Box>
         </Fade>
+        {mode === 'pomodoro' && (
+          <Chip
+            icon={workType === 'deep' ? <Psychology /> : <WorkOutline />}
+            label={workType === 'deep' ? 'Deep Work' : 'Shallow Work'}
+            onClick={onWorkTypeToggle}
+            sx={{
+              mt: 2,
+              bgcolor: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+              px: 2,
+              py: 2.5,
+              cursor: 'pointer',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' },
+              '& .MuiChip-icon': { color: 'white', fontSize: '1.2rem' }
+            }}
+          />
+        )}
         <Typography variant="body2" sx={{ mt: 2, opacity: 0.6 }}>
           Today's Focus: {stats.today} cycles
         </Typography>

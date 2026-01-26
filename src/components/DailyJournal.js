@@ -59,6 +59,7 @@ const DEFAULT_PROMPTS = [
     { id: '2', section: 'Morning', text: 'The "Big Rock": What is the one thing I must accomplish today to feel satisfied?' },
     { id: '3', section: 'Morning', text: 'The Obstacle: What is most likely to distract me today, and how will I handle it?' },
     { id: '15', section: 'Morning', text: 'Do I have a timeblock or deadline for my goals?' },
+    { id: '16', section: 'Morning', text: 'Slow down cool down, Am I slowing down?' },
     { id: '4', section: 'Deep Work', text: 'The Depth Ratio: How many hours of actual Deep Work did I achieve today versus "Shallow Work" (emails, meetings, admin)? Was this ratio acceptable?' },
     { id: '5', section: 'Deep Work', text: 'Distraction Deep Dive: When I lost focus today, what was the trigger (internal emotion or external app/site)? What was I trying to avoid or numb?' },
     { id: '6', section: 'Deep Work', text: 'Skill Growth & Value: What specifically did I do today to become better at my craft? Am I building skills that are rare and valuable, or am I doing work that is easy to replicate?' },

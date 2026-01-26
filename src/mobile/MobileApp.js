@@ -47,6 +47,7 @@ const MOBILE_JOURNAL_PROMPTS = [
     { id: '2', section: 'Morning', text: 'The "Big Rock": What is the one thing I must accomplish today?' },
     { id: '3', section: 'Morning', text: 'The Obstacle: What is most likely to distract me today?' },
     { id: '15', section: 'Morning', text: 'Do I have a timeblock or deadline for my goals?' },
+    { id: '16', section: 'Morning', text: 'Slow down cool down, Am I slowing down?' },
     { id: '4', section: 'Deep Work', text: 'The Depth Ratio: How many hours of actual Deep Work did I achieve today?' },
     { id: '5', section: 'Deep Work', text: 'Distraction Deep Dive: When I lost focus, what was the trigger (emotion or app/site)? What was I avoiding?' },
     { id: '6', section: 'Digital Minimalism', text: 'The Solitude Check: Did I spend any time today alone with my own thoughts?' },
