@@ -784,14 +784,28 @@ function MobileApp() {
                     {renderContent()}
                 </Box>
                 {currentUser && (
-                    <BottomNavigation showLabels value={value} onChange={(event, newValue) => setValue(newValue)} sx={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
-                        <BottomNavigationAction label="Today" icon={<FormatListBulleted />} sx={{ minWidth: 'auto', px: 1 }} />
-                        <BottomNavigationAction label="Schedule" icon={<CalendarToday />} sx={{ minWidth: 'auto', px: 1 }} />
-                        <BottomNavigationAction label="Weekly" icon={<ViewWeek />} sx={{ minWidth: 'auto', px: 1 }} />
-                        <BottomNavigationAction label="Monthly" icon={<CalendarViewMonth />} sx={{ minWidth: 'auto', px: 1 }} />
-                        <BottomNavigationAction label="Journal" icon={<MenuBook />} sx={{ minWidth: 'auto', px: 1 }} />
-                        <BottomNavigationAction label="Notes" icon={<EditNote />} sx={{ minWidth: 'auto', px: 1 }} />
-                        <BottomNavigationAction label="Settings" icon={<SettingsIcon />} sx={{ minWidth: 'auto', px: 1 }} />
+                    <BottomNavigation
+                        showLabels
+                        value={value}
+                        onChange={(event, newValue) => setValue(newValue)}
+                        sx={{
+                            overflowX: 'auto',
+                            flexWrap: 'nowrap',
+                            justifyContent: 'flex-start', // Ensure items are aligned to start for scrolling
+                            '& .MuiBottomNavigationAction-root': {
+                                minWidth: '80px', // Force minimum width
+                                padding: '6px 12px',
+                                flexShrink: 0 // Prevent shrinking
+                            }
+                        }}
+                    >
+                        <BottomNavigationAction label="Today" icon={<FormatListBulleted />} />
+                        <BottomNavigationAction label="Schedule" icon={<CalendarToday />} />
+                        <BottomNavigationAction label="Weekly" icon={<ViewWeek />} />
+                        <BottomNavigationAction label="Monthly" icon={<CalendarViewMonth />} />
+                        <BottomNavigationAction label="Journal" icon={<MenuBook />} />
+                        <BottomNavigationAction label="Notes" icon={<EditNote />} />
+                        <BottomNavigationAction label="Settings" icon={<SettingsIcon />} />
                     </BottomNavigation>
                 )}
             </Box>
