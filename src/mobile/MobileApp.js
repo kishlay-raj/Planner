@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday } from '@mui/icons-material';
+import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon } from '@mui/material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator } from '@mui/icons-material';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
 import packageJson from '../../package.json';
@@ -36,9 +37,21 @@ const MOBILE_JOURNAL_PROMPTS = [
     { id: 'digital-5', section: 'Daily Digital Audit', text: 'Trend Line: Did I use less internet today than yesterday? (Yes/No)' }
 ];
 
+const TAB_CONFIG = {
+    today: { label: 'Today', icon: <FormatListBulleted /> },
+    schedule: { label: 'Schedule', icon: <CalendarToday /> },
+    weekly: { label: 'Weekly', icon: <ViewWeek /> },
+    monthly: { label: 'Monthly', icon: <CalendarViewMonth /> },
+    journal: { label: 'Journal', icon: <MenuBook /> },
+    notes: { label: 'Notes', icon: <EditNote /> },
+    settings: { label: 'Settings', icon: <SettingsIcon /> }
+};
+
 function MobileApp() {
     const { currentUser, loginWithGoogle, logout } = useAuth();
-    const [value, setValue] = useState(0);
+    const [activeTab, setActiveTab] = useState('today');
+    const [mobileTabOrder, setMobileTabOrder] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'journal', 'notes', 'settings']);
+    const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
 
     // Global State
     const [tasks, addTask, updateTask, deleteTask, tasksLoading] = useFirestoreCollection('tasks/active', 'createdAt');
@@ -746,6 +759,53 @@ function MobileApp() {
                         </Button>
                     </Paper>
 
+                    {/* Customize Tabs Section */}
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, fontSize: '1rem' }}>Customize Tabs</Typography>
+                    <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            Drag to reorder. The top 4 will be shown in the bottom bar.
+                        </Typography>
+                        <DragDropContext onDragEnd={(result) => {
+                            if (!result.destination) return;
+                            const items = Array.from(mobileTabOrder);
+                            const [reorderedItem] = items.splice(result.source.index, 1);
+                            items.splice(result.destination.index, 0, reorderedItem);
+                            setMobileTabOrder(items);
+                        }}>
+                            <Droppable droppableId="tabs">
+                                {(provided) => (
+                                    <List {...provided.droppableProps} ref={provided.innerRef}>
+                                        {mobileTabOrder.map((key, index) => (
+                                            <Draggable key={key} draggableId={key} index={index}>
+                                                {(provided) => (
+                                                    <ListItem
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        secondaryAction={<DragIndicator sx={{ color: 'text.disabled' }} />}
+                                                        sx={{
+                                                            mb: 1,
+                                                            bgcolor: 'background.paper',
+                                                            border: '1px solid',
+                                                            borderColor: 'divider',
+                                                            borderRadius: 2
+                                                        }}
+                                                    >
+                                                        <ListItemIcon sx={{ minWidth: 40 }}>
+                                                            {TAB_CONFIG[key].icon}
+                                                        </ListItemIcon>
+                                                        <ListItemText primary={TAB_CONFIG[key].label} />
+                                                    </ListItem>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
+                                    </List>
+                                )}
+                            </Droppable>
+                        </DragDropContext>
+                    </Paper>
+
                     <Box sx={{ textAlign: 'center', mt: 4, mb: 2, opacity: 0.4 }}>
                         <Typography variant="caption">v{packageJson.version}</Typography>
                     </Box>
@@ -765,17 +825,24 @@ function MobileApp() {
             );
         }
         if (tasksLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
-        switch (value) {
-            case 0: return renderTodayView();
-            case 1: return renderScheduleView();
-            case 2: return renderWeeklyView();
-            case 3: return renderMonthlyView();
-            case 4: return renderJournalView();
-            case 5: return renderNotesView();
-            case 6: return renderSettingsView();
-            default: return null;
+
+
+        switch (activeTab) {
+            case 'today': return renderTodayView();
+            case 'schedule': return renderScheduleView();
+            case 'weekly': return renderWeeklyView();
+            case 'monthly': return renderMonthlyView();
+            case 'journal': return renderJournalView();
+            case 'notes': return renderNotesView();
+            case 'settings': return renderSettingsView();
+            default: return renderTodayView();
         }
     };
+
+    // Calculate visible and hidden tabs
+    const visibleTabs = mobileTabOrder.slice(0, 4);
+    const hiddenTabs = mobileTabOrder.slice(4);
+    const isOverflowActive = hiddenTabs.includes(activeTab);
 
     return (
         <ThemeProvider theme={mobileTheme}>
@@ -784,29 +851,74 @@ function MobileApp() {
                     {renderContent()}
                 </Box>
                 {currentUser && (
-                    <BottomNavigation
-                        showLabels
-                        value={value}
-                        onChange={(event, newValue) => setValue(newValue)}
-                        sx={{
-                            overflowX: 'auto',
-                            flexWrap: 'nowrap',
-                            justifyContent: 'flex-start', // Ensure items are aligned to start for scrolling
-                            '& .MuiBottomNavigationAction-root': {
-                                minWidth: '80px', // Force minimum width
-                                padding: '6px 12px',
-                                flexShrink: 0 // Prevent shrinking
-                            }
-                        }}
-                    >
-                        <BottomNavigationAction label="Today" icon={<FormatListBulleted />} />
-                        <BottomNavigationAction label="Schedule" icon={<CalendarToday />} />
-                        <BottomNavigationAction label="Weekly" icon={<ViewWeek />} />
-                        <BottomNavigationAction label="Monthly" icon={<CalendarViewMonth />} />
-                        <BottomNavigationAction label="Journal" icon={<MenuBook />} />
-                        <BottomNavigationAction label="Notes" icon={<EditNote />} />
-                        <BottomNavigationAction label="Settings" icon={<SettingsIcon />} />
-                    </BottomNavigation>
+                    <>
+                        <BottomNavigation
+                            showLabels
+                            value={isOverflowActive ? 'more' : activeTab}
+                            onChange={(event, newValue) => {
+                                if (newValue !== 'more') {
+                                    setActiveTab(newValue);
+                                }
+                            }}
+                            sx={{
+                                borderTop: mobileTheme.palette.mode === 'dark' ? '1px solid rgba(255,255,255,0.05)' : '1px solid rgba(0,0,0,0.05)',
+                                height: 65,
+                                position: 'fixed',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                zIndex: 1000
+                            }}
+                        >
+                            {visibleTabs.map(key => (
+                                <BottomNavigationAction
+                                    key={key}
+                                    label={TAB_CONFIG[key].label}
+                                    value={key}
+                                    icon={TAB_CONFIG[key].icon}
+                                />
+                            ))}
+
+                            {hiddenTabs.length > 0 && (
+                                <BottomNavigationAction
+                                    label="More"
+                                    value="more"
+                                    icon={<MoreHoriz />}
+                                    onClick={(e) => setMoreMenuAnchor(e.currentTarget)}
+                                />
+                            )}
+                        </BottomNavigation>
+
+                        <Menu
+                            anchorEl={moreMenuAnchor}
+                            open={Boolean(moreMenuAnchor)}
+                            onClose={() => setMoreMenuAnchor(null)}
+                            PaperProps={{
+                                style: {
+                                    width: '200px',
+                                },
+                            }}
+                            anchorOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                            }}
+                        >
+                            {hiddenTabs.map(key => (
+                                <MenuItem
+                                    key={key}
+                                    onClick={() => { setActiveTab(key); setMoreMenuAnchor(null); }}
+                                    selected={activeTab === key}
+                                >
+                                    <ListItemIcon fontSize="small">{TAB_CONFIG[key].icon}</ListItemIcon>
+                                    <ListItemText>{TAB_CONFIG[key].label}</ListItemText>
+                                </MenuItem>
+                            ))}
+                        </Menu>
+                    </>
                 )}
             </Box>
 
