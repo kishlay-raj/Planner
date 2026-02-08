@@ -598,6 +598,7 @@ function MobileApp() {
                 <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                     {notesType === 'daily' ? (
                         <NotesPanel
+                            key={notesDate.toISOString()}
                             selectedDate={notesDate}
                             sx={{ height: 'calc(100vh - 190px)', border: 'none' }}
                         />

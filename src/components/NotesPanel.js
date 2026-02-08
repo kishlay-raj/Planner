@@ -125,12 +125,13 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
     // Wait for the hook to finish loading the new path's data
     if (loading) return;
 
-    // Only update local state if we haven't synced this path yet
-    if (docPath !== lastSyncedPath.current) {
-      const contentToShow = currentUser
-        ? (noteData?.content || '')
-        : (noteData?.content || DEMO_CONTENT);
+    const contentToShow = currentUser
+      ? (noteData?.content || '')
+      : (noteData?.content || DEMO_CONTENT);
 
+    // Update if path changed OR if content mismatch (remote update)
+    // We rely on useFirestoreDoc's isTyping protection to filter out unwanted updates while typing
+    if (docPath !== lastSyncedPath.current || contentToShow !== editorContent) {
       setEditorContent(contentToShow);
       lastServerContent.current = contentToShow;
       lastSyncedPath.current = docPath;

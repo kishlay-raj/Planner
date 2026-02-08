@@ -18,6 +18,7 @@ export function useFirestore(location, initialValue, merge = true) {
 
     // Use a ref to prevent writing back data we just received from a snapshot (loops)
     const isRemoteUpdate = useRef(false);
+    const isTyping = useRef(false);
 
     useEffect(() => {
         // Fallback to localStorage if no user
@@ -56,6 +57,7 @@ export function useFirestore(location, initialValue, merge = true) {
         const docRef = doc(db, 'users', currentUser.uid, 'userData', Array.isArray(location) ? location.join('_') : location);
 
         const unsubscribe = onSnapshot(docRef, (docSnap) => {
+            if (isTyping.current) return;
             if (docSnap.exists()) {
                 isRemoteUpdate.current = true;
                 const rawData = docSnap.data();
@@ -93,6 +95,8 @@ export function useFirestore(location, initialValue, merge = true) {
 
     const saveData = (newDataOrFn) => {
         if (isDev) console.log("saveData called for:", location);
+
+        isTyping.current = true;
 
         // Support functional updates like React's setState
         const newData = typeof newDataOrFn === 'function' ? newDataOrFn(data) : newDataOrFn;
@@ -143,6 +147,7 @@ export function useFirestore(location, initialValue, merge = true) {
                 localStorage.setItem(localKey, JSON.stringify(newData));
                 setSaving(false);
             }
+            isTyping.current = false;
         }, 1000); // 1 second debounce
     };
 
