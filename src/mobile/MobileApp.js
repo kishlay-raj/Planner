@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator } from '@mui/icons-material';
+import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse } from '@mui/material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
@@ -191,6 +191,38 @@ function MobileApp() {
     const [prompts] = useFirestore('journalPrompts', MOBILE_JOURNAL_PROMPTS);
     const [journalData, setJournalData] = useFirestore('dailyJournalData', {});
     const currentJournalEntry = journalData[journalDateKey] || { responses: {}, notes: '' };
+
+    // --- COLLAPSIBLE SECTIONS STATE ---
+    const [collapsedSections, setCollapsedSections] = useState([]);
+
+    // Auto-collapse Morning section logic
+    useEffect(() => {
+        const todayRes = new Date();
+        todayRes.setHours(0, 0, 0, 0);
+
+        const journalDateStart = new Date(journalDate);
+        journalDateStart.setHours(0, 0, 0, 0);
+
+        const isPastDate = journalDateStart < todayRes;
+        const isToday = journalDateStart.getTime() === todayRes.getTime();
+        const currentHour = new Date().getHours();
+
+        // Collapse if past date OR (today AND past 3 PM / 15:00)
+        if (isPastDate || (isToday && currentHour >= 15)) {
+            setCollapsedSections(prev => {
+                if (!prev.includes('Morning')) return [...prev, 'Morning'];
+                return prev;
+            });
+        }
+    }, [journalDate]);
+
+    const handleToggleCollapse = (section) => {
+        setCollapsedSections(prev =>
+            prev.includes(section)
+                ? prev.filter(s => s !== section)
+                : [...prev, section]
+        );
+    };
 
     // --- HANDLERS ---
 
@@ -537,24 +569,45 @@ function MobileApp() {
                     <IconButton onClick={() => setJournalDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
                 </Paper>
                 <Box sx={{ px: 2 }}>
-                    {sections.map(section => (
-                        <Box key={section} sx={{ mb: 4 }}>
-                            <Typography variant="h6" fontWeight="bold" color="primary" sx={{ mb: 2, fontSize: '1rem', textTransform: 'uppercase' }}>{section}</Typography>
-                            {getSectionDescription(section) && (
-                                <Paper sx={{ p: 2, mb: 2, bgcolor: 'rgba(25, 118, 210, 0.08)', borderRadius: 2, border: '1px solid rgba(25, 118, 210, 0.2)' }}>
-                                    <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary', lineHeight: 1.5 }}>
-                                        {getSectionDescription(section)}
+                    {sections.map(section => {
+                        const isCollapsed = collapsedSections.includes(section);
+                        return (
+                            <Box key={section} sx={{ mb: 2 }}>
+                                <Box
+                                    onClick={() => handleToggleCollapse(section)}
+                                    sx={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        mb: 1,
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <Typography variant="h6" fontWeight="bold" color="primary" sx={{ fontSize: '1rem', textTransform: 'uppercase' }}>
+                                        {section}
                                     </Typography>
-                                </Paper>
-                            )}
-                            {prompts.filter(p => p.section === section).map(prompt => (
-                                <Paper key={prompt.id} sx={{ p: 2, mb: 2, borderRadius: 3 }}>
-                                    <Typography variant="body2" fontWeight="600" sx={{ mb: 1 }}>{prompt.text}</Typography>
-                                    <TextField fullWidth multiline minRows={2} variant="standard" placeholder="Write here..." value={currentJournalEntry.responses?.[prompt.id] || ''} onChange={(e) => handleJournalResponseChange(prompt.id, e.target.value)} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} sx={{ bgcolor: '#f7fafc', p: 1, borderRadius: 1 }} />
-                                </Paper>
-                            ))}
-                        </Box>
-                    ))}
+                                    <IconButton size="small">
+                                        {isCollapsed ? <ExpandMore /> : <ExpandLess />}
+                                    </IconButton>
+                                </Box>
+                                <Collapse in={!isCollapsed}>
+                                    {getSectionDescription(section) && (
+                                        <Paper sx={{ p: 2, mb: 2, bgcolor: 'rgba(25, 118, 210, 0.08)', borderRadius: 2, border: '1px solid rgba(25, 118, 210, 0.2)' }}>
+                                            <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary', lineHeight: 1.5 }}>
+                                                {getSectionDescription(section)}
+                                            </Typography>
+                                        </Paper>
+                                    )}
+                                    {prompts.filter(p => p.section === section).map(prompt => (
+                                        <Paper key={prompt.id} sx={{ p: 2, mb: 2, borderRadius: 3 }}>
+                                            <Typography variant="body2" fontWeight="600" sx={{ mb: 1 }}>{prompt.text}</Typography>
+                                            <TextField fullWidth multiline minRows={2} variant="standard" placeholder="Write here..." value={currentJournalEntry.responses?.[prompt.id] || ''} onChange={(e) => handleJournalResponseChange(prompt.id, e.target.value)} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} sx={{ bgcolor: '#f7fafc', p: 1, borderRadius: 1 }} />
+                                        </Paper>
+                                    ))}
+                                </Collapse>
+                            </Box>
+                        );
+                    })}
                     <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontSize: '1rem' }}>Daily Notes</Typography>
                     <Paper sx={{ p: 2, mb: 4, borderRadius: 3 }}>
                         <TextField fullWidth multiline minRows={6} variant="standard" placeholder="Free flow notes..." value={currentJournalEntry.notes || ''} onChange={(e) => handleJournalNotesChange(e.target.value)} InputProps={{ disableUnderline: true }} />
