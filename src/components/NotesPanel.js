@@ -7,7 +7,9 @@ import {
   NavigateNext,
   CloudDone,
   CloudUpload,
-  CloudOff
+  CloudOff,
+  Lock,
+  LockOpen
 } from '@mui/icons-material';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -54,8 +56,8 @@ const DEMO_CONTENT = `<h1>✨ Welcome to Flow Planner Demo</h1>
 
 const initialNoteData = { content: '' };
 
-const CustomToolbar = () => (
-  <div id="notes-toolbar">
+const CustomToolbar = ({ style }) => (
+  <div id="notes-toolbar" style={style}>
     <span className="ql-formats">
       <Tooltip title="Bold (Cmd+B)" enterDelay={0} arrow>
         <button className="ql-bold" aria-label="Bold (Cmd+B)" />
@@ -94,7 +96,7 @@ const CustomToolbar = () => (
   </div>
 );
 
-function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, title = "Notes" }) {
+function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, title = "Notes", enableLock = false }) {
   const { currentUser } = useAuth();
   const currentDate = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null;
 
@@ -104,6 +106,9 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
   // If customPath is provided, use it directly. Otherwise use the date-based path.
   const docPath = customPath || `planner/daily/${currentDate}`;
   const [noteData, setNoteData, loading, saving, error] = useFirestoreDoc(docPath, initialNoteData);
+
+  // Lock state: initialize with enableLock prop (default true for General Notes)
+  const [isLocked, setIsLocked] = React.useState(enableLock);
 
   // Local state for immediate editor responsiveness
   // Initialize with persisted content or empty string (or demo content if logged out)
@@ -363,6 +368,17 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+
+
+            {/* Lock Toggle */}
+            {enableLock && (
+              <Tooltip title={isLocked ? "Unlock to edit" : "Lock notes"}>
+                <IconButton onClick={() => setIsLocked(!isLocked)} size="small" color={isLocked ? "default" : "primary"}>
+                  {isLocked ? <Lock fontSize="small" /> : <LockOpen fontSize="small" />}
+                </IconButton>
+              </Tooltip>
+            )}
+
             {/* Sync Status Icon */}
             {currentUser && (
               <Tooltip title={status.text}>
@@ -446,7 +462,7 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
         onPasteCapture={handlePaste}
         onCutCapture={handleCut}
       >
-        <CustomToolbar />
+        <CustomToolbar style={{ opacity: isLocked ? 0.6 : 1, pointerEvents: isLocked ? 'none' : 'auto' }} />
         <ReactQuill
           ref={quillRef}
           theme="snow"
@@ -454,8 +470,9 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
           onChange={handleNoteChange}
           modules={modules}
           formats={formats}
-          placeholder="Start writing your notes for today..."
-          className="notes-editor"
+          readOnly={isLocked}
+          placeholder={isLocked ? "Notes are locked." : "Start writing your notes for today..."}
+          className={`notes-editor ${isLocked ? 'locked' : ''}`}
         />
       </Box>
 

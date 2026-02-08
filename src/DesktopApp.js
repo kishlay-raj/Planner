@@ -392,7 +392,7 @@ function DesktopApp() {
       case 'daily-journal':
         return <DailyJournal />;
       case 'independent-notes':
-        return <NotesPanel customPath="planner/notes/general" title="General Notes" />;
+        return <NotesPanel customPath="planner/notes/general" title="General Notes" enableLock={true} />;
       case 'relapse-journal':
         return <RelapseFortificationJournal />;
       case 'routines':

@@ -605,6 +605,7 @@ function MobileApp() {
                         <NotesPanel
                             customPath="planner/notes/general"
                             title="General Notes"
+                            enableLock={true}
                             sx={{ height: 'calc(100vh - 140px)', border: 'none' }}
                         />
                     )}
