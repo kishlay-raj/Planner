@@ -51,7 +51,8 @@ import {
     PhoneAndroid,
     CloudDone,
     CloudUpload,
-    CloudOff
+    CloudOff,
+    TrendingUp
 } from '@mui/icons-material';
 import { format, addDays, subDays } from 'date-fns';
 import { useTheme } from '@mui/material/styles';
@@ -73,6 +74,9 @@ const DEFAULT_PROMPTS = [
     { id: '13', section: 'Evening', text: 'Daily Improvement: What is one system I can tweak or change to make tomorrow 1% better than today?' },
     { id: '14', section: 'Evening', text: '3 Amazing things that happened today.' },
     { id: '17', section: 'Evening', text: 'Did I choose a public space instead of staying home alone?' },
+    // Growth Section
+    { id: 'growth-1', section: 'Growth', text: 'Comfort Zone: Did I come out of my comfort zone? Give instance.' },
+    { id: 'growth-2', section: 'Growth', text: 'Loving Action: DSN mode (Do Something Now) / Yes Mind. Give instance.' },
     // Phase 1: Awareness Audit
     { id: 'detox-0', section: 'Dopamine detox phase 1: Awareness', text: `"What exactly did I consume today, and in what quantity?" (Be precise: e.g., '2 hours of scrolling,' not 'a little while').` },
     { id: 'detox-0b', section: 'Dopamine detox phase 1: Awareness', text: "Am I feeling the 'Gremlins' on the pain side right now?" },
@@ -250,6 +254,7 @@ function DailyJournal() {
             case 'Dopamine detox phase 2: The Struggle': return { icon: Terrain, color: '#FF7043', borderColor: '#FF7043' }; // Deep Orange
             case 'Dopamine detox phase 3: Maintenance': return { icon: Build, color: '#66BB6A', borderColor: '#66BB6A' }; // Green
             case 'Daily Digital Audit': return { icon: PhoneAndroid, color: '#AB47BC', borderColor: '#AB47BC' }; // Purple
+            case 'Growth': return { icon: TrendingUp, color: '#FFD700', borderColor: '#FFD700' }; // Gold
             default: return { icon: Notes, color: theme.palette.text.secondary, borderColor: theme.palette.divider };
         }
     };

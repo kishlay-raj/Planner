@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess } from '@mui/icons-material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
@@ -27,6 +27,9 @@ const MOBILE_JOURNAL_PROMPTS = [
     { id: '8', section: 'Behavioral Triggers', text: 'The Transition Trap: Did I lose time during a task, or between tasks?' },
     { id: '13', section: 'Evening', text: 'Daily Improvement: What is one system I can tweak to make tomorrow 1% better?' },
     { id: '14', section: 'Evening', text: '3 Amazing things that happened today.' },
+    // Growth Section
+    { id: 'growth-1', section: 'Growth', text: 'Comfort Zone: Did I come out of my comfort zone? Give instance.' },
+    { id: 'growth-2', section: 'Growth', text: 'Loving Action: DSN mode (Do Something Now) / Yes Mind. Give instance.' },
     // Phase 1: Awareness Audit
     { id: 'detox-0', section: 'Dopamine detox phase 1: Awareness', text: `"What exactly did I consume today, and in what quantity?" (Be precise: e.g., '2 hours of scrolling,' not 'a little while').` },
     { id: 'detox-0b', section: 'Dopamine detox phase 1: Awareness', text: "Am I feeling the 'Gremlins' on the pain side right now?" },
@@ -295,6 +298,8 @@ function MobileApp() {
                 return "Don't have to use electronics and devices much. Technology is a powerful tool, but I will only use it for high-value activities. Every 5 mins scroll takes away your focus, every browser tab you add to your life brings a cognitive tax.";
             case 'Deep Work':
                 return "One hour of deep work beats ten hours of distracted effort. Small focused sessions, repeated daily, create extraordinary results. Consistency compounds faster than intensity.";
+            case 'Growth':
+                return "Growth happens when you step specifically outside your boundaries. Loving Action is breaking the inertia.";
             default:
                 return null;
         }
