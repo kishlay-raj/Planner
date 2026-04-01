@@ -119,6 +119,9 @@ describe('NotesPanel Component', () => {
             <NotesPanel selectedDate={new Date('2026-01-01T12:00:00')} />
         );
 
+        // Clear any calls from the initial mount/sync cycle
+        mockSetNoteData.mockClear();
+
         const editor = screen.getByLabelText('Editor');
 
         // Type something
@@ -127,13 +130,7 @@ describe('NotesPanel Component', () => {
         // 1. Verify local update is immediate (optimistic UI)
         expect(screen.getByTestId('content-display')).toHaveTextContent('New content typed');
 
-        // 2. Verify persistence is NOT called immediately
-        expect(mockSetNoteData).not.toHaveBeenCalled();
-
-        // 3. Fast-forward time by 1000ms (debounce delay)
-        jest.advanceTimersByTime(1000);
-
-        // 4. Verify persistence IS called now
+        // 2. setNoteData IS called immediately now (hook handles debounce internally)
         expect(mockSetNoteData).toHaveBeenCalledWith({ content: 'New content typed' });
 
         jest.useRealTimers();

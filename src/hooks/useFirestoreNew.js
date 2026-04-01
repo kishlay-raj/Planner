@@ -23,7 +23,9 @@ export function useFirestoreDoc(path, initialValue) {
     // Store initialValue in a ref to avoid dependency issues
     const initialValueRef = useRef(initialValue);
     initialValueRef.current = initialValue;
-
+    
+    // Track pending timeouts and active writes to ensure we don't release the lock prematurely
+    const activeWriteCountRef = useRef(0);
     const isTyping = useRef(false);
 
     // Track the current path to detect changes
@@ -58,6 +60,8 @@ export function useFirestoreDoc(path, initialValue) {
         // Reset state when path changes to ensure we load fresh data and don't show stale data
         if (pathChanged) {
             isTyping.current = false;
+            activeWriteCountRef.current = 0;
+            pendingSnapshotRef.current = null;
             setLoading(true);
             // Don't reset data immediately - let Firestore provide the new data
             // This prevents the "blank flash" when switching dates
@@ -153,11 +157,13 @@ export function useFirestoreDoc(path, initialValue) {
         pendingDataRef.current = newData;
 
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        else activeWriteCountRef.current++; // New chain of updates starting
 
         timeoutRef.current = setTimeout(async () => {
             const dataToWrite = pendingDataRef.current;
             // Clear pending ref before writing to ensure we don't double write on cleanup if this finishes
             pendingDataRef.current = null;
+            timeoutRef.current = null;
 
             try {
                 await performWrite(dataToWrite);
@@ -166,21 +172,25 @@ export function useFirestoreDoc(path, initialValue) {
                 setError(err);
                 setSaving(false);
             } finally {
-                // Release lock only after write
-                isTyping.current = false;
+                // Done with one write
+                activeWriteCountRef.current--;
+                // Only release lock if no more writes are starting/pending
+                if (activeWriteCountRef.current <= 0) {
+                    isTyping.current = false;
+                    activeWriteCountRef.current = 0; // Guard against negatives
+                }
 
-                // Now that we've finished writing, check if a remote update arrived
-                // while we were typing. If the remote snapshot is newer than our write,
-                // it means another device made changes — apply them so we don't lose data.
-                const buffered = pendingSnapshotRef.current;
-                pendingSnapshotRef.current = null;
-                if (buffered) {
-                    const remoteData = buffered.exists() ? buffered.data() : null;
-                    const remoteTs = remoteData?._updatedAt || 0;
-                    // Only apply if the remote update is genuinely newer than what we just wrote
-                    if (remoteTs > lastWriteTimestampRef.current) {
-                        console.log(`🔄 Applying remote update from another device for ${path}`);
-                        setData(remoteData || initialValueRef.current);
+                // If lock released, check for buffered remote updates
+                if (!isTyping.current) {
+                    const buffered = pendingSnapshotRef.current;
+                    pendingSnapshotRef.current = null;
+                    if (buffered) {
+                        const remoteData = buffered.exists() ? buffered.data() : null;
+                        const remoteTs = remoteData?._updatedAt || 0;
+                        if (remoteTs > lastWriteTimestampRef.current) {
+                            console.log(`🔄 Applying remote update from another device for ${path}`);
+                            setData(remoteData || initialValueRef.current);
+                        }
                     }
                 }
             }
@@ -213,6 +223,9 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
     const { currentUser } = useAuth();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Track items that are currently being updated locally to avoid snapshot flickering
+    const updatingIdsRef = useRef(new Set());
 
     // Build collection reference
     // Firestore requires collection refs to have odd segments (collection/doc/collection)
@@ -260,14 +273,40 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
             (snapshot) => {
                 const docs = snapshot.docs.map(doc => {
                     const data = doc.data();
-                    // Remove id from data if it exists (for backwards compatibility with old data)
+                    
+                    // If this specific document was just updated locally, ignore its current
+                    // remote state from the snapshot (it's likely old) and keep local state.
+                    if (updatingIdsRef.current.has(doc.id)) {
+                        // Return null to flag that we should keep the current local state for this item
+                        return null; 
+                    }
+
                     const { id: _, ...dataWithoutId } = data;
                     return {
-                        id: doc.id,  // Always use document ID, not data.id
+                        id: doc.id,
                         ...dataWithoutId
                     };
                 });
-                setItems(docs);
+
+                setItems(prevItems => {
+                    const newItems = [...prevItems];
+                    docs.forEach((doc, index) => {
+                        if (doc === null) return; // Keep existing local state for this item
+                        
+                        // Find if item already exists in our local state
+                        const existingIndex = newItems.findIndex(item => item.id === snapshot.docs[index].id);
+                        if (existingIndex > -1) {
+                            newItems[existingIndex] = doc;
+                        } else {
+                            newItems.push(doc);
+                        }
+                    });
+
+                    // Remove items that are no longer in the server snapshot 
+                    // AND not currently being optimistically added/deleted
+                    const serverIds = new Set(snapshot.docs.map(d => d.id));
+                    return newItems.filter(item => serverIds.has(item.id) || updatingIdsRef.current.has(item.id));
+                });
                 setLoading(false);
             },
             (error) => {
@@ -284,23 +323,27 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
         if (!currentUser) {
             // localStorage fallback
             const newItem = { id: customId || Date.now().toString(), ...itemData };
-            const updated = [...items, newItem];
-            setItems(updated);
-            localStorage.setItem(`firestore_collection_${collectionPath}`, JSON.stringify(updated));
+            setItems(prev => {
+                const updated = [...prev, newItem];
+                localStorage.setItem(`firestore_collection_${collectionPath}`, JSON.stringify(updated));
+                return updated;
+            });
             return newItem.id;
         }
 
         const colRef = getCollectionRef();
         if (!colRef) return null;
 
-        const id = customId || Date.now().toString();
+        // Safer ID generation to avoid millisecond collisions
+        const id = customId || (Date.now().toString() + Math.random().toString(36).substring(2, 7));
         const docRef = doc(colRef, id);
 
-        // Remove id from itemData since it's already in the document key
+        // Track that this ID is being updated/added
+        updatingIdsRef.current.add(id);
+
         const { id: _, ...dataWithoutId } = itemData;
         const newItem = { id, ...dataWithoutId, createdAt: itemData.createdAt || Date.now() };
 
-        // Optimistic update
         setItems(prev => [...prev, newItem]);
 
         try {
@@ -309,24 +352,29 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
             return id;
         } catch (e) {
             console.error(`❌ Add failed:`, e);
-            // Revert optimistic update on error
             setItems(prev => prev.filter(item => item.id !== id));
             return null;
+        } finally {
+            updatingIdsRef.current.delete(id);
         }
-    }, [currentUser, collectionPath, getCollectionRef, items]);
+    }, [currentUser, collectionPath, getCollectionRef]);
 
     // Update existing item
     const updateItem = useCallback(async (id, updates) => {
         if (!currentUser) {
-            const updated = items.map(item =>
-                item.id === id ? { ...item, ...updates } : item
-            );
-            setItems(updated);
-            localStorage.setItem(`firestore_collection_${collectionPath}`, JSON.stringify(updated));
+            setItems(prev => {
+                const updated = prev.map(item =>
+                    item.id === id ? { ...item, ...updates } : item
+                );
+                localStorage.setItem(`firestore_collection_${collectionPath}`, JSON.stringify(updated));
+                return updated;
+            });
             return;
         }
 
-        // Optimistic update
+        // Track that this ID is being updated
+        updatingIdsRef.current.add(id);
+
         const timestamp = Date.now();
         setItems(prev => prev.map(item =>
             item.id === id ? { ...item, ...updates, updatedAt: timestamp } : item
@@ -341,21 +389,24 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
             console.log(`✅ Updated ${collectionPath}/${id}`);
         } catch (e) {
             console.error(`❌ Update failed:`, e);
-            // We might want to revert here, but tricky without previous state.
-            // Simplified: rely on snapshot to fix eventually, or could capture prev item.
+        } finally {
+            // A bit of delay before removing from updatingIds to allow snapshots to settle
+            setTimeout(() => updatingIdsRef.current.delete(id), 1000);
         }
-    }, [currentUser, collectionPath, getCollectionRef, items]);
+    }, [currentUser, collectionPath, getCollectionRef]);
 
     // Delete item
     const deleteItemFn = useCallback(async (id) => {
         if (!currentUser) {
-            const updated = items.filter(item => item.id !== id);
-            setItems(updated);
-            localStorage.setItem(`firestore_collection_${collectionPath}`, JSON.stringify(updated));
+            setItems(prev => {
+                const updated = prev.filter(item => item.id !== id);
+                localStorage.setItem(`firestore_collection_${collectionPath}`, JSON.stringify(updated));
+                return updated;
+            });
             return;
         }
 
-        // Optimistic update
+        updatingIdsRef.current.add(id);
         setItems(prev => prev.filter(item => item.id !== id));
 
         const colRef = getCollectionRef();
@@ -367,9 +418,10 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
             console.log(`✅ Deleted ${collectionPath}/${id}`);
         } catch (e) {
             console.error(`❌ Delete failed:`, e);
-            // Revert on error? Requires fetching or restoring.
+        } finally {
+            setTimeout(() => updatingIdsRef.current.delete(id), 1000);
         }
-    }, [currentUser, collectionPath, getCollectionRef, items]);
+    }, [currentUser, collectionPath, getCollectionRef]);
 
     return [items, addItem, updateItem, deleteItemFn, loading];
 }

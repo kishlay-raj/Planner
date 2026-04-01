@@ -298,7 +298,6 @@ function PlannerScreen() {
         }} />
         <Grid item xs={12} md={3}>
           <NotesPanel
-            key={selectedDate.toISOString()}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
           />

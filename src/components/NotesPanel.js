@@ -102,8 +102,6 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
 
   // Use date-based document path - each day is a separate small document
   // If customPath is provided, use it directly. Otherwise use the date-based path.
-  // Use date-based document path - each day is a separate small document
-  // If customPath is provided, use it directly. Otherwise use the date-based path.
   const docPath = customPath || `planner/daily/${currentDate}`;
   const [noteData, setNoteData, loading, saving, error] = useFirestoreDoc(docPath, initialNoteData);
 
@@ -111,30 +109,33 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
   const [isLocked, setIsLocked] = React.useState(enableLock);
 
   // Local state for immediate editor responsiveness
-  // Initialize with persisted content or empty string (or demo content if logged out)
   const [editorContent, setEditorContent] = React.useState('');
+  // Ref mirror of editorContent to avoid stale closures in effects
+  const editorContentRef = React.useRef('');
 
   // Track the last path we successfully synced from the server
-  // This prevents the "Echo Problem" where our own saves come back from the server
-  // and overwrite our more recent local typing.
   const lastSyncedPath = React.useRef(null);
   const lastServerContent = React.useRef(initialNoteData.content);
 
-  // Sync from server to local state ONLY when loading a new path
+  // Sync from server to local state ONLY when loading a new path or genuine remote update
   React.useEffect(() => {
-    // Wait for the hook to finish loading the new path's data
     if (loading) return;
 
     const contentToShow = currentUser
       ? (noteData?.content || '')
       : (noteData?.content || DEMO_CONTENT);
 
-    // Update if path changed OR if content mismatch (remote update)
-    // We rely on useFirestoreDoc's isTyping protection to filter out unwanted updates while typing
-    if (docPath !== lastSyncedPath.current || contentToShow !== editorContent) {
+    if (docPath !== lastSyncedPath.current) {
+      // Path changed — always sync to show the new document
       setEditorContent(contentToShow);
+      editorContentRef.current = contentToShow;
       lastServerContent.current = contentToShow;
       lastSyncedPath.current = docPath;
+    } else if (contentToShow !== editorContentRef.current && contentToShow !== lastServerContent.current) {
+      // Same path, genuinely new remote content (not our own echo)
+      setEditorContent(contentToShow);
+      editorContentRef.current = contentToShow;
+      lastServerContent.current = contentToShow;
     }
   }, [docPath, loading, noteData, currentUser]);
 
@@ -171,6 +172,7 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
   // Handle immediate local update
   const handleNoteChange = (content) => {
     setEditorContent(content);
+    editorContentRef.current = content;
   };
 
   // State for delete confirmation dialog
