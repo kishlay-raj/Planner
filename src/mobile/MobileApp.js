@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp } from '@mui/icons-material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
@@ -46,6 +46,7 @@ const TAB_CONFIG = {
     weekly: { label: 'Weekly', icon: <ViewWeek /> },
     monthly: { label: 'Monthly', icon: <CalendarViewMonth /> },
     journal: { label: 'Journal', icon: <MenuBook /> },
+    gratitude: { label: 'Gratitude', icon: <Favorite /> },
     notes: { label: 'Notes', icon: <EditNote /> },
     settings: { label: 'Settings', icon: <SettingsIcon /> }
 };
@@ -53,7 +54,7 @@ const TAB_CONFIG = {
 function MobileApp() {
     const { currentUser, loginWithGoogle, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('today');
-    const [mobileTabOrder, setMobileTabOrder] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'journal', 'notes', 'settings']);
+    const [mobileTabOrder, setMobileTabOrder] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'journal', 'gratitude', 'notes', 'settings']);
     const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
 
     // Global State
@@ -158,6 +159,7 @@ function MobileApp() {
     const [weekDate, setWeekDate] = useState(new Date());
     const [monthDate, setMonthDate] = useState(new Date());
     const [journalDate, setJournalDate] = useState(new Date());
+    const [gratitudeDate, setGratitudeDate] = useState(new Date());
     const [notesDate, setNotesDate] = useState(new Date());
 
     // --- IDS ---
@@ -194,6 +196,11 @@ function MobileApp() {
     const [prompts] = useFirestore('journalPrompts', MOBILE_JOURNAL_PROMPTS);
     const [journalData, setJournalData] = useFirestore('dailyJournalData', {});
     const currentJournalEntry = journalData[journalDateKey] || { responses: {}, notes: '' };
+
+    // Gratitude Data
+    const gratitudeDateKey = format(gratitudeDate, 'yyyy-MM-dd');
+    const [gratitudeData, setGratitudeData] = useFirestore('gratitudeJournalData', {});
+    const currentGratitudeEntry = gratitudeData[gratitudeDateKey] || { item1: '', item2: '', item3: '', notes: '' };
 
     // --- COLLAPSIBLE SECTIONS STATE ---
     const [collapsedSections, setCollapsedSections] = useState([]);
@@ -613,9 +620,82 @@ function MobileApp() {
                             </Box>
                         );
                     })}
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontSize: '1rem' }}>Daily Notes</Typography>
+                     <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontSize: '1rem' }}>Daily Notes</Typography>
                     <Paper sx={{ p: 2, mb: 4, borderRadius: 3 }}>
                         <TextField fullWidth multiline minRows={6} variant="standard" placeholder="Free flow notes..." value={currentJournalEntry.notes || ''} onChange={(e) => handleJournalNotesChange(e.target.value)} InputProps={{ disableUnderline: true }} />
+                    </Paper>
+                </Box>
+            </Box>
+        );
+    };
+
+    const renderGratitudeView = () => {
+        return (
+            <Box sx={{ pb: 10 }}>
+                <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 10, borderRadius: 0 }}>
+                    <IconButton onClick={() => setGratitudeDate(d => subDays(d, 1))}><ChevronLeft /></IconButton>
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography variant="body1" fontWeight="700">{format(gratitudeDate, 'MMMM d')}</Typography>
+                        <Typography variant="caption" color="text.secondary">{format(gratitudeDate, 'EEEE')}</Typography>
+                    </Box>
+                    <IconButton onClick={() => setGratitudeDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
+                </Paper>
+                <Box sx={{ px: 2 }}>
+                    <Typography variant="subtitle1" fontWeight="600" color="text.secondary" sx={{ mb: 3 }}>
+                        Before you sleep, shift your focus. Remember your achievements and the good things that happened today.
+                    </Typography>
+
+                    {[
+                        { id: 'item1', label: '1. What is something you achieved today, big or small?', placeholder: 'I finally finished...' },
+                        { id: 'item2', label: '2. What is a good moment or positive thing that happened?', placeholder: 'I really enjoyed...' },
+                        { id: 'item3', label: '3. What is something you are deeply grateful for right now?', placeholder: 'I am grateful for...' }
+                    ].map((item) => (
+                        <Box key={item.id} sx={{ mb: 3 }}>
+                            <Typography variant="body2" fontWeight="600" sx={{ mb: 1, color: 'text.primary', lineHeight: 1.4 }}>{item.label}</Typography>
+                            <Paper sx={{ p: 2, borderRadius: 3 }}>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    minRows={2}
+                                    variant="standard"
+                                    placeholder={item.placeholder}
+                                    value={currentGratitudeEntry[item.id] || ''}
+                                    onChange={(e) => {
+                                        setGratitudeData(prev => ({
+                                            ...prev,
+                                            [gratitudeDateKey]: {
+                                                ...currentGratitudeEntry,
+                                                [item.id]: e.target.value
+                                            }
+                                        }));
+                                    }}
+                                    InputProps={{ disableUnderline: true, style: { fontSize: '1.05rem' } }}
+                                    sx={{ bgcolor: '#f7fafc', p: 1, borderRadius: 1 }}
+                                />
+                            </Paper>
+                        </Box>
+                    ))}
+
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, mt: 4, fontSize: '1rem' }}>Additional Notes</Typography>
+                    <Paper sx={{ p: 2, mb: 4, borderRadius: 3 }}>
+                        <TextField
+                            fullWidth
+                            multiline
+                            minRows={4}
+                            variant="standard"
+                            placeholder="Anything else?"
+                            value={currentGratitudeEntry.notes || ''}
+                            onChange={(e) => {
+                                setGratitudeData(prev => ({
+                                    ...prev,
+                                    [gratitudeDateKey]: {
+                                        ...currentGratitudeEntry,
+                                        notes: e.target.value
+                                    }
+                                }));
+                            }}
+                            InputProps={{ disableUnderline: true }}
+                        />
                     </Paper>
                 </Box>
             </Box>
@@ -893,6 +973,7 @@ function MobileApp() {
             case 'weekly': return renderWeeklyView();
             case 'monthly': return renderMonthlyView();
             case 'journal': return renderJournalView();
+            case 'gratitude': return renderGratitudeView();
             case 'notes': return renderNotesView();
             case 'settings': return renderSettingsView();
             default: return renderTodayView();

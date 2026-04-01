@@ -8,6 +8,7 @@ import WeeklyPlanner from './components/WeeklyPlanner';
 import MonthlyPlanner from './components/MonthlyPlanner';
 import YearlyPlanner from './components/YearlyPlanner';
 import DailyJournal from './components/DailyJournal';
+import GratitudeJournal from './components/GratitudeJournal';
 import RoutinePlanner from './components/RoutinePlanner';
 import RelapseFortificationJournal from './components/RelapseFortificationJournal';
 import EisenhowerMatrix from './components/EisenhowerMatrix';
@@ -344,6 +345,7 @@ function DesktopApp() {
     { id: 'planner-month', label: 'Monthly', iconKey: 'calendarMonth', visible: true },
     { id: 'planner-year', label: 'Yearly', iconKey: 'emojiEvents', visible: true },
     { id: 'daily-journal', label: 'Journal', iconKey: 'menuBook', visible: true },
+    { id: 'gratitude-journal', label: 'Gratitude', iconKey: 'favorite', visible: true },
     { id: 'independent-notes', label: 'General Notes', iconKey: 'editNote', visible: true },
     { id: 'relapse-journal', label: 'Fortification', iconKey: 'security', visible: true },
     { id: 'routines', label: 'Routines', iconKey: 'selfImprovement', visible: true },
@@ -391,6 +393,8 @@ function DesktopApp() {
         return <YearlyPlanner />;
       case 'daily-journal':
         return <DailyJournal />;
+      case 'gratitude-journal':
+        return <GratitudeJournal />;
       case 'independent-notes':
         return <NotesPanel customPath="planner/notes/general" title="General Notes" enableLock={true} />;
       case 'relapse-journal':

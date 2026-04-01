@@ -22,7 +22,8 @@ import {
   SelfImprovement,
   ViewQuilt,
   Security,
-  Settings
+  Settings,
+  Favorite
 } from '@mui/icons-material';
 
 const iconMap = {
@@ -34,7 +35,8 @@ const iconMap = {
   selfImprovement: <SelfImprovement />,
   viewQuilt: <ViewQuilt />,
   security: <Security />,
-  timer: <Timer />
+  timer: <Timer />,
+  favorite: <Favorite />
 };
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode, navConfig }) {
