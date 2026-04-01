@@ -54,8 +54,22 @@ const TAB_CONFIG = {
 function MobileApp() {
     const { currentUser, loginWithGoogle, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('today');
-    const [mobileTabOrder, setMobileTabOrder] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'journal', 'gratitude', 'notes', 'settings']);
+    const [mobileTabOrder, setMobileTabOrder, orderLoading] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'journal', 'gratitude', 'notes', 'settings']);
     const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
+
+    // Migration: ensure existing users get the new Gratitude tab
+    useEffect(() => {
+        if (!orderLoading && mobileTabOrder && !mobileTabOrder.includes('gratitude')) {
+            const newOrder = [...mobileTabOrder];
+            const journalIndex = newOrder.indexOf('journal');
+            if (journalIndex !== -1) {
+                newOrder.splice(journalIndex + 1, 0, 'gratitude');
+            } else {
+                newOrder.push('gratitude');
+            }
+            setMobileTabOrder(newOrder);
+        }
+    }, [mobileTabOrder, orderLoading, setMobileTabOrder]);
 
     // Global State
     const [tasks, addTask, updateTask, deleteTask, tasksLoading] = useFirestoreCollection('tasks/active', 'createdAt');
