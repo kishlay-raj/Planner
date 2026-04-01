@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { doc, collection, onSnapshot, setDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { doc, collection, onSnapshot, setDoc, deleteDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -15,6 +15,10 @@ export function useFirestoreDoc(path, initialValue) {
     const [data, setData] = useState(initialValue);
     const [loading, setLoading] = useState(true);
     const timeoutRef = useRef(null);
+    // Buffer snapshots that arrive while we're typing so we don't lose remote changes
+    const pendingSnapshotRef = useRef(null);
+    // Track the updatedAt of the last thing we wrote, so we can compare with incoming snapshots
+    const lastWriteTimestampRef = useRef(0);
 
     // Store initialValue in a ref to avoid dependency issues
     const initialValueRef = useRef(initialValue);
@@ -86,14 +90,16 @@ export function useFirestoreDoc(path, initialValue) {
         const unsubscribe = onSnapshot(
             docRef,
             (snap) => {
-                // If the user is currently typing/saving, DO NOT overwrite local state with Firestore data
-                // This prevents the "cursor jump" or "input reset" issues during the debounce delay
-                if (isTyping.current) return;
+                if (isTyping.current) {
+                    // While we're actively typing/saving, buffer the incoming snapshot instead
+                    // of discarding it. We'll apply it after our write settles.
+                    pendingSnapshotRef.current = snap;
+                    return;
+                }
 
                 if (snap.exists()) {
                     setData(snap.data());
                 } else {
-                    // Document doesn't exist, use initial value
                     setData(initialValueRef.current);
                 }
                 setLoading(false);
@@ -123,7 +129,10 @@ export function useFirestoreDoc(path, initialValue) {
         if (!docRef || dataToWrite === undefined || dataToWrite === null) return;
 
         try {
-            await setDoc(docRef, dataToWrite, { merge: true });
+            // Always include a write timestamp so we can detect which device wrote last
+            const writeTs = Date.now();
+            lastWriteTimestampRef.current = writeTs;
+            await setDoc(docRef, { ...dataToWrite, _updatedAt: writeTs }, { merge: true });
             console.log(`✅ Saved: ${path}`);
         } catch (e) {
             console.error(`❌ Save failed for ${path}:`, e);
@@ -155,10 +164,25 @@ export function useFirestoreDoc(path, initialValue) {
                 setSaving(false);
             } catch (err) {
                 setError(err);
-                setSaving(false); // Or keep true to indicate retry needed? For now, just stop spinner.
+                setSaving(false);
             } finally {
                 // Release lock only after write
                 isTyping.current = false;
+
+                // Now that we've finished writing, check if a remote update arrived
+                // while we were typing. If the remote snapshot is newer than our write,
+                // it means another device made changes — apply them so we don't lose data.
+                const buffered = pendingSnapshotRef.current;
+                pendingSnapshotRef.current = null;
+                if (buffered) {
+                    const remoteData = buffered.exists() ? buffered.data() : null;
+                    const remoteTs = remoteData?._updatedAt || 0;
+                    // Only apply if the remote update is genuinely newer than what we just wrote
+                    if (remoteTs > lastWriteTimestampRef.current) {
+                        console.log(`🔄 Applying remote update from another device for ${path}`);
+                        setData(remoteData || initialValueRef.current);
+                    }
+                }
             }
         }, 800);
     }, [performWrite]);
