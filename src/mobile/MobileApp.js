@@ -193,7 +193,8 @@ function MobileApp() {
         goals: [],
         habit: { name: '', days: [false, false, false, false, false, false, false] },
         journal: { start: '', stop: '', continue: '', grateful: '' },
-        days: {}
+        days: {},
+        notes: ''
     });
 
     // 2. Monthly Data (Active Editing)
@@ -551,6 +552,20 @@ function MobileApp() {
                             );
                         })}
                     </Box>
+
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, mt: 3, fontSize: '1rem' }}>Weekly Notes</Typography>
+                    <Paper sx={{ p: 2, mb: 4, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                        <TextField
+                            fullWidth
+                            multiline
+                            minRows={5}
+                            variant="standard"
+                            placeholder="Brain dump, ideas, observations for this week..."
+                            value={weekData?.notes || ''}
+                            onChange={(e) => setWeekData({ ...weekData, notes: e.target.value })}
+                            InputProps={{ disableUnderline: true }}
+                        />
+                    </Paper>
                 </Box>
             </Box>
         );
