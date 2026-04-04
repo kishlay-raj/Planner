@@ -27,7 +27,6 @@ window.AudioContext = jest.fn(() => mockAudioContext);
 
 describe('PomodoroPanel Component', () => {
     const mockOnModeChange = jest.fn();
-    const mockSetSettings = jest.fn();
     const mockSetStats = jest.fn();
 
     const defaultSettings = {
@@ -38,7 +37,12 @@ describe('PomodoroPanel Component', () => {
         autoStartPomodoros: false,
         longBreakInterval: 4,
         alarmVolume: 50,
-        tickingVolume: 50
+        alarmSound: 'Kitchen',
+        alarmRepeat: 1,
+        tickingVolume: 50,
+        tickingSound: 'Ticking Slow',
+        hourFormat: '24-hour',
+        darkMode: false
     };
 
     beforeEach(() => {
@@ -46,9 +50,6 @@ describe('PomodoroPanel Component', () => {
         jest.useFakeTimers();
 
         FirestoreHook.useFirestore.mockImplementation((path) => {
-            if (path === 'pomodoroSettings') {
-                return [defaultSettings, mockSetSettings];
-            }
             if (path === 'pomodoroStats') {
                 return [{ total: 0, today: 0 }, mockSetStats];
             }
@@ -60,8 +61,54 @@ describe('PomodoroPanel Component', () => {
         jest.useRealTimers();
     });
 
+    // Stateful wrapper so mode-switches and timer ticks work as real parent would do
     const renderPanel = () => {
-        return render(<PomodoroPanel onModeChange={mockOnModeChange} />);
+        const Wrapper = () => {
+            const [currentMode, setCurrentMode] = React.useState('pomodoro');
+            const [currentTimeLeft, setCurrentTimeLeft] = React.useState(defaultSettings.pomodoro * 60);
+            const [currentIsActive, setCurrentIsActive] = React.useState(false);
+
+            // Simulate the countdown that lives in the real parent
+            React.useEffect(() => {
+                if (!currentIsActive) return;
+                const id = setInterval(() => setCurrentTimeLeft(t => Math.max(0, t - 1)), 1000);
+                return () => clearInterval(id);
+            }, [currentIsActive]);
+
+            const handleSetMode = (newMode) => {
+                mockOnModeChange(newMode);
+                setCurrentMode(newMode);
+                const durations = {
+                    pomodoro: defaultSettings.pomodoro * 60,
+                    shortBreak: defaultSettings.shortBreak * 60,
+                    longBreak: defaultSettings.longBreak * 60,
+                };
+                setCurrentTimeLeft(durations[newMode] || defaultSettings.pomodoro * 60);
+                setCurrentIsActive(false);
+            };
+
+            return (
+                <PomodoroPanel
+                    timeLeft={currentTimeLeft}
+                    isActive={currentIsActive}
+                    mode={currentMode}
+                    setMode={handleSetMode}
+                    cycles={0}
+                    toggleTimer={() => setCurrentIsActive(a => !a)}
+                    resetTimer={() => {
+                        // Simulate parent next-mode logic (pomodoro → shortBreak → pomodoro)
+                        const next = currentMode === 'pomodoro' ? 'shortBreak' : 'pomodoro';
+                        handleSetMode(next);
+                    }}
+                    settings={defaultSettings}
+                    handleSettingChange={jest.fn()}
+                    workType="deep"
+                    onWorkTypeToggle={jest.fn()}
+                    sessionHistory={[]}
+                />
+            );
+        };
+        return render(<Wrapper />);
     };
 
     it('renders with default pomodoro state', () => {

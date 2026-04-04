@@ -8,6 +8,18 @@ import * as FirestoreHook from '../../hooks/useFirestore';
 // Mock dependencies
 jest.mock('../../hooks/useFirestore');
 
+// Mock useGitHubSync to prevent @octokit/rest ESM import error in Jest
+jest.mock('../../hooks/useGitHubSync', () => ({
+    useGitHubSync: () => ({
+        syncToGitHub: jest.fn(),
+        restoreFromGitHub: jest.fn(),
+        status: 'idle',
+        progress: '',
+        error: null
+    })
+}));
+
+
 const mockTheme = createTheme();
 
 describe('Settings Component', () => {

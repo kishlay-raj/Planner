@@ -11,6 +11,17 @@ jest.mock('../../hooks/useFirestoreNew');
 jest.mock('../../hooks/useFirestore');
 jest.mock('../../../package.json', () => ({ version: '1.0.0' }));
 
+// Mock useGitHubSync to prevent @octokit/rest ESM import error in Jest
+jest.mock('../../hooks/useGitHubSync', () => ({
+    useGitHubSync: () => ({
+        syncToGitHub: jest.fn(),
+        restoreFromGitHub: jest.fn(),
+        status: 'idle',
+        progress: '',
+        error: null
+    })
+}));
+
 describe('MobileApp Component', () => {
     const mockUser = { uid: 'test-uid', email: 'test@example.com' };
     const mockLogout = jest.fn();
@@ -69,7 +80,7 @@ describe('MobileApp Component', () => {
         });
 
         // Journal Mock (useFirestore - legacy)
-        useFirestore.mockImplementation((key) => {
+        useFirestore.mockImplementation((key, defaultValue) => {
             if (key === 'journalPrompts') {
                 return [[{ id: 'p1', section: 'Morning', text: 'Morning Prompt?' }], jest.fn()];
             }
@@ -78,7 +89,13 @@ describe('MobileApp Component', () => {
                     '2026-01-10': { responses: { 'p1': 'My Answer' }, notes: 'Daily Note' }
                 }, mockSetJournalData];
             }
-            return [{}, jest.fn()];
+            // Put Journal and Weekly in visible tab slots so tests can click them directly
+            if (key === 'mobileTabOrder') {
+                return [['today', 'weekly', 'journal', 'monthly', 'gratitude', 'notes', 'schedule', 'settings'], jest.fn(), false];
+            }
+            // Return the hook's default value for all other keys
+            // (darkMode → false, githubSettings → {...}, gratitudeJournalData → {}, etc.)
+            return [defaultValue !== undefined ? defaultValue : {}, jest.fn()];
         });
     });
 

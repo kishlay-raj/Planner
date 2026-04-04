@@ -532,7 +532,7 @@ function MobileApp() {
                         {[{ label: "Start", key: 'start' }, { label: "Stop", key: 'stop' }, { label: "Continue", key: 'continue' }, { label: "Grateful", key: 'grateful' }].map((item, idx) => (
                             <Box key={item.key} sx={{ mb: idx === 3 ? 0 : 2 }}>
                                 <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block', fontSize: '0.7rem' }}>{item.label}</Typography>
-                                <TextField fullWidth multiline variant="standard" placeholder="..." value={journal[item.key] || ''} onChange={(e) => setWeekData({ ...weekData, journal: { ...journal, [item.key]: e.target.value } })} InputProps={{ disableUnderline: true }} sx={{ bgcolor: '#f7fafc', p: 1, borderRadius: 1 }} />
+                                <TextField fullWidth multiline variant="standard" placeholder="..." value={journal[item.key] || ''} onChange={(e) => setWeekData({ ...weekData, journal: { ...journal, [item.key]: e.target.value } })} InputProps={{ disableUnderline: true }} sx={{ bgcolor: 'background.default', p: 1, borderRadius: 1 }} />
                             </Box>
                         ))}
                     </Paper>
@@ -642,7 +642,7 @@ function MobileApp() {
                                     {prompts.filter(p => p.section === section).map(prompt => (
                                         <Paper key={prompt.id} sx={{ p: 2, mb: 2, borderRadius: 3 }}>
                                             <Typography variant="body2" fontWeight="600" sx={{ mb: 1 }}>{prompt.text}</Typography>
-                                            <TextField fullWidth multiline minRows={2} variant="standard" placeholder="Write here..." value={currentJournalEntry.responses?.[prompt.id] || ''} onChange={(e) => handleJournalResponseChange(prompt.id, e.target.value)} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} sx={{ bgcolor: '#f7fafc', p: 1, borderRadius: 1 }} />
+                                            <TextField fullWidth multiline minRows={2} variant="standard" placeholder="Write here..." value={currentJournalEntry.responses?.[prompt.id] || ''} onChange={(e) => handleJournalResponseChange(prompt.id, e.target.value)} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} sx={{ bgcolor: 'background.default', p: 1, borderRadius: 1 }} />
                                         </Paper>
                                     ))}
                                 </Collapse>
@@ -699,7 +699,7 @@ function MobileApp() {
                                         }));
                                     }}
                                     InputProps={{ disableUnderline: true, style: { fontSize: '1.05rem' } }}
-                                    sx={{ bgcolor: '#f7fafc', p: 1, borderRadius: 1 }}
+                                    sx={{ bgcolor: 'background.default', p: 1, borderRadius: 1 }}
                                 />
                             </Paper>
                         </Box>
