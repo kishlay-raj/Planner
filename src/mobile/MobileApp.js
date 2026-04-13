@@ -222,6 +222,7 @@ function MobileApp() {
     
     // --- JOURNAL SETTINGS STATE ---
     const [disabledSections, setDisabledSections] = useFirestore('journalDisabledSections', []);
+    const [defaultCollapsedSections, setDefaultCollapsedSections] = useFirestore('journalDefaultCollapsedSections', []);
     const [openJournalSettings, setOpenJournalSettings] = useState(false);
 
     const handleToggleJournalSection = (section) => {
@@ -230,7 +231,13 @@ function MobileApp() {
         );
     };
 
-    // Auto-collapse Morning section logic
+    const handleToggleDefaultCollapse = (section) => {
+        setDefaultCollapsedSections(prev =>
+            prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+        );
+    };
+
+    // Auto-collapse Morning section logic + Apply User Defaults
     useEffect(() => {
         const todayRes = new Date();
         todayRes.setHours(0, 0, 0, 0);
@@ -242,14 +249,19 @@ function MobileApp() {
         const isToday = journalDateStart.getTime() === todayRes.getTime();
         const currentHour = new Date().getHours();
 
-        // Collapse if past date OR (today AND past 3 PM / 15:00)
-        if (isPastDate || (isToday && currentHour >= 15)) {
-            setCollapsedSections(prev => {
-                if (!prev.includes('Morning')) return [...prev, 'Morning'];
-                return prev;
-            });
-        }
-    }, [journalDate]);
+        setCollapsedSections(prev => {
+            // Start with user-defined defaults
+            let newCollapsed = [...defaultCollapsedSections];
+            
+            // Add automatic Morning collapse logic (if not already there)
+            if (isPastDate || (isToday && currentHour >= 15)) {
+                if (!newCollapsed.includes('Morning')) {
+                    newCollapsed.push('Morning');
+                }
+            }
+            return newCollapsed;
+        });
+    }, [journalDate, defaultCollapsedSections]);
 
     const handleToggleCollapse = (section) => {
         setCollapsedSections(prev =>
@@ -1144,13 +1156,28 @@ function MobileApp() {
                 <DialogTitle>Journal Categories</DialogTitle>
                 <DialogContent>
                     <List>
+                        <Box sx={{ px: 2, display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>CATEGORY</Typography>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'text.secondary', pr: 1 }}>AUTO-MINIMIZE</Typography>
+                        </Box>
+                        <Divider sx={{ mb: 1 }} />
                         {[...new Set(prompts.map(p => p.section))].map(section => (
-                            <ListItem key={section} disablePadding>
+                            <ListItem 
+                                key={section} 
+                                disablePadding
+                                secondaryAction={
+                                    <IconButton edge="end" size="small" onClick={() => handleToggleDefaultCollapse(section)}>
+                                        {defaultCollapsedSections.includes(section) ? 
+                                            <ExpandMore color="primary" /> : 
+                                            <ExpandLess sx={{ opacity: 0.3 }} />
+                                        }
+                                    </IconButton>
+                                }
+                            >
                                 <Checkbox 
                                     edge="start" 
                                     checked={!disabledSections.includes(section)} 
                                     onChange={() => handleToggleJournalSection(section)} 
-                                    sx={{ py: 1.5 }} 
                                 />
                                 <ListItemText primary={section} />
                             </ListItem>
