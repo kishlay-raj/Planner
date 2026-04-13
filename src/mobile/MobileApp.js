@@ -219,6 +219,16 @@ function MobileApp() {
 
     // --- COLLAPSIBLE SECTIONS STATE ---
     const [collapsedSections, setCollapsedSections] = useState([]);
+    
+    // --- JOURNAL SETTINGS STATE ---
+    const [disabledSections, setDisabledSections] = useFirestore('journalDisabledSections', []);
+    const [openJournalSettings, setOpenJournalSettings] = useState(false);
+
+    const handleToggleJournalSection = (section) => {
+        setDisabledSections(prev => 
+            prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+        );
+    };
 
     // Auto-collapse Morning section logic
     useEffect(() => {
@@ -598,7 +608,8 @@ function MobileApp() {
     };
 
     const renderJournalView = () => {
-        const sections = [...new Set(prompts.map(p => p.section))];
+        const allSections = [...new Set(prompts.map(p => p.section))];
+        const sections = allSections.filter(s => !disabledSections.includes(s));
         return (
             <Box sx={{ pb: 10 }}>
                 <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 10, borderRadius: 0 }}>
@@ -607,7 +618,10 @@ function MobileApp() {
                         <Typography variant="body1" fontWeight="700">{format(journalDate, 'MMMM d')}</Typography>
                         <Typography variant="caption" color="text.secondary">{format(journalDate, 'EEEE')}</Typography>
                     </Box>
-                    <IconButton onClick={() => setJournalDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
+                    <Box sx={{ display: 'flex' }}>
+                        <IconButton onClick={() => setJournalDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
+                        <IconButton onClick={() => setOpenJournalSettings(true)}><SettingsIcon fontSize="small" /></IconButton>
+                    </Box>
                 </Paper>
                 <Box sx={{ px: 2 }}>
                     {sections.map(section => {
@@ -1123,6 +1137,28 @@ function MobileApp() {
                     }} color="warning" autoFocus>
                         Yes, Restore Data
                     </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={openJournalSettings} onClose={() => setOpenJournalSettings(false)} fullWidth maxWidth="xs">
+                <DialogTitle>Journal Categories</DialogTitle>
+                <DialogContent>
+                    <List>
+                        {[...new Set(prompts.map(p => p.section))].map(section => (
+                            <ListItem key={section} disablePadding>
+                                <Checkbox 
+                                    edge="start" 
+                                    checked={!disabledSections.includes(section)} 
+                                    onChange={() => handleToggleJournalSection(section)} 
+                                    sx={{ py: 1.5 }} 
+                                />
+                                <ListItemText primary={section} />
+                            </ListItem>
+                        ))}
+                    </List>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenJournalSettings(false)}>Done</Button>
                 </DialogActions>
             </Dialog>
         </ThemeProvider>
