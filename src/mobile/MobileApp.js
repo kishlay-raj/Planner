@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch } from '@mui/icons-material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch, WarningAmber } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
 import AntiGravityHabitTracker from '../components/AntiGravityHabitTracker';
+import MistakesJournal from '../components/MistakesJournal';
 import packageJson from '../../package.json';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestoreCollection, useFirestoreDoc } from '../hooks/useFirestoreNew';
@@ -49,6 +50,7 @@ const TAB_CONFIG = {
     'anti-gravity': { label: 'Habit', icon: <RocketLaunch /> },
     journal: { label: 'Journal', icon: <MenuBook /> },
     gratitude: { label: 'Gratitude', icon: <Favorite /> },
+    mistakes: { label: 'Mistakes', icon: <WarningAmber /> },
     notes: { label: 'Notes', icon: <EditNote /> },
     settings: { label: 'Settings', icon: <SettingsIcon /> }
 };
@@ -56,20 +58,48 @@ const TAB_CONFIG = {
 function MobileApp() {
     const { currentUser, loginWithGoogle, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('today');
-    const [mobileTabOrder, setMobileTabOrder, orderLoading] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'anti-gravity', 'journal', 'gratitude', 'notes', 'settings']);
+    const [mobileTabOrder, setMobileTabOrder, orderLoading] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'anti-gravity', 'journal', 'gratitude', 'mistakes', 'notes', 'settings']);
     const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
 
-    // Migration: ensure existing users get the new Gratitude tab
+    // Migration: ensure existing users get new tabs (gratitude, anti-gravity)
     useEffect(() => {
-        if (!orderLoading && mobileTabOrder && !mobileTabOrder.includes('gratitude')) {
-            const newOrder = [...mobileTabOrder];
-            const journalIndex = newOrder.indexOf('journal');
-            if (journalIndex !== -1) {
-                newOrder.splice(journalIndex + 1, 0, 'gratitude');
-            } else {
-                newOrder.push('gratitude');
+        if (!orderLoading && mobileTabOrder) {
+            let updated = false;
+            let newOrder = [...mobileTabOrder];
+
+            if (!newOrder.includes('gratitude')) {
+                const journalIndex = newOrder.indexOf('journal');
+                if (journalIndex !== -1) {
+                    newOrder.splice(journalIndex + 1, 0, 'gratitude');
+                } else {
+                    newOrder.push('gratitude');
+                }
+                updated = true;
             }
-            setMobileTabOrder(newOrder);
+
+            if (!newOrder.includes('anti-gravity')) {
+                const monthlyIndex = newOrder.indexOf('monthly');
+                if (monthlyIndex !== -1) {
+                    newOrder.splice(monthlyIndex + 1, 0, 'anti-gravity');
+                } else {
+                    newOrder.push('anti-gravity');
+                }
+                updated = true;
+            }
+
+            if (!newOrder.includes('mistakes')) {
+                const notesIndex = newOrder.indexOf('notes');
+                if (notesIndex !== -1) {
+                    newOrder.splice(notesIndex, 0, 'mistakes');
+                } else {
+                    newOrder.push('mistakes');
+                }
+                updated = true;
+            }
+
+            if (updated) {
+                setMobileTabOrder(newOrder);
+            }
         }
     }, [mobileTabOrder, orderLoading, setMobileTabOrder]);
 
@@ -1035,6 +1065,7 @@ function MobileApp() {
             case 'anti-gravity': return renderAntiGravityView();
             case 'journal': return renderJournalView();
             case 'gratitude': return renderGratitudeView();
+            case 'mistakes': return <MistakesJournal />;
             case 'notes': return renderNotesView();
             case 'settings': return renderSettingsView();
             default: return renderTodayView();

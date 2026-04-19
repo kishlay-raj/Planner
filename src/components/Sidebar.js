@@ -24,7 +24,8 @@ import {
   Security,
   Settings,
   Favorite,
-  RocketLaunch
+  RocketLaunch,
+  WarningAmber
 } from '@mui/icons-material';
 
 const iconMap = {
@@ -38,7 +39,8 @@ const iconMap = {
   security: <Security />,
   timer: <Timer />,
   favorite: <Favorite />,
-  rocket: <RocketLaunch />
+  rocket: <RocketLaunch />,
+  warning: <WarningAmber />
 };
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode, navConfig }) {

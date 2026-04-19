@@ -18,6 +18,7 @@ import { useFirestore } from './hooks/useFirestore';
 import './App.css';
 import FloatingPomodoro from './components/FloatingPomodoro';
 import AntiGravityHabitTracker from './components/AntiGravityHabitTracker';
+import MistakesJournal from './components/MistakesJournal';
 
 // Moved theme creation inside component or useMemo to depend on mode
 // But since we need it in JSX, we will refactor to use a useMemo hook for theme creation.
@@ -350,6 +351,7 @@ function DesktopApp() {
     { id: 'gratitude-journal', label: 'Gratitude', iconKey: 'favorite', visible: true },
     { id: 'independent-notes', label: 'General Notes', iconKey: 'editNote', visible: true },
     { id: 'relapse-journal', label: 'Fortification', iconKey: 'security', visible: true },
+    { id: 'mistakes', label: 'Mistakes', iconKey: 'warning', visible: true },
     { id: 'routines', label: 'Routines', iconKey: 'selfImprovement', visible: true },
     { id: 'eisenhower', label: 'Matrix', iconKey: 'viewQuilt', visible: true },
     { id: 'pomodoro', label: 'Pomodoro', iconKey: 'timer', visible: true }
@@ -422,6 +424,8 @@ function DesktopApp() {
         return <EisenhowerMatrix />;
       case 'anti-gravity':
         return <AntiGravityHabitTracker />;
+      case 'mistakes':
+        return <MistakesJournal />;
       case 'settings':
         // Pass darkMode and toggle handler to Settings
         return <Settings
