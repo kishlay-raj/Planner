@@ -17,6 +17,7 @@ import Sidebar from './components/Sidebar';
 import { useFirestore } from './hooks/useFirestore';
 import './App.css';
 import FloatingPomodoro from './components/FloatingPomodoro';
+import AntiGravityHabitTracker from './components/AntiGravityHabitTracker';
 
 // Moved theme creation inside component or useMemo to depend on mode
 // But since we need it in JSX, we will refactor to use a useMemo hook for theme creation.
@@ -344,6 +345,7 @@ function DesktopApp() {
     { id: 'planner-week', label: 'Weekly', iconKey: 'viewWeek', visible: true },
     { id: 'planner-month', label: 'Monthly', iconKey: 'calendarMonth', visible: true },
     { id: 'planner-year', label: 'Yearly', iconKey: 'emojiEvents', visible: true },
+    { id: 'anti-gravity', label: 'Habit', iconKey: 'rocket', visible: true },
     { id: 'daily-journal', label: 'Journal', iconKey: 'menuBook', visible: true },
     { id: 'gratitude-journal', label: 'Gratitude', iconKey: 'favorite', visible: true },
     { id: 'independent-notes', label: 'General Notes', iconKey: 'editNote', visible: true },
@@ -418,6 +420,8 @@ function DesktopApp() {
         />;
       case 'eisenhower':
         return <EisenhowerMatrix />;
+      case 'anti-gravity':
+        return <AntiGravityHabitTracker />;
       case 'settings':
         // Pass darkMode and toggle handler to Settings
         return <Settings

@@ -23,7 +23,8 @@ import {
   ViewQuilt,
   Security,
   Settings,
-  Favorite
+  Favorite,
+  RocketLaunch
 } from '@mui/icons-material';
 
 const iconMap = {
@@ -36,7 +37,8 @@ const iconMap = {
   viewQuilt: <ViewQuilt />,
   security: <Security />,
   timer: <Timer />,
-  favorite: <Favorite />
+  favorite: <Favorite />,
+  rocket: <RocketLaunch />
 };
 
 function Sidebar({ onNavigate, activePanel, pomodoroMode, navConfig }) {

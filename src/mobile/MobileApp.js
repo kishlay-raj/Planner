@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite } from '@mui/icons-material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
+import AntiGravityHabitTracker from '../components/AntiGravityHabitTracker';
 import packageJson from '../../package.json';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestoreCollection, useFirestoreDoc } from '../hooks/useFirestoreNew';
@@ -45,6 +46,7 @@ const TAB_CONFIG = {
     schedule: { label: 'Schedule', icon: <CalendarToday /> },
     weekly: { label: 'Weekly', icon: <ViewWeek /> },
     monthly: { label: 'Monthly', icon: <CalendarViewMonth /> },
+    'anti-gravity': { label: 'Habit', icon: <RocketLaunch /> },
     journal: { label: 'Journal', icon: <MenuBook /> },
     gratitude: { label: 'Gratitude', icon: <Favorite /> },
     notes: { label: 'Notes', icon: <EditNote /> },
@@ -54,7 +56,7 @@ const TAB_CONFIG = {
 function MobileApp() {
     const { currentUser, loginWithGoogle, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('today');
-    const [mobileTabOrder, setMobileTabOrder, orderLoading] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'journal', 'gratitude', 'notes', 'settings']);
+    const [mobileTabOrder, setMobileTabOrder, orderLoading] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'anti-gravity', 'journal', 'gratitude', 'notes', 'settings']);
     const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
 
     // Migration: ensure existing users get the new Gratitude tab
@@ -1009,6 +1011,10 @@ function MobileApp() {
     };
 
 
+    const renderAntiGravityView = () => {
+        return <AntiGravityHabitTracker />;
+    };
+
     const renderContent = () => {
         if (!currentUser) {
             return (
@@ -1026,6 +1032,7 @@ function MobileApp() {
             case 'schedule': return renderScheduleView();
             case 'weekly': return renderWeeklyView();
             case 'monthly': return renderMonthlyView();
+            case 'anti-gravity': return renderAntiGravityView();
             case 'journal': return renderJournalView();
             case 'gratitude': return renderGratitudeView();
             case 'notes': return renderNotesView();
