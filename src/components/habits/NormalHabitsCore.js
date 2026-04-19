@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Box, Typography, Collapse, Checkbox, Paper, List, ListItem, ListItemText, IconButton, LinearProgress } from '@mui/material';
-import { ExpandMore, ExpandLess, DeleteOutline } from '@mui/icons-material';
+import { Box, Typography, Collapse, Checkbox, Paper, List, ListItem, ListItemText, IconButton, LinearProgress, TextField, Tooltip } from '@mui/material';
+import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined } from '@mui/icons-material';
 import { format } from 'date-fns';
 import MilestoneBadges from './MilestoneBadges';
 import HabitHeatmap from './HabitHeatmap';
 
-function NormalHabitItem({ habit, onComplete, onDelete }) {
+function NormalHabitItem({ habit, onComplete, onDelete, onArchive, onUpdateNotes }) {
   const [expanded, setExpanded] = useState(false);
+  const [localNotes, setLocalNotes] = useState(habit.notes || '');
   const streak = habit.streak || 0;
   const bestStreak = habit.bestStreak || 0;
   const targetDays = habit.targetDays || 30;
@@ -77,22 +78,54 @@ function NormalHabitItem({ habit, onComplete, onDelete }) {
           </Typography>
           <MilestoneBadges streak={streak} />
           <Box sx={{ mt: 1.5 }}>
-            <HabitHeatmap completionDates={habit.completionDates || []} totalDays={90} />
+            <HabitHeatmap completionDates={habit.completionDates || []} frictionLogs={habit.frictionLogs || {}} totalDays={90} />
           </Box>
-          {onDelete && (
-            <Box sx={{ mt: 1.5, textAlign: 'right' }}>
-              <IconButton size="small" color="error" onClick={() => onDelete(habit.id)}>
-                <DeleteOutline fontSize="small" />
-              </IconButton>
-            </Box>
-          )}
+          
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 1, display: 'block' }}>
+              HABIT NOTES
+            </Typography>
+            <TextField 
+              multiline 
+              rows={2} 
+              fullWidth 
+              size="small"
+              placeholder="Reflections..."
+              value={localNotes}
+              onChange={(e) => setLocalNotes(e.target.value)}
+              onBlur={() => onUpdateNotes && onUpdateNotes(habit.id, localNotes)}
+              sx={{ 
+                '& .MuiOutlinedInput-root': {
+                  fontSize: '0.8rem',
+                  bgcolor: 'action.hover'
+                }
+              }}
+            />
+          </Box>
+
+          <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+            {onArchive && (
+              <Tooltip title="Archive">
+                <IconButton size="small" onClick={() => onArchive(habit.id)}>
+                  <ArchiveOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {onDelete && (
+              <Tooltip title="Delete">
+                <IconButton size="small" color="error" onClick={() => onDelete(habit.id)}>
+                  <DeleteOutline fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
         </Box>
       </Collapse>
     </Paper>
   );
 }
 
-export default function NormalHabitsCore({ habits, onComplete, onDelete }) {
+export default function NormalHabitsCore({ habits, onComplete, onDelete, onArchive, onUpdateNotes }) {
   const grouped = habits.reduce((acc, habit) => {
     const group = habit.identity || 'General';
     if (!acc[group]) acc[group] = [];
@@ -109,7 +142,7 @@ export default function NormalHabitsCore({ habits, onComplete, onDelete }) {
           </Typography>
           <List disablePadding>
             {grouped[identity].map(habit => (
-              <NormalHabitItem key={habit.id} habit={habit} onComplete={onComplete} onDelete={onDelete} />
+              <NormalHabitItem key={habit.id} habit={habit} onComplete={onComplete} onDelete={onDelete} onArchive={onArchive} onUpdateNotes={onUpdateNotes} />
             ))}
           </List>
         </Box>

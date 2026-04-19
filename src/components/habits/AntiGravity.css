@@ -31,6 +31,7 @@
 .heatmap-level-2 { background-color: #40c463; }
 .heatmap-level-3 { background-color: #30a14e; }
 .heatmap-level-4 { background-color: #216e39; }
+.heatmap-level-friction { background-color: #f6e05e; } /* Yellow for logged hurdles */
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
@@ -39,6 +40,7 @@
   .heatmap-level-2 { background-color: #006d32; }
   .heatmap-level-3 { background-color: #26a641; }
   .heatmap-level-4 { background-color: #39d353; }
+  .heatmap-level-friction { background-color: #d69e2e; } /* Darker yellow for dark mode */
 }
 
 /* === Badge Styles === */

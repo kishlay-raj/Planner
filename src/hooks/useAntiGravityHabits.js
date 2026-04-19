@@ -14,15 +14,18 @@ export function useAntiGravityHabits() {
         quotes: DEFAULT_QUOTES
     });
 
-    const criticalHabits = habits.filter(h => h.type === 'critical');
-    const normalHabits = habits.filter(h => h.type === 'normal');
-    const incubatorHabits = habits.filter(h => h.type === 'incubator');
+    const activeHabits = habits.filter(h => !h.isArchived);
+    const criticalHabits = activeHabits.filter(h => h.type === 'critical');
+    const normalHabits = activeHabits.filter(h => h.type === 'normal');
+    const incubatorHabits = activeHabits.filter(h => h.type === 'incubator');
+    const archivedHabits = habits.filter(h => h.isArchived);
 
     return {
         habits,
         criticalHabits,
         normalHabits,
         incubatorHabits,
+        archivedHabits,
         addHabit,
         updateHabit,
         deleteHabit,

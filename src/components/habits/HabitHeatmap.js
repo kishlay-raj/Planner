@@ -7,7 +7,7 @@ import '../habits/AntiGravity.css';
  * GitHub-style contribution heatmap for a single habit.
  * Shows the last `totalDays` days of completion data.
  */
-export default function HabitHeatmap({ completionDates = [], totalDays = 90, habitName }) {
+export default function HabitHeatmap({ completionDates = [], frictionLogs = {}, totalDays = 90, habitName }) {
   const today = new Date();
   const dateSet = new Set(completionDates);
 
@@ -19,7 +19,8 @@ export default function HabitHeatmap({ completionDates = [], totalDays = 90, hab
     days.push({
       date: d,
       key,
-      completed: dateSet.has(key)
+      completed: dateSet.has(key),
+      friction: frictionLogs[key] || null
     });
   }
 
@@ -56,16 +57,22 @@ export default function HabitHeatmap({ completionDates = [], totalDays = 90, hab
               if (!day) {
                 return <Box key={`empty-${di}`} sx={{ width: 14, height: 14 }} />;
               }
+              let tooltipTitle = `${format(day.date, 'MMM d, yyyy')} — ${day.completed ? '✅ Completed' : '⬜ Missed'}`;
+              let cellClass = day.completed ? 'heatmap-level-3' : 'heatmap-level-0';
+
+              if (!day.completed && day.friction) {
+                tooltipTitle = `${format(day.date, 'MMM d, yyyy')} — 🚧 Hurdle: "${day.friction}"`;
+                cellClass = 'heatmap-level-friction';
+              }
+
               return (
                 <Tooltip 
                   key={day.key} 
-                  title={`${format(day.date, 'MMM d, yyyy')} — ${day.completed ? '✅ Completed' : '⬜ Missed'}`}
+                  title={tooltipTitle}
                   arrow
                   placement="top"
                 >
-                  <Box 
-                    className={`heatmap-cell ${day.completed ? 'heatmap-level-3' : 'heatmap-level-0'}`}
-                  />
+                  <Box className={`heatmap-cell ${cellClass}`} />
                 </Tooltip>
               );
             })}

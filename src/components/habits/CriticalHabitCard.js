@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, Checkbox, Chip, LinearProgress, Collapse, IconButton } from '@mui/material';
-import { ExpandMore, ExpandLess, DeleteOutline } from '@mui/icons-material';
+import { Box, Typography, Paper, Checkbox, Chip, LinearProgress, Collapse, IconButton, TextField, Tooltip } from '@mui/material';
+import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined } from '@mui/icons-material';
 import { format } from 'date-fns';
 import MilestoneBadges from './MilestoneBadges';
 import HabitHeatmap from './HabitHeatmap';
 
-export default function CriticalHabitCard({ habit, onComplete, onDelete }) {
+export default function CriticalHabitCard({ 
+  habit, 
+  onComplete, 
+  onDelete, 
+  onArchive, 
+  onUpdateNotes 
+}) {
   const [expanded, setExpanded] = useState(false);
+  const [localNotes, setLocalNotes] = useState(habit.notes || '');
   const streak = habit.streak || 0;
   const bestStreak = habit.bestStreak || 0;
   const targetDays = habit.targetDays || 30;
@@ -115,16 +122,47 @@ export default function CriticalHabitCard({ habit, onComplete, onDelete }) {
             <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 1, display: 'block' }}>
               LAST 90 DAYS
             </Typography>
-            <HabitHeatmap completionDates={habit.completionDates || []} totalDays={90} />
+            <HabitHeatmap completionDates={habit.completionDates || []} frictionLogs={habit.frictionLogs || {}} totalDays={90} />
+          </Box>
+          
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 1.5, display: 'block' }}>
+              HABIT NOTES
+            </Typography>
+            <TextField 
+              multiline 
+              rows={3} 
+              fullWidth 
+              size="small"
+              placeholder="Add personal reflections or focus tips..."
+              value={localNotes}
+              onChange={(e) => setLocalNotes(e.target.value)}
+              onBlur={() => onUpdateNotes && onUpdateNotes(habit.id, localNotes)}
+              sx={{ 
+                '& .MuiOutlinedInput-root': {
+                  fontSize: '0.85rem',
+                  bgcolor: 'action.hover'
+                }
+              }}
+            />
           </Box>
 
-          {onDelete && (
-            <Box sx={{ mt: 2, textAlign: 'right' }}>
-              <IconButton size="small" color="error" onClick={() => onDelete(habit.id)}>
-                <DeleteOutline fontSize="small" />
-              </IconButton>
-            </Box>
-          )}
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+            {onArchive && (
+              <Tooltip title="Archive">
+                <IconButton size="small" onClick={() => onArchive(habit.id)}>
+                  <ArchiveOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+            {onDelete && (
+              <Tooltip title="Delete">
+                <IconButton size="small" color="error" onClick={() => onDelete(habit.id)}>
+                  <DeleteOutline fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
         </Box>
       </Collapse>
     </Paper>

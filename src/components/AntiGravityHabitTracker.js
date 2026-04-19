@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, TextField, Select, MenuItem, 
   DialogActions, Grid, IconButton, Tooltip, List, ListItem, ListItemText, ListItemSecondaryAction,
-  Divider, useMediaQuery, useTheme } from '@mui/material';
-import { Add, RocketLaunch, Settings, Delete, History } from '@mui/icons-material';
+  Divider, useMediaQuery, useTheme, Collapse, Paper } from '@mui/material';
+import { Add, RocketLaunch, Settings, Delete, History, Archive, Unarchive, ExpandMore, ExpandLess } from '@mui/icons-material';
 import { useAntiGravityHabits } from '../hooks/useAntiGravityHabits';
 import AtmosphereQuote from './habits/AtmosphereQuote';
 import CriticalHabitCard from './habits/CriticalHabitCard';
@@ -34,6 +34,7 @@ export default function AntiGravityHabitTracker() {
   const {
     criticalHabits,
     normalHabits,
+    archivedHabits,
     addHabit,
     updateHabit,
     deleteHabit,
@@ -44,7 +45,9 @@ export default function AntiGravityHabitTracker() {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBackfillOpen, setIsBackfillOpen] = useState(false);
+  const [isArchivedExpanded, setIsArchivedExpanded] = useState(false);
   const [backfillHabitId, setBackfillHabitId] = useState(null);
+  const [hurdlePrompt, setHurdlePrompt] = useState({ open: false, dateStr: '', text: '' });
   const [newQuote, setNewQuote] = useState({ text: '', author: '' });
   const [newHabit, setNewHabit] = useState({ 
     name: '', behavior: '', time: '', location: '', 
@@ -113,12 +116,44 @@ export default function AntiGravityHabitTracker() {
     const streak = recalcStreak(newDates);
     const newBestStreak = Math.max(target.bestStreak || 0, streak);
 
+    // If there was a friction log, remove it since they completed the day
+    const updatedFrictionLogs = { ...(target.frictionLogs || {}) };
+    delete updatedFrictionLogs[dateStr];
+
     await updateHabit(backfillHabitId, {
       completionDates: newDates,
       streak,
       bestStreak: newBestStreak,
-      completedToday: newDates.includes(today)
+      completedToday: newDates.includes(today),
+      frictionLogs: updatedFrictionLogs
     });
+  };
+
+  // === Log Hurdle ===
+  const handleSaveHurdle = async () => {
+    if (!backfillHabitId || !hurdlePrompt.dateStr) return;
+    const target = allTrackable.find(h => h.id === backfillHabitId);
+    if (!target) return;
+
+    const currentLogs = target.frictionLogs || {};
+    
+    await updateHabit(backfillHabitId, {
+      frictionLogs: {
+        ...currentLogs,
+        [hurdlePrompt.dateStr]: hurdlePrompt.text
+      }
+    });
+    setHurdlePrompt({ open: false, dateStr: '', text: '' });
+  };
+
+  // === Archive / Unarchive ===
+  const handleArchiveHabit = async (habitId, archiveState = true) => {
+    await updateHabit(habitId, { isArchived: archiveState });
+  };
+
+  // === Update Notes ===
+  const handleUpdateNotes = async (habitId, notes) => {
+    await updateHabit(habitId, { notes });
   };
 
   const handleAddHabit = async () => {
@@ -129,6 +164,7 @@ export default function AntiGravityHabitTracker() {
       streak: 0,
       bestStreak: 0,
       completionDates: [],
+      frictionLogs: {},
       completedToday: false,
       createdAt: Date.now()
     });
@@ -221,6 +257,8 @@ export default function AntiGravityHabitTracker() {
                   index={index} 
                   onComplete={handleComplete}
                   onDelete={handleDeleteHabit}
+                  onArchive={(id) => handleArchiveHabit(id, true)}
+                  onUpdateNotes={handleUpdateNotes}
                 />
                 <Box sx={{ mt: 0.5, display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                   <Button 
@@ -229,7 +267,7 @@ export default function AntiGravityHabitTracker() {
                     sx={{ fontSize: '0.7rem', textTransform: 'none' }}
                     onClick={() => { setBackfillHabitId(habit.id); setIsBackfillOpen(true); }}
                   >
-                    Add Past Day
+                    Review History
                   </Button>
                 </Box>
               </Grid>
@@ -253,7 +291,13 @@ export default function AntiGravityHabitTracker() {
             </IconButton>
           </Box>
           {normalHabits.length > 0 ? (
-             <NormalHabitsCore habits={normalHabits} onComplete={handleComplete} onDelete={handleDeleteHabit} />
+             <NormalHabitsCore 
+                habits={normalHabits} 
+                onComplete={handleComplete} 
+                onDelete={handleDeleteHabit} 
+                onArchive={(id) => handleArchiveHabit(id, true)}
+                onUpdateNotes={handleUpdateNotes}
+             />
           ) : (
              <Typography variant="body2" color="text.secondary">No routines yet.</Typography>
           )}
@@ -267,7 +311,7 @@ export default function AntiGravityHabitTracker() {
                   sx={{ fontSize: '0.7rem', textTransform: 'none' }}
                   onClick={() => { setBackfillHabitId(h.id); setIsBackfillOpen(true); }}
                 >
-                  {h.name}
+                  Review History ({h.name})
                 </Button>
               ))}
             </Box>
@@ -289,6 +333,59 @@ export default function AntiGravityHabitTracker() {
             }} 
           />
         </Box>
+
+        {/* Section 4: Archived Habits */}
+        {archivedHabits.length > 0 && (
+          <Box sx={{ p: isMobile ? 2 : 3, borderTop: '1px solid', borderColor: 'divider' }}>
+            <Box 
+              sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}
+              onClick={() => setIsArchivedExpanded(!isArchivedExpanded)}
+            >
+              <Typography variant="subtitle1" fontWeight="bold" color="text.secondary">
+                ARCHIVED HABITS ({archivedHabits.length})
+              </Typography>
+              <IconButton size="small">
+                {isArchivedExpanded ? <ExpandLess /> : <ExpandMore />}
+              </IconButton>
+            </Box>
+            
+            <Collapse in={isArchivedExpanded}>
+              <Box sx={{ mt: 2 }}>
+                <List dense>
+                  {archivedHabits.map(h => (
+                    <ListItem 
+                      key={h.id}
+                      sx={{ 
+                        bgcolor: 'action.hover', 
+                        borderRadius: 1, 
+                        mb: 1,
+                        '&:hover': { bgcolor: 'action.selected' }
+                      }}
+                    >
+                      <ListItemText 
+                        primary={h.name} 
+                        secondary={`${h.type.toUpperCase()} · ${h.streak || 0} day streak`}
+                        primaryTypographyProps={{ fontWeight: 600 }}
+                      />
+                      <ListItemSecondaryAction>
+                        <Tooltip title="Unarchive">
+                          <IconButton size="small" onClick={() => handleArchiveHabit(h.id, false)} sx={{ mr: 1 }}>
+                            <Unarchive fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete Permanently">
+                          <IconButton size="small" color="error" onClick={() => handleDeleteHabit(h.id)}>
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </Collapse>
+          </Box>
+        )}
       </Box>
 
       {/* ===== NEW HABIT DIALOG ===== */}
@@ -348,25 +445,39 @@ export default function AntiGravityHabitTracker() {
           <List dense>
             {last30Days.map(dateStr => {
               const alreadyDone = (backfillTarget?.completionDates || []).includes(dateStr);
+              const hurdleLog = (backfillTarget?.frictionLogs || {})[dateStr];
+              
               return (
                 <ListItem 
                   key={dateStr} 
                   component="div"
-                  onClick={() => !alreadyDone && handleBackfill(dateStr)}
                   sx={{ 
-                    cursor: alreadyDone ? 'default' : 'pointer',
                     bgcolor: alreadyDone ? 'action.selected' : 'transparent',
                     borderRadius: 1,
                     mb: 0.5,
-                    '&:hover': { bgcolor: alreadyDone ? 'action.selected' : 'action.hover' }
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
                   }}
                 >
                   <ListItemText 
                     primary={format(parseISO(dateStr), 'EEEE, MMM d, yyyy')}
+                    secondary={hurdleLog ? `🚧 ${hurdleLog}` : null}
                     primaryTypographyProps={{ variant: 'body2' }}
+                    secondaryTypographyProps={{ variant: 'caption', color: 'warning.main' }}
+                    sx={{ flexGrow: 1 }}
                   />
-                  {alreadyDone && (
-                    <Typography variant="caption" color="success.main" fontWeight={700}>✅</Typography>
+                  {alreadyDone ? (
+                    <Typography variant="caption" color="success.main" fontWeight={700}>✅ Done</Typography>
+                  ) : (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button size="small" variant="outlined" color="primary" onClick={() => handleBackfill(dateStr)} sx={{ minWidth: 'unset', px: 1, py: 0.25, fontSize: '0.7rem' }}>
+                        ✅ Complete
+                      </Button>
+                      <Button size="small" variant="outlined" color="warning" onClick={() => setHurdlePrompt({ open: true, dateStr, text: hurdleLog || '' })} sx={{ minWidth: 'unset', px: 1, py: 0.25, fontSize: '0.7rem' }}>
+                        🚧 Log Hurdle
+                      </Button>
+                    </Box>
                   )}
                 </ListItem>
               );
@@ -374,7 +485,30 @@ export default function AntiGravityHabitTracker() {
           </List>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsBackfillOpen(false)}>Done</Button>
+          <Button onClick={() => setIsBackfillOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ===== LOG HURDLE DIALOG ===== */}
+      <Dialog open={hurdlePrompt.open} onClose={() => setHurdlePrompt({ open: false, dateStr: '', text: '' })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ pb: 1 }}>Friction Analysis</DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            What hurdle stopped the person you want to become on <strong>{hurdlePrompt.dateStr && format(parseISO(hurdlePrompt.dateStr), 'MMM d, yyyy')}</strong>?
+          </Typography>
+          <TextField
+            multiline
+            rows={3}
+            fullWidth
+            variant="outlined"
+            placeholder="I was too tired after work..."
+            value={hurdlePrompt.text}
+            onChange={(e) => setHurdlePrompt({ ...hurdlePrompt, text: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setHurdlePrompt({ open: false, dateStr: '', text: '' })}>Cancel</Button>
+          <Button variant="contained" color="warning" onClick={handleSaveHurdle}>Save Hurdle</Button>
         </DialogActions>
       </Dialog>
 
