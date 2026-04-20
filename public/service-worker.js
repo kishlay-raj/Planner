@@ -54,6 +54,8 @@ self.addEventListener('fetch', (event) => {
                     // Update cache with fresh version
                     return caches.open(CACHE_NAME).then((cache) => {
                         cache.put(event.request, response.clone());
+                        // IMPORTANT: Keep the root index.html fresh for offline fallback
+                        cache.put('/index.html', response.clone());
                         return response;
                     });
                 })

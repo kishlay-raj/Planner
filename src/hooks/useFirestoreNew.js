@@ -136,10 +136,12 @@ export function useFirestoreDoc(path, initialValue) {
             // Always include a write timestamp so we can detect which device wrote last
             const writeTs = Date.now();
             lastWriteTimestampRef.current = writeTs;
-            await setDoc(docRef, { ...dataToWrite, _updatedAt: writeTs }, { merge: true });
-            console.log(`✅ Saved: ${path}`);
+            // Fire and forget so offline writes don't hang UI
+            setDoc(docRef, { ...dataToWrite, _updatedAt: writeTs }, { merge: true })
+                .then(() => console.log(`✅ Saved: ${path}`))
+                .catch(e => console.error(`❌ Save failed async for ${path}:`, e));
         } catch (e) {
-            console.error(`❌ Save failed for ${path}:`, e);
+            console.error(`❌ Save preparation failed for ${path}:`, e);
             throw e; // Re-throw to be caught by saveData
         }
     }, [currentUser, path, getDocRef]);
@@ -347,11 +349,12 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
         setItems(prev => [...prev, newItem]);
 
         try {
-            await setDoc(docRef, { ...dataWithoutId, createdAt: newItem.createdAt });
-            console.log(`✅ Added to ${collectionPath}: ${id}`);
+            setDoc(docRef, { ...dataWithoutId, createdAt: newItem.createdAt })
+                .then(() => console.log(`✅ Added to ${collectionPath}: ${id}`))
+                .catch(e => console.error(`❌ Add failed async for ${collectionPath}:`, e));
             return id;
         } catch (e) {
-            console.error(`❌ Add failed:`, e);
+            console.error(`❌ Add preparation failed:`, e);
             setItems(prev => prev.filter(item => item.id !== id));
             return null;
         } finally {
@@ -385,10 +388,11 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
 
         const docRef = doc(colRef, id);
         try {
-            await setDoc(docRef, { ...updates, updatedAt: timestamp }, { merge: true });
-            console.log(`✅ Updated ${collectionPath}/${id}`);
+            setDoc(docRef, { ...updates, updatedAt: timestamp }, { merge: true })
+                .then(() => console.log(`✅ Updated ${collectionPath}/${id}`))
+                .catch(e => console.error(`❌ Update failed async for ${collectionPath}:`, e));
         } catch (e) {
-            console.error(`❌ Update failed:`, e);
+            console.error(`❌ Update preparation failed:`, e);
         } finally {
             // A bit of delay before removing from updatingIds to allow snapshots to settle
             setTimeout(() => updatingIdsRef.current.delete(id), 1000);
@@ -414,10 +418,11 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
 
         const docRef = doc(colRef, id);
         try {
-            await deleteDoc(docRef);
-            console.log(`✅ Deleted ${collectionPath}/${id}`);
+            deleteDoc(docRef)
+                .then(() => console.log(`✅ Deleted ${collectionPath}/${id}`))
+                .catch(e => console.error(`❌ Delete failed async for ${collectionPath}:`, e));
         } catch (e) {
-            console.error(`❌ Delete failed:`, e);
+            console.error(`❌ Delete preparation failed:`, e);
         } finally {
             setTimeout(() => updatingIdsRef.current.delete(id), 1000);
         }
