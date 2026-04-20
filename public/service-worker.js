@@ -4,11 +4,17 @@
 // Version: dynamic-v2
 const CACHE_NAME = 'flow-planner-dynamic-v2';
 
-// Essential static assets to pre-cache
 const STATIC_ASSETS = [
     '/index.html',
-    '/manifest.json'
-    // Add other static root-level assets if needed (e.g. icons)
+    '/manifest.json',
+    '/bell.mp3',
+    '/bird.mp3',
+    '/kitchen.mp3',
+    '/ticking-fast.mp3',
+    '/ticking-slow.mp3',
+    '/flow_icon.svg',
+    '/icon-192.png',
+    '/icon-512.png'
     // We avoid hardcoding /static/js/... because filenames contain hashes in production
 ];
 
@@ -70,7 +76,7 @@ self.addEventListener('fetch', (event) => {
     // 2. Asset Requests (JS, CSS, Images) -> Stale-While-Revalidate
     // We try to serve from cache immediately for speed, but update the cache in the background.
     if (
-        requestUrl.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|json|woff|woff2)$/) &&
+        requestUrl.pathname.match(/\.(js|css|png|jpg|jpeg|svg|ico|json|woff|woff2|mp3|wav|ogg)$/) &&
         requestUrl.origin === self.location.origin
     ) {
         event.respondWith(
