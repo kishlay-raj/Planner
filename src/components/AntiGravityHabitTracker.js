@@ -270,9 +270,9 @@ export default function AntiGravityHabitTracker() {
               </IconButton>
             </Box>
           </Box>
-          <Grid container spacing={2}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {criticalHabits.map((habit, index) => (
-              <Grid item xs={12} sm={6} md={4} key={habit.id}>
+              <Box key={habit.id}>
                 <CriticalHabitCard 
                   habit={habit} 
                   index={index} 
@@ -292,14 +292,14 @@ export default function AntiGravityHabitTracker() {
                     Review History
                   </Button>
                 </Box>
-              </Grid>
+              </Box>
             ))}
             {criticalHabits.length === 0 && (
-              <Grid item xs={12}>
+              <Box>
                 <Typography variant="body2" color="text.secondary">No critical habits yet. Click + to add one.</Typography>
-              </Grid>
+              </Box>
             )}
-          </Grid>
+          </Box>
         </Box>
 
         {/* Section 2: Routines */}
