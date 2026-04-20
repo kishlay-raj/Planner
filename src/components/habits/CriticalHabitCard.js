@@ -10,7 +10,8 @@ export default function CriticalHabitCard({
   onComplete, 
   onDelete, 
   onArchive, 
-  onUpdateNotes 
+  onUpdateNotes,
+  selectedDate
 }) {
   const [expanded, setExpanded] = useState(false);
   const [localNotes, setLocalNotes] = useState(habit.notes || '');
@@ -19,8 +20,8 @@ export default function CriticalHabitCard({
   const targetDays = habit.targetDays || 30;
   const progress = Math.min((streak / targetDays) * 100, 100);
   const isTargetReached = progress >= 100;
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const completedToday = (habit.completionDates || []).includes(today);
+  const targetDateStr = selectedDate || format(new Date(), 'yyyy-MM-dd');
+  const completedToday = (habit.completionDates || []).includes(targetDateStr);
 
   const getProgressColor = () => {
     if (isTargetReached) return 'success';

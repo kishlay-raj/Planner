@@ -2,14 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, TextField, Select, MenuItem, 
   DialogActions, Grid, IconButton, Tooltip, List, ListItem, ListItemText, ListItemSecondaryAction,
   Divider, useMediaQuery, useTheme, Collapse, Paper } from '@mui/material';
-import { Add, RocketLaunch, Settings, Delete, History, Archive, Unarchive, ExpandMore, ExpandLess } from '@mui/icons-material';
+import { Add, RocketLaunch, Settings, Delete, History, Archive, Unarchive, ExpandMore, ExpandLess, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useAntiGravityHabits } from '../hooks/useAntiGravityHabits';
 import AtmosphereQuote from './habits/AtmosphereQuote';
 import CriticalHabitCard from './habits/CriticalHabitCard';
 import NormalHabitsCore from './habits/NormalHabitsCore';
 import DailyScore from './habits/DailyScore';
 import NotesPanel from './NotesPanel';
-import { format, subDays, parseISO } from 'date-fns';
+import { format, subDays, addDays, parseISO, isSameDay } from 'date-fns';
 import './habits/AntiGravity.css';
 
 // Helper: recalculate streak by walking backwards from today through completionDates
@@ -42,6 +42,8 @@ export default function AntiGravityHabitTracker() {
     setSettings
   } = useAntiGravityHabits();
 
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBackfillOpen, setIsBackfillOpen] = useState(false);
@@ -65,10 +67,11 @@ export default function AntiGravityHabitTracker() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings?.quotes?.length]);
 
-  // Daily score calculation — use local timezone
-  const today = format(new Date(), 'yyyy-MM-dd');
+  // Daily score calculation
+  const trueToday = new Date();
+  const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
   const allTrackable = [...criticalHabits, ...normalHabits];
-  const completedTodayCount = allTrackable.filter(h => (h.completionDates || []).includes(today)).length;
+  const completedSelectedCount = allTrackable.filter(h => (h.completionDates || []).includes(selectedDateStr)).length;
 
   // === Core completion handler (date-based, always recalculates streak) ===
   const handleComplete = async (habitId) => {
@@ -76,13 +79,13 @@ export default function AntiGravityHabitTracker() {
     if (!target) return;
 
     const dates = target.completionDates || [];
-    const isCompletedToday = dates.includes(today);
+    const isCompletedSelectedDate = dates.includes(selectedDateStr);
     let newDates;
 
-    if (isCompletedToday) {
-      newDates = dates.filter(d => d !== today);
+    if (isCompletedSelectedDate) {
+      newDates = dates.filter(d => d !== selectedDateStr);
     } else {
-      newDates = [...dates, today].sort();
+      newDates = [...dates, selectedDateStr].sort();
     }
 
     const newStreak = recalcStreak(newDates);
@@ -90,7 +93,7 @@ export default function AntiGravityHabitTracker() {
 
     await updateHabit(habitId, {
       completionDates: newDates,
-      completedToday: !isCompletedToday,
+      completedToday: newDates.includes(format(trueToday, 'yyyy-MM-dd')),
       streak: newStreak,
       bestStreak: newBestStreak
     });
@@ -124,7 +127,7 @@ export default function AntiGravityHabitTracker() {
       completionDates: newDates,
       streak,
       bestStreak: newBestStreak,
-      completedToday: newDates.includes(today),
+      completedToday: newDates.includes(format(new Date(), 'yyyy-MM-dd')),
       frictionLogs: updatedFrictionLogs
     });
   };
@@ -216,8 +219,26 @@ export default function AntiGravityHabitTracker() {
             Habit Tracker
           </Typography>
         </Box>
+
+        {/* Date Selector */}
+        <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: 'action.hover', borderRadius: 2 }}>
+          <IconButton onClick={() => setSelectedDate(subDays(selectedDate, 1))} size="small">
+            <ChevronLeft />
+          </IconButton>
+          <Typography variant="body2" sx={{ fontWeight: 600, px: 1, minWidth: '85px', textAlign: 'center' }}>
+            {isSameDay(selectedDate, trueToday) ? 'Today' : format(selectedDate, 'MMM d')}
+          </Typography>
+          <IconButton 
+            onClick={() => setSelectedDate(addDays(selectedDate, 1))} 
+            disabled={isSameDay(selectedDate, trueToday)}
+            size="small"
+          >
+            <ChevronRight />
+          </IconButton>
+        </Box>
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DailyScore completedCount={completedTodayCount} totalCount={allTrackable.length} />
+          <DailyScore completedCount={completedSelectedCount} totalCount={allTrackable.length} />
           <Tooltip title="Settings">
             <IconButton onClick={() => setIsSettingsOpen(true)} size="small" sx={{ color: 'text.secondary' }}>
               <Settings />
@@ -255,6 +276,7 @@ export default function AntiGravityHabitTracker() {
                 <CriticalHabitCard 
                   habit={habit} 
                   index={index} 
+                  selectedDate={selectedDateStr}
                   onComplete={handleComplete}
                   onDelete={handleDeleteHabit}
                   onArchive={(id) => handleArchiveHabit(id, true)}
@@ -293,6 +315,7 @@ export default function AntiGravityHabitTracker() {
           {normalHabits.length > 0 ? (
              <NormalHabitsCore 
                 habits={normalHabits} 
+                selectedDate={selectedDateStr}
                 onComplete={handleComplete} 
                 onDelete={handleDeleteHabit} 
                 onArchive={(id) => handleArchiveHabit(id, true)}

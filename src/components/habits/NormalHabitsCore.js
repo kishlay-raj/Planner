@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import MilestoneBadges from './MilestoneBadges';
 import HabitHeatmap from './HabitHeatmap';
 
-function NormalHabitItem({ habit, onComplete, onDelete, onArchive, onUpdateNotes }) {
+function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes }) {
   const [expanded, setExpanded] = useState(false);
   const [localNotes, setLocalNotes] = useState(habit.notes || '');
   const streak = habit.streak || 0;
@@ -13,8 +13,8 @@ function NormalHabitItem({ habit, onComplete, onDelete, onArchive, onUpdateNotes
   const targetDays = habit.targetDays || 30;
   const progress = Math.min((streak / targetDays) * 100, 100);
   const isComplete = progress >= 100;
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const completedToday = (habit.completionDates || []).includes(today);
+  const targetDateStr = selectedDate || format(new Date(), 'yyyy-MM-dd');
+  const completedToday = (habit.completionDates || []).includes(targetDateStr);
 
   return (
     <Paper sx={{ mb: 1, borderRadius: 1, opacity: completedToday ? 0.75 : 1 }} elevation={0} variant="outlined">
@@ -125,7 +125,7 @@ function NormalHabitItem({ habit, onComplete, onDelete, onArchive, onUpdateNotes
   );
 }
 
-export default function NormalHabitsCore({ habits, onComplete, onDelete, onArchive, onUpdateNotes }) {
+export default function NormalHabitsCore({ habits, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes }) {
   const grouped = habits.reduce((acc, habit) => {
     const group = habit.identity || 'General';
     if (!acc[group]) acc[group] = [];
@@ -142,7 +142,7 @@ export default function NormalHabitsCore({ habits, onComplete, onDelete, onArchi
           </Typography>
           <List disablePadding>
             {grouped[identity].map(habit => (
-              <NormalHabitItem key={habit.id} habit={habit} onComplete={onComplete} onDelete={onDelete} onArchive={onArchive} onUpdateNotes={onUpdateNotes} />
+              <NormalHabitItem key={habit.id} habit={habit} selectedDate={selectedDate} onComplete={onComplete} onDelete={onDelete} onArchive={onArchive} onUpdateNotes={onUpdateNotes} />
             ))}
           </List>
         </Box>
