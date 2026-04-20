@@ -48,6 +48,8 @@ export default function AntiGravityHabitTracker() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isBackfillOpen, setIsBackfillOpen] = useState(false);
   const [isArchivedExpanded, setIsArchivedExpanded] = useState(false);
+  const [isCriticalExpanded, setIsCriticalExpanded] = useState(true);
+  const [isRoutinesExpanded, setIsRoutinesExpanded] = useState(true);
   const [backfillHabitId, setBackfillHabitId] = useState(null);
   const [hurdlePrompt, setHurdlePrompt] = useState({ open: false, dateStr: '', text: '' });
   const [newQuote, setNewQuote] = useState({ text: '', author: '' });
@@ -260,85 +262,113 @@ export default function AntiGravityHabitTracker() {
 
         {/* Section 1: Critical Habits */}
         <Box sx={{ p: isMobile ? 2 : 3, borderBottom: '1px solid', borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box 
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, cursor: 'pointer' }}
+            onClick={() => setIsCriticalExpanded(!isCriticalExpanded)}
+          >
             <Typography variant="subtitle1" fontWeight="bold" color="primary">
               CRITICAL HABITS
             </Typography>
-            <Box>
-              <IconButton onClick={() => setIsAddOpen(true)} color="primary" size="small">
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton 
+                onClick={(e) => { e.stopPropagation(); setIsAddOpen(true); }} 
+                color="primary" 
+                size="small"
+              >
                 <Add />
+              </IconButton>
+              <IconButton size="small">
+                {isCriticalExpanded ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
               </IconButton>
             </Box>
           </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {criticalHabits.map((habit, index) => (
-              <Box key={habit.id}>
-                <CriticalHabitCard 
-                  habit={habit} 
-                  index={index} 
-                  selectedDate={selectedDateStr}
-                  onComplete={handleComplete}
-                  onDelete={handleDeleteHabit}
-                  onArchive={(id) => handleArchiveHabit(id, true)}
-                  onUpdateNotes={handleUpdateNotes}
-                />
-                <Box sx={{ mt: 0.5, display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                  <Button 
-                    size="small" 
-                    startIcon={<History />} 
-                    sx={{ fontSize: '0.7rem', textTransform: 'none' }}
-                    onClick={() => { setBackfillHabitId(habit.id); setIsBackfillOpen(true); }}
-                  >
-                    Review History
-                  </Button>
+          <Collapse in={isCriticalExpanded}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {criticalHabits.map((habit, index) => (
+                <Box key={habit.id}>
+                  <CriticalHabitCard 
+                    habit={habit} 
+                    index={index} 
+                    selectedDate={selectedDateStr}
+                    onComplete={handleComplete}
+                    onDelete={handleDeleteHabit}
+                    onArchive={(id) => handleArchiveHabit(id, true)}
+                    onUpdateNotes={handleUpdateNotes}
+                  />
+                  <Box sx={{ mt: 0.5, display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+                    <Button 
+                      size="small" 
+                      startIcon={<History />} 
+                      sx={{ fontSize: '0.7rem', textTransform: 'none' }}
+                      onClick={() => { setBackfillHabitId(habit.id); setIsBackfillOpen(true); }}
+                    >
+                      Review History
+                    </Button>
+                  </Box>
                 </Box>
-              </Box>
-            ))}
-            {criticalHabits.length === 0 && (
-              <Box>
-                <Typography variant="body2" color="text.secondary">No critical habits yet. Click + to add one.</Typography>
-              </Box>
-            )}
-          </Box>
+              ))}
+              {criticalHabits.length === 0 && (
+                <Box>
+                  <Typography variant="body2" color="text.secondary">No critical habits yet. Click + to add one.</Typography>
+                </Box>
+              )}
+            </Box>
+          </Collapse>
         </Box>
 
         {/* Section 2: Routines */}
         <Box sx={{ p: isMobile ? 2 : 3, borderBottom: '1px solid', borderColor: 'divider' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box 
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, cursor: 'pointer' }}
+            onClick={() => setIsRoutinesExpanded(!isRoutinesExpanded)}
+          >
             <Typography variant="subtitle1" fontWeight="bold" color="primary">
               ROUTINES
             </Typography>
-            <IconButton onClick={() => { setNewHabit(h => ({...h, type: 'normal'})); setIsAddOpen(true); }} color="primary" size="small">
-              <Add />
-            </IconButton>
-          </Box>
-          {normalHabits.length > 0 ? (
-             <NormalHabitsCore 
-                habits={normalHabits} 
-                selectedDate={selectedDateStr}
-                onComplete={handleComplete} 
-                onDelete={handleDeleteHabit} 
-                onArchive={(id) => handleArchiveHabit(id, true)}
-                onUpdateNotes={handleUpdateNotes}
-             />
-          ) : (
-             <Typography variant="body2" color="text.secondary">No routines yet.</Typography>
-          )}
-          {normalHabits.length > 0 && (
-            <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-              {normalHabits.map(h => (
-                <Button
-                  key={h.id}
-                  size="small"
-                  startIcon={<History />}
-                  sx={{ fontSize: '0.7rem', textTransform: 'none' }}
-                  onClick={() => { setBackfillHabitId(h.id); setIsBackfillOpen(true); }}
-                >
-                  Review History ({h.name})
-                </Button>
-              ))}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton 
+                onClick={(e) => { e.stopPropagation(); setNewHabit(h => ({...h, type: 'normal'})); setIsAddOpen(true); }} 
+                color="primary" 
+                size="small"
+              >
+                <Add />
+              </IconButton>
+              <IconButton size="small">
+                {isRoutinesExpanded ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+              </IconButton>
             </Box>
-          )}
+          </Box>
+          <Collapse in={isRoutinesExpanded}>
+            <Box>
+              {normalHabits.length > 0 ? (
+                 <NormalHabitsCore 
+                    habits={normalHabits} 
+                    selectedDate={selectedDateStr}
+                    onComplete={handleComplete} 
+                    onDelete={handleDeleteHabit} 
+                    onArchive={(id) => handleArchiveHabit(id, true)}
+                    onUpdateNotes={handleUpdateNotes}
+                 />
+              ) : (
+                 <Typography variant="body2" color="text.secondary">No routines yet.</Typography>
+              )}
+              {normalHabits.length > 0 && (
+                <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {normalHabits.map(h => (
+                    <Button
+                      key={h.id}
+                      size="small"
+                      startIcon={<History />}
+                      sx={{ fontSize: '0.7rem', textTransform: 'none' }}
+                      onClick={() => { setBackfillHabitId(h.id); setIsBackfillOpen(true); }}
+                    >
+                      Review History ({h.name})
+                    </Button>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          </Collapse>
         </Box>
 
         {/* Section 3: Incubator */}
