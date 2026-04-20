@@ -29,6 +29,8 @@ import {
   getYear,
   getMonth
 } from 'date-fns';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 // Default week data structure
 const defaultWeekData = {
@@ -145,6 +147,15 @@ function WeeklyPlanner() {
   const handleNotesChange = (val) => updateWeekData({ notes: val });
 
   const isDarkMode = theme.palette.mode === 'dark';
+
+  const quillModules = React.useMemo(() => ({
+    toolbar: [
+      ['bold', 'italic', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      ['link', 'clean']
+    ],
+    clipboard: { matchVisual: false }
+  }), []);
 
   return (
     <Box sx={{ p: 3, height: '100vh', overflow: 'auto', bgcolor: 'background.default', color: 'text.primary', transition: 'all 0.3s ease' }}>
@@ -378,22 +389,54 @@ function WeeklyPlanner() {
                   Weekly Notes
                 </Typography>
               </Box>
-              <TextField
-                fullWidth multiline minRows={5}
-                placeholder="Brain dump, reminders, or extra notes..."
-                value={currentWeekData.notes}
-                onChange={(e) => handleNotesChange(e.target.value)}
-                sx={{
+              <Box sx={{
+                bgcolor: 'action.hover',
+                borderRadius: 1,
+                border: '1px solid transparent',
+                '&:hover': { borderColor: 'divider' },
+                '&:focus-within': { borderColor: 'warning.main' },
+                '& .quill': {
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: '150px'
+                },
+                '& .ql-toolbar': {
+                  border: 'none',
+                  borderBottom: '1px solid',
+                  borderColor: 'divider',
                   bgcolor: 'action.hover',
-                  borderRadius: 1,
-                  '& .MuiOutlinedInput-root': {
-                    color: 'text.primary',
-                    '& fieldset': { borderColor: 'transparent' },
-                    '&:hover fieldset': { borderColor: 'divider' },
-                    '&.Mui-focused fieldset': { borderColor: 'warning.main' },
-                  }
-                }}
-              />
+                  borderTopLeftRadius: 4,
+                  borderTopRightRadius: 4,
+                },
+                '& .ql-container': {
+                  border: 'none',
+                  flexGrow: 1,
+                  fontSize: '1rem',
+                  fontFamily: 'inherit',
+                  minHeight: '120px'
+                },
+                '& .ql-editor': {
+                  color: 'text.primary',
+                  minHeight: '120px'
+                },
+                '& .ql-stroke': {
+                  stroke: theme.palette.text.primary
+                },
+                '& .ql-fill': {
+                  fill: theme.palette.text.primary
+                },
+                '& .ql-picker': {
+                  color: 'text.primary'
+                }
+              }}>
+                <ReactQuill 
+                  theme="snow"
+                  value={currentWeekData.notes || ''}
+                  onChange={handleNotesChange}
+                  modules={quillModules}
+                  placeholder="Brain dump, reminders, or extra notes..."
+                />
+              </Box>
             </Paper>
           </Box>
         </Grid>
