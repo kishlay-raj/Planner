@@ -216,7 +216,7 @@ export default function AntiGravityHabitTracker() {
         justifyContent: 'space-between'
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <RocketLaunch sx={{ color: '#1976d2', fontSize: isMobile ? '24px' : '32px' }} />
+          <img src="/ganesha_logo.png" alt="Ganesha Logo" style={{ height: isMobile ? '24px' : '32px', width: isMobile ? '24px' : '32px', objectFit: 'contain' }} />
           <Typography variant={isMobile ? "subtitle1" : "h6"} sx={{ color: 'text.primary', fontWeight: 600 }}>
             Habit Tracker
           </Typography>

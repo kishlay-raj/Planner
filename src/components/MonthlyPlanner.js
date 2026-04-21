@@ -179,6 +179,7 @@ function MonthlyPlanner() {
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/ganesha_logo.png" alt="Ganesha Logo" style={{ height: '36px', width: '36px', marginRight: '16px', objectFit: 'contain' }} />
           <IconButton onClick={() => handleNavigate('prev')} sx={{ color: 'text.secondary' }}>
             <NavigateBefore />
           </IconButton>

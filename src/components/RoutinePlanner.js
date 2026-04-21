@@ -61,6 +61,7 @@ function RoutinePlanner({ onTaskCreate }) {
 
     // Load from LS or defaults
     const [routines, setRoutines] = useFirestore('routineData', DEFAULT_ROUTINES);
+    const [routineNotes, setRoutineNotes] = useFirestore('routineNotes', { text: '' });
 
     const [newItemText, setNewItemText] = useState({});
     const [newSectionName, setNewSectionName] = useState('');
@@ -321,7 +322,7 @@ function RoutinePlanner({ onTaskCreate }) {
     };
 
     return (
-        <Box sx={{ p: 3, height: '100vh', maxHeight: '100vh', overflow: 'hidden', bgcolor: theme.bg, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+        <Box sx={{ p: 3, height: '100vh', maxHeight: '100vh', overflow: 'auto', bgcolor: theme.bg, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
             <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
                     <Typography variant="h3" sx={{ color: theme.text, fontWeight: 800, letterSpacing: '-1px', mb: 0.5 }}>
@@ -441,6 +442,42 @@ function RoutinePlanner({ onTaskCreate }) {
                         )}
                     </Paper>
                 </Box>
+            </Box>
+
+            {/* Notes Section */}
+            <Box sx={{ mt: 3, flexShrink: 0 }}>
+                <Paper sx={{
+                    p: 3,
+                    bgcolor: 'background.paper',
+                    borderRadius: 3,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    border: `1px solid ${theme.palette.divider}`,
+                    borderTopWidth: '3px',
+                    borderTopColor: theme.palette.warning.main
+                }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.warning.main, letterSpacing: '0.5px', mb: 2, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                        📝 Routine Notes
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        multiline
+                        minRows={4}
+                        placeholder="Reflections on your routine, things to tweak, ideas..."
+                        value={routineNotes?.text || ''}
+                        onChange={(e) => setRoutineNotes({ text: e.target.value })}
+                        variant="outlined"
+                        sx={{
+                            bgcolor: 'action.hover',
+                            borderRadius: 1,
+                            '& .MuiOutlinedInput-root': {
+                                color: 'text.primary',
+                                '& fieldset': { borderColor: 'transparent' },
+                                '&:hover fieldset': { borderColor: 'divider' },
+                                '&.Mui-focused fieldset': { borderColor: theme.palette.warning.main }
+                            }
+                        }}
+                    />
+                </Paper>
             </Box>
         </Box>
     );
