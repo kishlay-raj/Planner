@@ -6,6 +6,7 @@ import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
 import AntiGravityHabitTracker from '../components/AntiGravityHabitTracker';
 import MistakesJournal from '../components/MistakesJournal';
+import WeeklyPlanner from '../components/WeeklyPlanner';
 import packageJson from '../../package.json';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestoreCollection, useFirestoreDoc } from '../hooks/useFirestoreNew';
@@ -202,32 +203,18 @@ function MobileApp() {
     }, [ghToken, ghOwner, ghRepo]); // Only depend on the input values, not githubSettings to avoid loops
 
     // --- NAVIGATION DATES ---
-    const [weekDate, setWeekDate] = useState(new Date());
     const [monthDate, setMonthDate] = useState(new Date());
     const [journalDate, setJournalDate] = useState(new Date());
     const [gratitudeDate, setGratitudeDate] = useState(new Date());
     const [notesDate, setNotesDate] = useState(new Date());
-
-    // --- IDS ---
-    const weekId = `${getYear(weekDate)}-${getISOWeek(weekDate)}`;
     const monthId = `${getYear(monthDate)}-${getMonth(monthDate) + 1}`;
 
     // Context IDs (Cascading)
     const todayWeekId = `${getYear(currentDate)}-${getISOWeek(currentDate)}`; // For Today View Context
-    const weekMonthId = `${getYear(weekDate)}-${getMonth(weekDate) + 1}`; // For Weekly View Context
+    const weekMonthId = `${getYear(monthDate)}-${getMonth(monthDate) + 1}`; // For Weekly View Context
     const monthYearId = `${getYear(monthDate)}`; // For Monthly View Context
 
     // --- DATA HOOKS ---
-
-    // 1. Weekly Data (Active Editing)
-    const [weekData, setWeekData] = useFirestoreDoc(`planner/weekly/${weekId}`, {
-        focus: '',
-        goals: [],
-        habit: { name: '', days: [false, false, false, false, false, false, false] },
-        journal: { start: '', stop: '', continue: '', grateful: '' },
-        days: {},
-        notes: ''
-    });
 
     // 2. Monthly Data (Active Editing)
     const [monthData, setMonthData] = useFirestoreDoc(`planner/monthly/${monthId}`, { monthlyFocus: '', notes: '' });
@@ -490,139 +477,7 @@ function MobileApp() {
     };
 
     const renderWeeklyView = () => {
-        const weekStart = startOfWeek(weekDate, { weekStartsOn: 1 });
-        const weekEnd = endOfWeek(weekDate, { weekStartsOn: 1 });
-        const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
-        const habit = weekData?.habit || { name: '', days: [] };
-        const journal = weekData?.journal || { start: '', stop: '', continue: '', grateful: '' };
-
-        return (
-            <Box sx={{ pb: 10 }}>
-                <Paper elevation={0} sx={{ p: 2, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 10, borderRadius: 0 }}>
-                    <IconButton onClick={() => setWeekDate(d => subWeeks(d, 1))}><ChevronLeft /></IconButton>
-                    <Box sx={{ textAlign: 'center' }}>
-                        <Typography variant="body1" fontWeight="700">Week {getISOWeek(weekDate)}</Typography>
-                        <Typography variant="caption" color="text.secondary">{format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d')}</Typography>
-                    </Box>
-                    <IconButton onClick={() => setWeekDate(d => addWeeks(d, 1))}><ChevronRight /></IconButton>
-                </Paper>
-
-                {/* Context: Monthly Focus */}
-                {renderContextCard('Monthly Focus', weekMonthData?.monthlyFocus, '#9c27b0')}
-
-                <Box sx={{ px: 2 }}>
-                    <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                        <Typography variant="caption" color="primary" fontWeight="bold" sx={{ mb: 1, display: 'block' }}>WEEKLY FOCUS</Typography>
-                        <TextField fullWidth multiline variant="standard" placeholder="What matters most this week?" value={weekData?.focus || ''} onChange={(e) => setWeekData({ ...weekData, focus: e.target.value })} InputProps={{ disableUnderline: true, style: { fontSize: '1.1rem', fontWeight: 500 } }} />
-                    </Paper>
-
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, fontSize: '1rem' }}>Weekly Goals</Typography>
-                    <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                        {(weekData?.goals || []).map((goal, idx) => (
-                            <Box key={goal.id || idx} sx={{ display: 'flex', alignItems: 'center', mb: idx === (weekData?.goals || []).length - 1 ? 0 : 1.5, gap: 1 }}>
-                                <Checkbox
-                                    checked={goal.completed || false}
-                                    onChange={() => {
-                                        const newGoals = [...(weekData?.goals || [])];
-                                        newGoals[idx] = { ...goal, completed: !goal.completed };
-                                        setWeekData({ ...weekData, goals: newGoals });
-                                    }}
-                                    size="small"
-                                    sx={{ p: 0, '&.Mui-checked': { color: '#38a169' } }}
-                                />
-                                <TextField
-                                    fullWidth
-                                    variant="standard"
-                                    placeholder="Goal..."
-                                    value={goal.text || ''}
-                                    onChange={(e) => {
-                                        const newGoals = [...(weekData?.goals || [])];
-                                        newGoals[idx] = { ...goal, text: e.target.value };
-                                        setWeekData({ ...weekData, goals: newGoals });
-                                    }}
-                                    InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }}
-                                    sx={{ textDecoration: goal.completed ? 'line-through' : 'none', opacity: goal.completed ? 0.6 : 1 }}
-                                />
-                                <IconButton
-                                    size="small"
-                                    onClick={() => {
-                                        const newGoals = (weekData?.goals || []).filter((_, i) => i !== idx);
-                                        setWeekData({ ...weekData, goals: newGoals });
-                                    }}
-                                    sx={{ opacity: 0.5 }}
-                                >
-                                    <Delete fontSize="small" />
-                                </IconButton>
-                            </Box>
-                        ))}
-                        <Button
-                            size="small"
-                            startIcon={<Add />}
-                            onClick={() => {
-                                const newGoal = { id: Date.now(), text: '', completed: false };
-                                setWeekData({ ...weekData, goals: [...(weekData?.goals || []), newGoal] });
-                            }}
-                            sx={{ mt: (weekData?.goals || []).length > 0 ? 1.5 : 0, textTransform: 'none' }}
-                        >
-                            Add Goal
-                        </Button>
-                    </Paper>
-
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, fontSize: '1rem' }}>Habit Tracker</Typography>
-                    <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                        <TextField fullWidth variant="standard" placeholder="Habit to build..." value={habit.name || ''} onChange={(e) => setWeekData({ ...weekData, habit: { ...habit, name: e.target.value } })} InputProps={{ disableUnderline: true, style: { fontSize: '1rem', marginBottom: '12px' } }} />
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 1 }}>
-                            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, idx) => (
-                                <Box key={idx} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                                    <Typography variant="caption" color="text.secondary" fontWeight="bold" sx={{ fontSize: '0.7rem' }}>{day}</Typography>
-                                    <Checkbox checked={habit.days?.[idx] || false} onChange={() => { const newDays = [...(habit.days || [])]; newDays[idx] = !newDays[idx]; setWeekData({ ...weekData, habit: { ...habit, days: newDays } }); }} sx={{ p: 0, '&.Mui-checked': { color: '#38a169' } }} />
-                                </Box>
-                            ))}
-                        </Box>
-                    </Paper>
-
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, fontSize: '1rem' }}>Reflection</Typography>
-                    <Paper sx={{ p: 2, mb: 3, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                        {[{ label: "Start", key: 'start' }, { label: "Stop", key: 'stop' }, { label: "Continue", key: 'continue' }, { label: "Grateful", key: 'grateful' }].map((item, idx) => (
-                            <Box key={item.key} sx={{ mb: idx === 3 ? 0 : 2 }}>
-                                <Typography variant="caption" fontWeight="bold" color="text.secondary" sx={{ textTransform: 'uppercase', mb: 0.5, display: 'block', fontSize: '0.7rem' }}>{item.label}</Typography>
-                                <TextField fullWidth multiline variant="standard" placeholder="..." value={journal[item.key] || ''} onChange={(e) => setWeekData({ ...weekData, journal: { ...journal, [item.key]: e.target.value } })} InputProps={{ disableUnderline: true }} sx={{ bgcolor: 'background.default', p: 1, borderRadius: 1 }} />
-                            </Box>
-                        ))}
-                    </Paper>
-
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, fontSize: '1rem' }}>Daily Plan</Typography>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {days.map(day => {
-                            const dateKey = format(day, 'yyyy-MM-dd'); const isToday = isSameDay(day, new Date());
-                            return (
-                                <Paper key={dateKey} sx={{ p: 2, borderRadius: 3, border: isToday ? '1px solid #1976d2' : '1px solid transparent', bgcolor: isToday ? 'rgba(25, 118, 210, 0.04)' : 'white' }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                        <Typography variant="subtitle2" fontWeight="700" color={isToday ? 'primary' : 'text.primary'}>{format(day, 'EEEE')}</Typography>
-                                        <Typography variant="caption" color="text.secondary">{format(day, 'MMM d')}</Typography>
-                                    </Box>
-                                    <TextField fullWidth multiline variant="standard" placeholder="Plan..." value={weekData?.days?.[dateKey] || ''} onChange={(e) => setWeekData({ ...weekData, days: { ...weekData.days, [dateKey]: e.target.value } })} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} />
-                                </Paper>
-                            );
-                        })}
-                    </Box>
-
-                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 1.5, mt: 3, fontSize: '1rem' }}>Weekly Notes</Typography>
-                    <Paper sx={{ p: 2, mb: 4, borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                        <TextField
-                            fullWidth
-                            multiline
-                            minRows={5}
-                            variant="standard"
-                            placeholder="Brain dump, ideas, observations for this week..."
-                            value={weekData?.notes || ''}
-                            onChange={(e) => setWeekData({ ...weekData, notes: e.target.value })}
-                            InputProps={{ disableUnderline: true }}
-                        />
-                    </Paper>
-                </Box>
-            </Box>
-        );
+        return <WeeklyPlanner />;
     };
 
     const renderMonthlyView = () => {

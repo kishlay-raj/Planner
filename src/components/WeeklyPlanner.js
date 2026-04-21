@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useFirestoreDoc } from '../hooks/useFirestoreNew';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import {
   Box,
   Paper,
@@ -9,7 +11,8 @@ import {
   TextField,
   Checkbox,
   Tooltip,
-  useTheme
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   NavigateBefore,
@@ -29,10 +32,6 @@ import {
   getYear,
   getMonth
 } from 'date-fns';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-
-// Default week data structure
 const defaultWeekData = {
   focus: '',
   goals: [],
@@ -44,6 +43,7 @@ const defaultWeekData = {
 
 function WeeklyPlanner() {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const weekId = `${getYear(currentDate)}-${getISOWeek(currentDate)}`;
@@ -158,7 +158,15 @@ function WeeklyPlanner() {
   }), []);
 
   return (
-    <Box sx={{ p: 3, height: '100vh', overflow: 'auto', bgcolor: 'background.default', color: 'text.primary', transition: 'all 0.3s ease' }}>
+    <Box sx={{ 
+      p: isMobile ? 2 : 3, 
+      pb: isMobile ? 12 : 3, // Extra padding for mobile bottom nav
+      height: 'auto', 
+      minHeight: '100%',
+      bgcolor: 'background.default', 
+      color: 'text.primary', 
+      transition: 'all 0.3s ease' 
+    }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -186,7 +194,7 @@ function WeeklyPlanner() {
         </Paper>
       )}
 
-      <Grid container spacing={4}>
+      <Grid container spacing={isMobile ? 2 : 4}>
         {/* Left Column */}
         <Grid item xs={12} md={5}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>

@@ -131,13 +131,19 @@ export function useFirestore(location, initialValue, merge = true) {
 
                     const dataPreview = JSON.stringify(dataToSave) || '';
                     if (isDev) console.log("📦 Data to save:", dataPreview.substring(0, 200) + (dataPreview.length > 200 ? "..." : ""));
-                    const writeStartTime = Date.now();
-                    await setDoc(docRef, dataToSave, { merge });
-                    const writeEndTime = Date.now();
-                    if (isDev) console.log(`✅ Firestore write SUCCESS for "${location}" (took ${writeEndTime - writeStartTime}ms)`);
+                    
+                    setDoc(docRef, dataToSave, { merge })
+                        .then(() => {
+                            if (isDev) console.log(`✅ Firestore write SUCCESS for "${location}"`);
+                        })
+                        .catch((e) => {
+                            console.error("❌ Error saving to Firestore:", e.code, e.message);
+                            console.error("Full error:", e);
+                        });
+                    
                     setSaving(false);
                 } catch (e) {
-                    console.error("❌ Error saving to Firestore:", e.code, e.message);
+                    console.error("❌ Error saving to Firestore (preparation):", e.code, e.message);
                     console.error("Full error:", e);
                     setSaving(false); // Should expose error too but for now just stop spinner
                 }
