@@ -15,6 +15,7 @@ export default function MistakesJournal() {
 
     const [newMistake, setNewMistake] = useState('');
     const [newLesson, setNewLesson] = useState('');
+    const [visibleCount, setVisibleCount] = useState(3);
 
     const handleAddMistake = async () => {
         if (!newMistake.trim() || !newLesson.trim()) return;
@@ -31,6 +32,7 @@ export default function MistakesJournal() {
 
     // Sort descending by creation time (newest first)
     const sortedMistakes = [...mistakes].sort((a, b) => b.createdAt - a.createdAt);
+    const visibleMistakes = sortedMistakes.slice(0, visibleCount);
 
     return (
         <Box sx={{ 
@@ -119,7 +121,7 @@ export default function MistakesJournal() {
                 )}
 
                 <List disablePadding>
-                    {sortedMistakes.map((log) => (
+                    {visibleMistakes.map((log) => (
                         <Paper key={log.id} sx={{ mb: 3, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }} elevation={0}>
                             <Box sx={{ p: 2, bgcolor: 'action.hover', borderBottom: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Typography variant="caption" fontWeight="bold" color="text.secondary">
@@ -155,6 +157,23 @@ export default function MistakesJournal() {
                         </Paper>
                     ))}
                 </List>
+
+                {/* Show More Button */}
+                {visibleCount < sortedMistakes.length && (
+                    <Box sx={{ textAlign: 'center', mt: 1, mb: 3 }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+                            Showing {visibleMistakes.length} of {sortedMistakes.length}
+                        </Typography>
+                        <Button
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => setVisibleCount(c => c + 3)}
+                            sx={{ borderRadius: 2, px: 4 }}
+                        >
+                            Show More
+                        </Button>
+                    </Box>
+                )}
             </Box>
         </Box>
     );

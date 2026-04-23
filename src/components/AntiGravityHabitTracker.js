@@ -12,19 +12,57 @@ import NotesPanel from './NotesPanel';
 import { format, subDays, addDays, parseISO, isSameDay } from 'date-fns';
 import './habits/AntiGravity.css';
 
-// Helper: recalculate streak by walking backwards from today through completionDates
+// Helper: recalculate streak by walking backwards from the most recent completed date.
+// Gives a 1-day grace window (today or yesterday) before considering the streak broken.
 function recalcStreak(completionDates) {
+  if (!completionDates || completionDates.length === 0) return 0;
+
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const sorted = [...completionDates].sort();
+  const mostRecent = sorted[sorted.length - 1];
+
+  // If the most recent completion is more than 1 day before today, streak is broken
+  const todayDate = new Date(todayStr + 'T00:00:00');
+  const mostRecentDate = new Date(mostRecent + 'T00:00:00');
+  const dayDiff = Math.floor((todayDate - mostRecentDate) / (1000 * 60 * 60 * 24));
+  if (dayDiff > 1) return 0;
+
+  // Walk backwards from the most recent completed date
   let streak = 0;
-  const todayDate = new Date();
+  const dateSet = new Set(completionDates);
   for (let i = 0; i < 1000; i++) {
-    const checkDate = format(subDays(todayDate, i), 'yyyy-MM-dd');
-    if (completionDates.includes(checkDate)) {
+    const checkDate = format(subDays(mostRecentDate, i), 'yyyy-MM-dd');
+    if (dateSet.has(checkDate)) {
       streak++;
     } else {
       break;
     }
   }
   return streak;
+}
+
+// Helper: find the longest consecutive run across ALL completion dates
+function recalcBestStreak(completionDates) {
+  if (!completionDates || completionDates.length === 0) return 0;
+
+  const sorted = [...new Set(completionDates)].sort();
+  let best = 1;
+  let current = 1;
+
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(sorted[i - 1] + 'T00:00:00');
+    const curr = new Date(sorted[i] + 'T00:00:00');
+    const diff = Math.round((curr - prev) / (1000 * 60 * 60 * 24));
+
+    if (diff === 1) {
+      current++;
+    } else if (diff > 1) {
+      current = 1;
+    }
+    // diff === 0 means duplicate, skip
+    best = Math.max(best, current);
+  }
+  return best;
 }
 
 export default function AntiGravityHabitTracker() {
@@ -91,7 +129,7 @@ export default function AntiGravityHabitTracker() {
     }
 
     const newStreak = recalcStreak(newDates);
-    const newBestStreak = Math.max(target.bestStreak || 0, newStreak);
+    const newBestStreak = recalcBestStreak(newDates);
 
     await updateHabit(habitId, {
       completionDates: newDates,
@@ -119,7 +157,7 @@ export default function AntiGravityHabitTracker() {
 
     const newDates = [...dates, dateStr].sort();
     const streak = recalcStreak(newDates);
-    const newBestStreak = Math.max(target.bestStreak || 0, streak);
+    const newBestStreak = recalcBestStreak(newDates);
 
     // If there was a friction log, remove it since they completed the day
     const updatedFrictionLogs = { ...(target.frictionLogs || {}) };
@@ -216,10 +254,6 @@ export default function AntiGravityHabitTracker() {
         justifyContent: 'space-between'
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <img src="/ganesha_logo.png" alt="Ganesha Logo" style={{ height: isMobile ? '24px' : '32px', width: isMobile ? '24px' : '32px', objectFit: 'contain' }} />
-          <Typography variant={isMobile ? "subtitle1" : "h6"} sx={{ color: 'text.primary', fontWeight: 600 }}>
-            Habit Tracker
-          </Typography>
         </Box>
 
         {/* Date Selector */}

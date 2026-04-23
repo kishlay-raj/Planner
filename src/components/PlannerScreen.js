@@ -141,8 +141,6 @@ function PlannerScreen() {
         bgcolor: 'background.paper'
       }}>
         <div className="planner-nav" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src="/ganesha_logo.png" alt="Ganesha Logo" style={{ height: '32px', width: '32px', objectFit: 'contain' }} />
-          <Typography className="planner-title" sx={{ color: 'text.primary' }}>Flow Planner</Typography>
         </div>
         <div className="planner-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {currentUser ? (

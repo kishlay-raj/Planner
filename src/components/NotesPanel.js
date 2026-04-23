@@ -364,7 +364,7 @@ function NotesPanel({ selectedDate, onDateChange, sx = {}, customPath = null, ti
         backgroundColor: 'background.paper',
       }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {title}
             </Typography>

@@ -54,7 +54,6 @@ function YearlyPlanner() {
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', mb: 4 }}>
                 <Box /> {/* Left spacer for perfect centering */}
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <img src="/ganesha_logo.png" alt="Ganesha Logo" style={{ height: '36px', width: '36px', marginRight: '16px', objectFit: 'contain' }} />
                     <IconButton onClick={() => handleNavigate('prev')}><NavigateBefore /></IconButton>
                     <Typography variant="h4" sx={{ mx: 3, fontWeight: 'bold' }}>{format(currentYear, 'yyyy')}</Typography>
                     <IconButton onClick={() => handleNavigate('next')}><NavigateNext /></IconButton>
