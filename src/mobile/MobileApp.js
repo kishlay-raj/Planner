@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch, WarningAmber, Visibility, VisibilityOff } from '@mui/icons-material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch, WarningAmber, Visibility, VisibilityOff, Timer } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
@@ -53,6 +53,7 @@ const TAB_CONFIG = {
     gratitude: { label: 'Gratitude', icon: <Favorite /> },
     mistakes: { label: 'Mistakes', icon: <WarningAmber /> },
     notes: { label: 'Notes', icon: <EditNote /> },
+    pomodoro: { label: 'Pomodoro', icon: <Timer /> },
     settings: { label: 'Settings', icon: <SettingsIcon /> }
 };
 
@@ -94,6 +95,16 @@ function MobileApp() {
                     newOrder.splice(notesIndex, 0, 'mistakes');
                 } else {
                     newOrder.push('mistakes');
+                }
+                updated = true;
+            }
+
+            if (!newOrder.includes('pomodoro')) {
+                const settingsIndex = newOrder.indexOf('settings');
+                if (settingsIndex !== -1) {
+                    newOrder.splice(settingsIndex, 0, 'pomodoro');
+                } else {
+                    newOrder.push('pomodoro');
                 }
                 updated = true;
             }
@@ -988,6 +999,216 @@ function MobileApp() {
         return <AntiGravityHabitTracker />;
     };
 
+    // --- MOBILE POMODORO STATE ---
+    const [mPrimaryTask, setMPrimaryTask] = useFirestore('pomodoroPrimaryTask', '');
+    const [mSecondaryTask, setMSecondaryTask] = useFirestore('pomodoroSecondaryTask', '');
+    const [mEditingTasks, setMEditingTasks] = useState(false);
+    const [mLocalPrimary, setMLocalPrimary] = useState('');
+    const [mLocalSecondary, setMLocalSecondary] = useState('');
+    const [mTimeLeft, setMTimeLeft] = useState(25 * 60);
+    const [mIsActive, setMIsActive] = useState(false);
+    const [mMode, setMMode] = useState('pomodoro'); // 'pomodoro' | 'shortBreak' | 'longBreak'
+    const [mCycles, setMCycles] = useState(0);
+    const mPomodoroSettings = { pomodoro: 25, shortBreak: 5, longBreak: 15, longBreakInterval: 4 };
+    const mModeColors = { pomodoro: '#b74b4b', shortBreak: '#4c9195', longBreak: '#457ca3' };
+
+    useEffect(() => {
+        setMLocalPrimary(mPrimaryTask || '');
+        setMLocalSecondary(mSecondaryTask || '');
+    }, [mPrimaryTask, mSecondaryTask]);
+
+    useEffect(() => {
+        let interval = null;
+        if (mIsActive && mTimeLeft > 0) {
+            interval = setInterval(() => setMTimeLeft(t => t - 1), 1000);
+        } else if (mTimeLeft === 0) {
+            setMCycles(c => c + 1);
+            if (mMode === 'pomodoro') {
+                if ((mCycles + 1) >= mPomodoroSettings.longBreakInterval) {
+                    setMMode('longBreak');
+                    setMTimeLeft(mPomodoroSettings.longBreak * 60);
+                    setMCycles(0);
+                } else {
+                    setMMode('shortBreak');
+                    setMTimeLeft(mPomodoroSettings.shortBreak * 60);
+                }
+            } else {
+                setMMode('pomodoro');
+                setMTimeLeft(mPomodoroSettings.pomodoro * 60);
+            }
+            setMIsActive(false);
+        }
+        return () => clearInterval(interval);
+    }, [mIsActive, mTimeLeft, mMode, mCycles]);
+
+    const mHandleModeChange = (newMode) => {
+        setMMode(newMode);
+        setMIsActive(false);
+        if (newMode === 'pomodoro') setMTimeLeft(mPomodoroSettings.pomodoro * 60);
+        else if (newMode === 'shortBreak') setMTimeLeft(mPomodoroSettings.shortBreak * 60);
+        else setMTimeLeft(mPomodoroSettings.longBreak * 60);
+    };
+
+    const mSaveTasks = () => {
+        setMPrimaryTask(mLocalPrimary);
+        setMSecondaryTask(mLocalSecondary);
+        setMEditingTasks(false);
+    };
+
+    const renderPomodoroView = () => {
+        const bgColor = mModeColors[mMode];
+        const mins = Math.floor(mTimeLeft / 60).toString().padStart(2, '0');
+        const secs = (mTimeLeft % 60).toString().padStart(2, '0');
+        return (
+            <Box sx={{ pb: 10, minHeight: '100vh', bgcolor: bgColor, color: 'white', display: 'flex', flexDirection: 'column' }}>
+                {/* Header */}
+                <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+                    <Typography variant="h6" fontWeight="700" sx={{ letterSpacing: 1 }}>Pomodoro</Typography>
+                </Box>
+
+                {/* Mode Selector */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, px: 2, mb: 2 }}>
+                    {[['pomodoro', 'Focus'], ['shortBreak', 'Short Break'], ['longBreak', 'Long Break']].map(([val, label]) => (
+                        <Button
+                            key={val}
+                            size="small"
+                            onClick={() => mHandleModeChange(val)}
+                            sx={{
+                                color: 'white',
+                                fontWeight: mMode === val ? 700 : 400,
+                                bgcolor: mMode === val ? 'rgba(255,255,255,0.2)' : 'transparent',
+                                borderRadius: 2,
+                                px: 1.5,
+                                fontSize: '0.75rem',
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.15)' }
+                            }}
+                        >{label}</Button>
+                    ))}
+                </Box>
+
+                {/* Timer */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+                    <Typography sx={{ fontSize: '90px', fontWeight: 'bold', fontFamily: 'monospace', letterSpacing: 4, lineHeight: 1 }}>
+                        {mins}:{secs}
+                    </Typography>
+                    <Typography sx={{ mt: 1, opacity: 0.7, fontSize: '0.9rem' }}>
+                        #{mCycles + 1} · {mMode === 'pomodoro' ? 'Time to focus!' : 'Take a break!'}
+                    </Typography>
+                </Box>
+
+                {/* Controls */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4 }}>
+                    <Button
+                        variant="contained"
+                        onClick={() => setMIsActive(a => !a)}
+                        sx={{
+                            bgcolor: 'white',
+                            color: bgColor,
+                            fontWeight: 700,
+                            fontSize: '1.1rem',
+                            px: 6,
+                            py: 1.5,
+                            borderRadius: 2,
+                            minWidth: 160,
+                            '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' }
+                        }}
+                    >
+                        {mIsActive ? 'PAUSE' : 'START'}
+                    </Button>
+                    <Button
+                        onClick={() => { setMIsActive(false); mHandleModeChange(mMode); }}
+                        sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2, px: 2, fontWeight: 700, '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }}
+                    >
+                        RESET
+                    </Button>
+                </Box>
+
+                {/* Task Section */}
+                <Box sx={{ px: 2 }}>
+                    {!mEditingTasks ? (
+                        <Box
+                            onClick={() => setMEditingTasks(true)}
+                            sx={{
+                                border: '1px dashed rgba(255,255,255,0.35)',
+                                borderRadius: 3,
+                                p: 2.5,
+                                cursor: 'pointer',
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
+                                transition: 'background 0.2s'
+                            }}
+                        >
+                            {mPrimaryTask ? (
+                                <>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: mSecondaryTask ? 1.5 : 0 }}>
+                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'white', flexShrink: 0 }} />
+                                        <Box>
+                                            <Typography sx={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase' }}>Primary Focus</Typography>
+                                            <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>{mPrimaryTask}</Typography>
+                                        </Box>
+                                    </Box>
+                                    {mSecondaryTask && (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, opacity: 0.75, borderTop: '1px solid rgba(255,255,255,0.15)', pt: 1.5 }}>
+                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.8)', flexShrink: 0 }} />
+                                            <Box>
+                                                <Typography sx={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase' }}>Gap Filler</Typography>
+                                                <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>{mSecondaryTask}</Typography>
+                                            </Box>
+                                        </Box>
+                                    )}
+                                </>
+                            ) : (
+                                <Typography sx={{ opacity: 0.5, textAlign: 'center', fontSize: '0.95rem' }}>
+                                    + Set focus tasks for this session
+                                </Typography>
+                            )}
+                        </Box>
+                    ) : (
+                        <Box sx={{ border: '1px solid rgba(255,255,255,0.3)', borderRadius: 3, p: 2.5, bgcolor: 'rgba(0,0,0,0.15)' }}>
+                            <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 0.5 }}>Primary Focus</Typography>
+                            <TextField
+                                fullWidth
+                                variant="standard"
+                                placeholder="What's the one thing you must do?"
+                                value={mLocalPrimary}
+                                onChange={e => setMLocalPrimary(e.target.value)}
+                                sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white', fontSize: '1rem', fontWeight: 600 }, '& input::placeholder': { color: 'rgba(255,255,255,0.35)' } }}
+                                InputProps={{ disableUnderline: false }}
+                            />
+                            <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 0.25 }}>Gap Filler (Secondary)</Typography>
+                            <Typography sx={{ fontSize: '0.68rem', opacity: 0.5, mb: 0.5 }}>For breaks, waiting, or low-energy moments</Typography>
+                            <TextField
+                                fullWidth
+                                variant="standard"
+                                placeholder="Quick task to fill small gaps..."
+                                value={mLocalSecondary}
+                                onChange={e => setMLocalSecondary(e.target.value)}
+                                sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white', fontSize: '0.95rem' }, '& input::placeholder': { color: 'rgba(255,255,255,0.35)' } }}
+                                InputProps={{ disableUnderline: false }}
+                            />
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={mSaveTasks}
+                                    sx={{ bgcolor: 'white', color: bgColor, fontWeight: 700, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                                >
+                                    Save
+                                </Button>
+                                <Button
+                                    size="small"
+                                    onClick={() => setMEditingTasks(false)}
+                                    sx={{ color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.3)' }}
+                                >
+                                    Cancel
+                                </Button>
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
+            </Box>
+        );
+    };
+
     const renderContent = () => {
         if (!currentUser) {
             return (
@@ -1010,6 +1231,7 @@ function MobileApp() {
             case 'gratitude': return renderGratitudeView();
             case 'mistakes': return <MistakesJournal />;
             case 'notes': return renderNotesView();
+            case 'pomodoro': return renderPomodoroView();
             case 'settings': return renderSettingsView();
             default: return renderTodayView();
         }

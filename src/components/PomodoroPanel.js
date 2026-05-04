@@ -54,6 +54,22 @@ function PomodoroPanel({
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [analyticsView, setAnalyticsView] = useState(0); // 0: Daily, 1: Weekly, 2: Monthly
+  const [primaryTask, setPrimaryTask] = useFirestore('pomodoroPrimaryTask', '');
+  const [secondaryTask, setSecondaryTask] = useFirestore('pomodoroSecondaryTask', '');
+  const [editingTasks, setEditingTasks] = useState(false);
+  const [localPrimary, setLocalPrimary] = useState('');
+  const [localSecondary, setLocalSecondary] = useState('');
+
+  React.useEffect(() => {
+    setLocalPrimary(primaryTask || '');
+    setLocalSecondary(secondaryTask || '');
+  }, [primaryTask, secondaryTask]);
+
+  const handleSaveTasks = () => {
+    setPrimaryTask(localPrimary);
+    setSecondaryTask(localSecondary);
+    setEditingTasks(false);
+  };
 
   // Stats handling (keeping this locally for now as it reads from firestore mostly)
   const defaultStats = { total: 0, today: 0, lastDate: new Date().toDateString() };
@@ -363,6 +379,101 @@ function PomodoroPanel({
         <Typography variant="body2" sx={{ mt: 2, opacity: 0.6 }}>
           Today's Focus: {stats.today} cycles
         </Typography>
+
+        {/* Task Section */}
+        <Box sx={{ mt: 4, width: '100%', maxWidth: 480 }}>
+          {!editingTasks ? (
+            <Box
+              onClick={() => setEditingTasks(true)}
+              sx={{
+                cursor: 'pointer',
+                border: '1px dashed rgba(255,255,255,0.3)',
+                borderRadius: 3,
+                p: 2.5,
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
+                transition: 'background 0.2s'
+              }}
+            >
+              {primaryTask ? (
+                <>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: secondaryTask ? 1.5 : 0 }}>
+                    <Box sx={{
+                      width: 10, height: 10, borderRadius: '50%',
+                      bgcolor: 'rgba(255,255,255,0.9)', flexShrink: 0
+                    }} />
+                    <Box>
+                      <Typography sx={{ fontSize: '0.65rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase', lineHeight: 1 }}>Primary Focus</Typography>
+                      <Typography sx={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.3 }}>{primaryTask}</Typography>
+                    </Box>
+                  </Box>
+                  {secondaryTask && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 0.5, opacity: 0.7, borderTop: '1px solid rgba(255,255,255,0.15)', pt: 1.5 }}>
+                      <Box sx={{
+                        width: 8, height: 8, borderRadius: '50%',
+                        border: '2px solid rgba(255,255,255,0.7)', flexShrink: 0
+                      }} />
+                      <Box>
+                        <Typography sx={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase', lineHeight: 1 }}>Gap Filler</Typography>
+                        <Typography sx={{ fontWeight: 500, fontSize: '0.9rem', lineHeight: 1.3 }}>{secondaryTask}</Typography>
+                      </Box>
+                    </Box>
+                  )}
+                </>
+              ) : (
+                <Typography sx={{ opacity: 0.5, fontSize: '0.95rem', textAlign: 'center' }}>
+                  + Set focus tasks for this session
+                </Typography>
+              )}
+            </Box>
+          ) : (
+            <Box sx={{ border: '1px solid rgba(255,255,255,0.3)', borderRadius: 3, p: 2.5, bgcolor: 'rgba(0,0,0,0.15)' }}>
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 1 }}>Primary Focus</Typography>
+              <TextField
+                fullWidth
+                variant="standard"
+                placeholder="What's the one thing you must do?"
+                value={localPrimary}
+                onChange={e => setLocalPrimary(e.target.value)}
+                InputProps={{
+                  disableUnderline: false,
+                  style: { color: 'white', fontSize: '1rem', fontWeight: 600 }
+                }}
+                sx={{ mb: 2, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white' }, '& input::placeholder': { color: 'rgba(255,255,255,0.4)' } }}
+              />
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 1 }}>Gap Filler (Secondary)</Typography>
+              <Typography sx={{ fontSize: '0.7rem', opacity: 0.5, mb: 1 }}>For breaks, waiting, or low-energy moments</Typography>
+              <TextField
+                fullWidth
+                variant="standard"
+                placeholder="Quick task to fill small gaps..."
+                value={localSecondary}
+                onChange={e => setLocalSecondary(e.target.value)}
+                InputProps={{
+                  disableUnderline: false,
+                  style: { color: 'white', fontSize: '0.95rem' }
+                }}
+                sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white' }, '& input::placeholder': { color: 'rgba(255,255,255,0.4)' } }}
+              />
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleSaveTasks}
+                  sx={{ bgcolor: 'white', color: modeColors[mode], fontWeight: 700, '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' } }}
+                >
+                  Save
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => setEditingTasks(false)}
+                  sx={{ color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.3)', border: '1px solid' }}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </Box>
       </Container>
 
       {/* Analytics Section */}
