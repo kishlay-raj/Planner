@@ -227,7 +227,7 @@ function MobileApp() {
 
     // Journal Data
     const journalDateKey = format(journalDate, 'yyyy-MM-dd');
-    const [prompts] = useFirestore('journalPrompts', MOBILE_JOURNAL_PROMPTS);
+    const [prompts, setPrompts] = useFirestore('journalPrompts', MOBILE_JOURNAL_PROMPTS);
     const [journalData, setJournalData] = useFirestore('dailyJournalData', {});
     const currentJournalEntry = journalData[journalDateKey] || { responses: {}, notes: '' };
 
@@ -243,6 +243,28 @@ function MobileApp() {
     const [disabledSections, setDisabledSections] = useFirestore('journalDisabledSections', []);
     const [defaultCollapsedSections, setDefaultCollapsedSections] = useFirestore('journalDefaultCollapsedSections', []);
     const [openJournalSettings, setOpenJournalSettings] = useState(false);
+    const [expandedSettingsSection, setExpandedSettingsSection] = useState(null);
+    const [addQuestionDialogOpen, setAddQuestionDialogOpen] = useState(false);
+    const [newQuestionCategory, setNewQuestionCategory] = useState('');
+    const [newQuestionText, setNewQuestionText] = useState('');
+
+    const handleAddQuestion = () => {
+        if (!newQuestionText.trim()) return;
+        const newPrompt = {
+            id: 'user-' + Date.now().toString(),
+            section: newQuestionCategory,
+            text: newQuestionText.trim()
+        };
+        setPrompts([...prompts, newPrompt]);
+        setNewQuestionText('');
+        setAddQuestionDialogOpen(false);
+    };
+
+    const handleRemoveQuestion = (promptId) => {
+        if (window.confirm('Are you sure you want to remove this question?')) {
+            setPrompts(prompts.filter(p => p.id !== promptId));
+        }
+    };
 
     const handleToggleJournalSection = (section) => {
         setDisabledSections(prev => 
@@ -553,11 +575,32 @@ function MobileApp() {
                                         </Paper>
                                     )}
                                     {prompts.filter(p => p.section === section).map(prompt => (
-                                        <Paper key={prompt.id} sx={{ p: 2, mb: 2, borderRadius: 3 }}>
-                                            <Typography variant="body2" fontWeight="600" sx={{ mb: 1 }}>{prompt.text}</Typography>
+                                        <Paper key={prompt.id} sx={{ p: 2, mb: 2, borderRadius: 3, position: 'relative' }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                                                <Typography variant="body2" fontWeight="600" sx={{ pr: 3 }}>{prompt.text}</Typography>
+                                                <IconButton 
+                                                    size="small" 
+                                                    onClick={() => handleRemoveQuestion(prompt.id)}
+                                                    sx={{ position: 'absolute', top: 4, right: 4, opacity: 0.3, '&:hover': { opacity: 1, color: 'error.main' } }}
+                                                >
+                                                    <Delete fontSize="small" />
+                                                </IconButton>
+                                            </Box>
                                             <TextField fullWidth multiline minRows={2} variant="standard" placeholder="Write here..." value={currentJournalEntry.responses?.[prompt.id] || ''} onChange={(e) => handleJournalResponseChange(prompt.id, e.target.value)} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} sx={{ bgcolor: 'background.default', p: 1, borderRadius: 1 }} />
                                         </Paper>
                                     ))}
+                                    <Button 
+                                        variant="outlined" 
+                                        size="small" 
+                                        startIcon={<Add />} 
+                                        onClick={() => {
+                                            setNewQuestionCategory(section);
+                                            setAddQuestionDialogOpen(true);
+                                        }}
+                                        sx={{ mb: 3, width: '100%', borderStyle: 'dashed' }}
+                                    >
+                                        Add Question to {section}
+                                    </Button>
                                 </Collapse>
                             </Box>
                         );
@@ -1045,7 +1088,7 @@ function MobileApp() {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={openJournalSettings} onClose={() => setOpenJournalSettings(false)} fullWidth maxWidth="xs">
+            <Dialog open={openJournalSettings} onClose={() => setOpenJournalSettings(false)} fullWidth maxWidth="sm">
                 <DialogTitle>Journal Categories</DialogTitle>
                 <DialogContent>
                     <List>
@@ -1055,30 +1098,81 @@ function MobileApp() {
                         </Box>
                         <Divider sx={{ mb: 1 }} />
                         {[...new Set(prompts.map(p => p.section))].map(section => (
-                            <ListItem 
-                                key={section} 
-                                disablePadding
-                                secondaryAction={
-                                    <IconButton edge="end" size="small" onClick={() => handleToggleDefaultCollapse(section)}>
-                                        {defaultCollapsedSections.includes(section) ? 
-                                            <ExpandMore color="primary" /> : 
-                                            <ExpandLess sx={{ opacity: 0.3 }} />
-                                        }
-                                    </IconButton>
-                                }
-                            >
-                                <Checkbox 
-                                    edge="start" 
-                                    checked={!disabledSections.includes(section)} 
-                                    onChange={() => handleToggleJournalSection(section)} 
-                                />
-                                <ListItemText primary={section} />
-                            </ListItem>
+                            <React.Fragment key={section}>
+                                <ListItem 
+                                    disablePadding
+                                    secondaryAction={
+                                        <IconButton edge="end" size="small" onClick={(e) => { e.stopPropagation(); handleToggleDefaultCollapse(section); }}>
+                                            {defaultCollapsedSections.includes(section) ? 
+                                                <ExpandMore color="primary" /> : 
+                                                <ExpandLess sx={{ opacity: 0.3 }} />
+                                            }
+                                        </IconButton>
+                                    }
+                                >
+                                    <Checkbox 
+                                        edge="start" 
+                                        checked={!disabledSections.includes(section)} 
+                                        onChange={() => handleToggleJournalSection(section)} 
+                                    />
+                                    <ListItemText 
+                                        primary={section} 
+                                        onClick={() => setExpandedSettingsSection(expandedSettingsSection === section ? null : section)}
+                                        sx={{ cursor: 'pointer' }}
+                                        secondary={expandedSettingsSection === section ? "Tap to collapse questions" : "Tap to edit questions"}
+                                    />
+                                </ListItem>
+                                <Collapse in={expandedSettingsSection === section} timeout="auto" unmountOnExit>
+                                    <List component="div" disablePadding sx={{ pl: 4, pr: 2, bgcolor: 'background.default', borderRadius: 2, mb: 1 }}>
+                                        {prompts.filter(p => p.section === section).map(prompt => (
+                                            <ListItem key={prompt.id} disablePadding sx={{ py: 1 }}>
+                                                <ListItemText primary={prompt.text} primaryTypographyProps={{ variant: 'body2' }} />
+                                                <IconButton size="small" color="error" onClick={() => handleRemoveQuestion(prompt.id)}>
+                                                    <Delete fontSize="small" />
+                                                </IconButton>
+                                            </ListItem>
+                                        ))}
+                                        <ListItem disablePadding sx={{ py: 1, justifyContent: 'center' }}>
+                                            <Button 
+                                                size="small" 
+                                                startIcon={<Add />} 
+                                                onClick={() => {
+                                                    setNewQuestionCategory(section);
+                                                    setAddQuestionDialogOpen(true);
+                                                }}
+                                            >
+                                                Add Question
+                                            </Button>
+                                        </ListItem>
+                                    </List>
+                                </Collapse>
+                            </React.Fragment>
                         ))}
                     </List>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenJournalSettings(false)}>Done</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={addQuestionDialogOpen} onClose={() => setAddQuestionDialogOpen(false)} fullWidth maxWidth="xs">
+                <DialogTitle>Add Question to {newQuestionCategory}</DialogTitle>
+                <DialogContent>
+                    <TextField 
+                        autoFocus 
+                        margin="dense" 
+                        label="Question Text" 
+                        fullWidth 
+                        multiline
+                        minRows={2}
+                        variant="outlined" 
+                        value={newQuestionText} 
+                        onChange={(e) => setNewQuestionText(e.target.value)} 
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAddQuestionDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleAddQuestion} variant="contained">Add</Button>
                 </DialogActions>
             </Dialog>
         </ThemeProvider>
