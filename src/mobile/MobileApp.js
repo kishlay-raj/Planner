@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch, WarningAmber } from '@mui/icons-material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch, WarningAmber, Visibility, VisibilityOff } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
@@ -241,12 +241,14 @@ function MobileApp() {
     
     // --- JOURNAL SETTINGS STATE ---
     const [disabledSections, setDisabledSections] = useFirestore('journalDisabledSections', []);
+    const [disabledPrompts, setDisabledPrompts] = useFirestore('journalDisabledPrompts', []);
     const [defaultCollapsedSections, setDefaultCollapsedSections] = useFirestore('journalDefaultCollapsedSections', []);
     const [openJournalSettings, setOpenJournalSettings] = useState(false);
     const [expandedSettingsSection, setExpandedSettingsSection] = useState(null);
     const [addQuestionDialogOpen, setAddQuestionDialogOpen] = useState(false);
     const [newQuestionCategory, setNewQuestionCategory] = useState('');
     const [newQuestionText, setNewQuestionText] = useState('');
+    const [journalManageMode, setJournalManageMode] = useState(false);
 
     const handleAddQuestion = () => {
         if (!newQuestionText.trim()) return;
@@ -263,7 +265,14 @@ function MobileApp() {
     const handleRemoveQuestion = (promptId) => {
         if (window.confirm('Are you sure you want to remove this question?')) {
             setPrompts(prompts.filter(p => p.id !== promptId));
+            setDisabledPrompts(prev => prev.filter(id => id !== promptId));
         }
+    };
+
+    const handleTogglePrompt = (promptId) => {
+        setDisabledPrompts(prev =>
+            prev.includes(promptId) ? prev.filter(id => id !== promptId) : [...prev, promptId]
+        );
     };
 
     const handleToggleJournalSection = (section) => {
@@ -541,9 +550,22 @@ function MobileApp() {
                     </Box>
                     <Box sx={{ display: 'flex' }}>
                         <IconButton onClick={() => setJournalDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
+                        <IconButton
+                            onClick={() => setJournalManageMode(m => !m)}
+                            sx={{ color: journalManageMode ? 'primary.main' : 'text.secondary' }}
+                            title={journalManageMode ? 'Exit Manage Mode' : 'Manage Questions'}
+                        >
+                            <EditNote fontSize="small" />
+                        </IconButton>
                         <IconButton onClick={() => setOpenJournalSettings(true)}><SettingsIcon fontSize="small" /></IconButton>
                     </Box>
                 </Paper>
+                {journalManageMode && (
+                    <Paper sx={{ mx: 2, mb: 1, p: 1.5, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <EditNote sx={{ color: 'white', fontSize: 18 }} />
+                        <Typography variant="caption" sx={{ color: 'white', fontWeight: 600 }}>Manage mode: toggle or remove questions</Typography>
+                    </Paper>
+                )}
                 <Box sx={{ px: 2 }}>
                     {sections.map(section => {
                         const isCollapsed = collapsedSections.includes(section);
@@ -574,33 +596,56 @@ function MobileApp() {
                                             </Typography>
                                         </Paper>
                                     )}
-                                    {prompts.filter(p => p.section === section).map(prompt => (
-                                        <Paper key={prompt.id} sx={{ p: 2, mb: 2, borderRadius: 3, position: 'relative' }}>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                                                <Typography variant="body2" fontWeight="600" sx={{ pr: 3 }}>{prompt.text}</Typography>
-                                                <IconButton 
-                                                    size="small" 
-                                                    onClick={() => handleRemoveQuestion(prompt.id)}
-                                                    sx={{ position: 'absolute', top: 4, right: 4, opacity: 0.3, '&:hover': { opacity: 1, color: 'error.main' } }}
-                                                >
-                                                    <Delete fontSize="small" />
-                                                </IconButton>
-                                            </Box>
-                                            <TextField fullWidth multiline minRows={2} variant="standard" placeholder="Write here..." value={currentJournalEntry.responses?.[prompt.id] || ''} onChange={(e) => handleJournalResponseChange(prompt.id, e.target.value)} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} sx={{ bgcolor: 'background.default', p: 1, borderRadius: 1 }} />
-                                        </Paper>
-                                    ))}
-                                    <Button 
-                                        variant="outlined" 
-                                        size="small" 
-                                        startIcon={<Add />} 
-                                        onClick={() => {
-                                            setNewQuestionCategory(section);
-                                            setAddQuestionDialogOpen(true);
-                                        }}
-                                        sx={{ mb: 3, width: '100%', borderStyle: 'dashed' }}
-                                    >
-                                        Add Question to {section}
-                                    </Button>
+                                    {prompts.filter(p => p.section === section && (journalManageMode || !disabledPrompts.includes(p.id))).map(prompt => {
+                                        const isPromptDisabled = disabledPrompts.includes(prompt.id);
+                                        return (
+                                            <Paper key={prompt.id} sx={{ p: 2, mb: 2, borderRadius: 3, position: 'relative', opacity: isPromptDisabled ? 0.45 : 1, transition: 'opacity 0.2s' }}>
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: isPromptDisabled ? 0 : 1 }}>
+                                                    <Typography variant="body2" fontWeight="600" sx={{ pr: journalManageMode ? 8 : 1, textDecoration: isPromptDisabled ? 'line-through' : 'none', color: isPromptDisabled ? 'text.disabled' : 'text.primary' }}>{prompt.text}</Typography>
+                                                    {journalManageMode && (
+                                                        <Box sx={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 0.5 }}>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleTogglePrompt(prompt.id)}
+                                                                sx={{ color: isPromptDisabled ? 'text.disabled' : 'success.main' }}
+                                                                title={isPromptDisabled ? 'Enable question' : 'Disable question'}
+                                                            >
+                                                                {isPromptDisabled
+                                                                    ? <VisibilityOff fontSize="small" />
+                                                                    : <Visibility fontSize="small" />
+                                                                }
+                                                            </IconButton>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleRemoveQuestion(prompt.id)}
+                                                                sx={{ color: 'error.main', opacity: 0.6, '&:hover': { opacity: 1 } }}
+                                                                title="Remove question permanently"
+                                                            >
+                                                                <Delete fontSize="small" />
+                                                            </IconButton>
+                                                        </Box>
+                                                    )}
+                                                </Box>
+                                                {!isPromptDisabled && (
+                                                    <TextField fullWidth multiline minRows={2} variant="standard" placeholder="Write here..." value={currentJournalEntry.responses?.[prompt.id] || ''} onChange={(e) => handleJournalResponseChange(prompt.id, e.target.value)} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} sx={{ bgcolor: 'background.default', p: 1, borderRadius: 1 }} />
+                                                )}
+                                            </Paper>
+                                        );
+                                    })}
+                                    {journalManageMode && (
+                                        <Button 
+                                            variant="outlined" 
+                                            size="small" 
+                                            startIcon={<Add />} 
+                                            onClick={() => {
+                                                setNewQuestionCategory(section);
+                                                setAddQuestionDialogOpen(true);
+                                            }}
+                                            sx={{ mb: 3, width: '100%', borderStyle: 'dashed' }}
+                                        >
+                                            Add Question to {section}
+                                        </Button>
+                                    )}
                                 </Collapse>
                             </Box>
                         );
@@ -1124,14 +1169,28 @@ function MobileApp() {
                                 </ListItem>
                                 <Collapse in={expandedSettingsSection === section} timeout="auto" unmountOnExit>
                                     <List component="div" disablePadding sx={{ pl: 4, pr: 2, bgcolor: 'background.default', borderRadius: 2, mb: 1 }}>
-                                        {prompts.filter(p => p.section === section).map(prompt => (
-                                            <ListItem key={prompt.id} disablePadding sx={{ py: 1 }}>
-                                                <ListItemText primary={prompt.text} primaryTypographyProps={{ variant: 'body2' }} />
-                                                <IconButton size="small" color="error" onClick={() => handleRemoveQuestion(prompt.id)}>
-                                                    <Delete fontSize="small" />
-                                                </IconButton>
-                                            </ListItem>
-                                        ))}
+                                        {prompts.filter(p => p.section === section).map(prompt => {
+                                            const isPromptDisabled = disabledPrompts.includes(prompt.id);
+                                            return (
+                                                <ListItem key={prompt.id} disablePadding sx={{ py: 1 }}>
+                                                    <ListItemText
+                                                        primary={prompt.text}
+                                                        primaryTypographyProps={{ variant: 'body2', sx: { textDecoration: isPromptDisabled ? 'line-through' : 'none', color: isPromptDisabled ? 'text.disabled' : 'text.primary' } }}
+                                                    />
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => handleTogglePrompt(prompt.id)}
+                                                        sx={{ color: isPromptDisabled ? 'text.disabled' : 'success.main', mr: 0.5 }}
+                                                        title={isPromptDisabled ? 'Enable' : 'Disable'}
+                                                    >
+                                                        {isPromptDisabled ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                                                    </IconButton>
+                                                    <IconButton size="small" color="error" onClick={() => handleRemoveQuestion(prompt.id)} title="Remove permanently">
+                                                        <Delete fontSize="small" />
+                                                    </IconButton>
+                                                </ListItem>
+                                            );
+                                        })}
                                         <ListItem disablePadding sx={{ py: 1, justifyContent: 'center' }}>
                                             <Button 
                                                 size="small" 
