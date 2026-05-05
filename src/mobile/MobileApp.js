@@ -548,6 +548,22 @@ function MobileApp() {
         );
     };
 
+    // --- JOURNAL QUESTION MENU STATE ---
+    const [questionMenuAnchor, setQuestionMenuAnchor] = useState(null);
+    const [questionMenuPromptId, setQuestionMenuPromptId] = useState(null);
+    const [showHiddenQuestions, setShowHiddenQuestions] = useState({});
+
+    const handleOpenQuestionMenu = (event, promptId) => {
+        event.stopPropagation();
+        setQuestionMenuAnchor(event.currentTarget);
+        setQuestionMenuPromptId(promptId);
+    };
+
+    const handleCloseQuestionMenu = () => {
+        setQuestionMenuAnchor(null);
+        setQuestionMenuPromptId(null);
+    };
+
     const renderJournalView = () => {
         const allSections = [...new Set(prompts.map(p => p.section))];
         const sections = allSections.filter(s => !disabledSections.includes(s));
@@ -561,25 +577,17 @@ function MobileApp() {
                     </Box>
                     <Box sx={{ display: 'flex' }}>
                         <IconButton onClick={() => setJournalDate(d => addDays(d, 1))}><ChevronRight /></IconButton>
-                        <IconButton
-                            onClick={() => setJournalManageMode(m => !m)}
-                            sx={{ color: journalManageMode ? 'primary.main' : 'text.secondary' }}
-                            title={journalManageMode ? 'Exit Manage Mode' : 'Manage Questions'}
-                        >
-                            <EditNote fontSize="small" />
-                        </IconButton>
                         <IconButton onClick={() => setOpenJournalSettings(true)}><SettingsIcon fontSize="small" /></IconButton>
                     </Box>
                 </Paper>
-                {journalManageMode && (
-                    <Paper sx={{ mx: 2, mb: 1, p: 1.5, bgcolor: 'primary.main', borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <EditNote sx={{ color: 'white', fontSize: 18 }} />
-                        <Typography variant="caption" sx={{ color: 'white', fontWeight: 600 }}>Manage mode: toggle or remove questions</Typography>
-                    </Paper>
-                )}
                 <Box sx={{ px: 2 }}>
                     {sections.map(section => {
                         const isCollapsed = collapsedSections.includes(section);
+                        const sectionPrompts = prompts.filter(p => p.section === section);
+                        const hiddenCount = sectionPrompts.filter(p => disabledPrompts.includes(p.id)).length;
+                        const isShowingHidden = showHiddenQuestions[section] || false;
+                        const visiblePrompts = sectionPrompts.filter(p => !disabledPrompts.includes(p.id));
+                        const hiddenPrompts = sectionPrompts.filter(p => disabledPrompts.includes(p.id));
                         return (
                             <Box key={section} sx={{ mb: 2 }}>
                                 <Box
@@ -607,65 +615,99 @@ function MobileApp() {
                                             </Typography>
                                         </Paper>
                                     )}
-                                    {prompts.filter(p => p.section === section && (journalManageMode || !disabledPrompts.includes(p.id))).map(prompt => {
-                                        const isPromptDisabled = disabledPrompts.includes(prompt.id);
-                                        return (
-                                            <Paper key={prompt.id} sx={{ p: 2, mb: 2, borderRadius: 3, position: 'relative', opacity: isPromptDisabled ? 0.45 : 1, transition: 'opacity 0.2s' }}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: isPromptDisabled ? 0 : 1 }}>
-                                                    <Typography variant="body2" fontWeight="600" sx={{ pr: journalManageMode ? 8 : 1, textDecoration: isPromptDisabled ? 'line-through' : 'none', color: isPromptDisabled ? 'text.disabled' : 'text.primary' }}>{prompt.text}</Typography>
-                                                    {journalManageMode && (
-                                                        <Box sx={{ position: 'absolute', top: 4, right: 4, display: 'flex', gap: 0.5 }}>
-                                                            <IconButton
+                                    {/* Active questions */}
+                                    {visiblePrompts.map(prompt => (
+                                        <Paper key={prompt.id} sx={{ p: 2, mb: 2, borderRadius: 3, position: 'relative' }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                                                <Typography variant="body2" fontWeight="600" sx={{ pr: 3, flex: 1 }}>{prompt.text}</Typography>
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={(e) => handleOpenQuestionMenu(e, prompt.id)}
+                                                    sx={{ mt: -0.5, mr: -0.5, opacity: 0.4, '&:hover': { opacity: 1 } }}
+                                                >
+                                                    <MoreHoriz fontSize="small" />
+                                                </IconButton>
+                                            </Box>
+                                            <TextField fullWidth multiline minRows={2} variant="standard" placeholder="Write here..." value={currentJournalEntry.responses?.[prompt.id] || ''} onChange={(e) => handleJournalResponseChange(prompt.id, e.target.value)} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} sx={{ bgcolor: 'background.default', p: 1, borderRadius: 1 }} />
+                                        </Paper>
+                                    ))}
+
+                                    {/* Hidden questions section */}
+                                    {hiddenCount > 0 && (
+                                        <Box sx={{ mb: 2 }}>
+                                            <Button
+                                                size="small"
+                                                onClick={() => setShowHiddenQuestions(prev => ({ ...prev, [section]: !prev[section] }))}
+                                                startIcon={isShowingHidden ? <ExpandLess /> : <ExpandMore />}
+                                                sx={{ color: 'text.secondary', fontSize: '0.75rem', textTransform: 'none', mb: 1 }}
+                                            >
+                                                {hiddenCount} hidden question{hiddenCount > 1 ? 's' : ''}{isShowingHidden ? ' — tap to collapse' : ' — tap to show'}
+                                            </Button>
+                                            <Collapse in={isShowingHidden}>
+                                                {hiddenPrompts.map(prompt => (
+                                                    <Paper key={prompt.id} sx={{ p: 1.5, mb: 1, borderRadius: 2, opacity: 0.5, border: '1px dashed', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                        <Typography variant="body2" sx={{ textDecoration: 'line-through', color: 'text.disabled', flex: 1, pr: 1 }}>{prompt.text}</Typography>
+                                                        <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                                                            <Button
                                                                 size="small"
                                                                 onClick={() => handleTogglePrompt(prompt.id)}
-                                                                sx={{ color: isPromptDisabled ? 'text.disabled' : 'success.main' }}
-                                                                title={isPromptDisabled ? 'Enable question' : 'Disable question'}
+                                                                sx={{ minWidth: 'auto', fontSize: '0.7rem', textTransform: 'none', color: 'primary.main' }}
                                                             >
-                                                                {isPromptDisabled
-                                                                    ? <VisibilityOff fontSize="small" />
-                                                                    : <Visibility fontSize="small" />
-                                                                }
-                                                            </IconButton>
+                                                                Restore
+                                                            </Button>
                                                             <IconButton
                                                                 size="small"
                                                                 onClick={() => handleRemoveQuestion(prompt.id)}
-                                                                sx={{ color: 'error.main', opacity: 0.6, '&:hover': { opacity: 1 } }}
-                                                                title="Remove question permanently"
+                                                                sx={{ color: 'error.main', opacity: 0.5 }}
                                                             >
-                                                                <Delete fontSize="small" />
+                                                                <Delete sx={{ fontSize: 16 }} />
                                                             </IconButton>
                                                         </Box>
-                                                    )}
-                                                </Box>
-                                                {!isPromptDisabled && (
-                                                    <TextField fullWidth multiline minRows={2} variant="standard" placeholder="Write here..." value={currentJournalEntry.responses?.[prompt.id] || ''} onChange={(e) => handleJournalResponseChange(prompt.id, e.target.value)} InputProps={{ disableUnderline: true, style: { fontSize: '0.95rem' } }} sx={{ bgcolor: 'background.default', p: 1, borderRadius: 1 }} />
-                                                )}
-                                            </Paper>
-                                        );
-                                    })}
-                                    {journalManageMode && (
-                                        <Button 
-                                            variant="outlined" 
-                                            size="small" 
-                                            startIcon={<Add />} 
-                                            onClick={() => {
-                                                setNewQuestionCategory(section);
-                                                setAddQuestionDialogOpen(true);
-                                            }}
-                                            sx={{ mb: 3, width: '100%', borderStyle: 'dashed' }}
-                                        >
-                                            Add Question to {section}
-                                        </Button>
+                                                    </Paper>
+                                                ))}
+                                            </Collapse>
+                                        </Box>
                                     )}
+
+                                    {/* Add question button — always visible */}
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<Add />}
+                                        onClick={() => {
+                                            setNewQuestionCategory(section);
+                                            setAddQuestionDialogOpen(true);
+                                        }}
+                                        sx={{ mb: 3, width: '100%', borderStyle: 'dashed', fontSize: '0.8rem', textTransform: 'none' }}
+                                    >
+                                        Add question to {section}
+                                    </Button>
                                 </Collapse>
                             </Box>
                         );
                     })}
-                     <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontSize: '1rem' }}>Daily Notes</Typography>
+                    <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, fontSize: '1rem' }}>Daily Notes</Typography>
                     <Paper sx={{ p: 2, mb: 4, borderRadius: 3 }}>
                         <TextField fullWidth multiline minRows={6} variant="standard" placeholder="Free flow notes..." value={currentJournalEntry.notes || ''} onChange={(e) => handleJournalNotesChange(e.target.value)} InputProps={{ disableUnderline: true }} />
                     </Paper>
                 </Box>
+
+                {/* Per-question action menu */}
+                <Menu
+                    anchorEl={questionMenuAnchor}
+                    open={Boolean(questionMenuAnchor)}
+                    onClose={handleCloseQuestionMenu}
+                    PaperProps={{ sx: { borderRadius: 2, minWidth: 160, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' } }}
+                >
+                    <MenuItem onClick={() => { handleTogglePrompt(questionMenuPromptId); handleCloseQuestionMenu(); }}>
+                        <ListItemIcon><VisibilityOff fontSize="small" /></ListItemIcon>
+                        <ListItemText primaryTypographyProps={{ variant: 'body2' }}>Hide question</ListItemText>
+                    </MenuItem>
+                    <MenuItem onClick={() => { handleRemoveQuestion(questionMenuPromptId); handleCloseQuestionMenu(); }} sx={{ color: 'error.main' }}>
+                        <ListItemIcon><Delete fontSize="small" sx={{ color: 'error.main' }} /></ListItemIcon>
+                        <ListItemText primaryTypographyProps={{ variant: 'body2' }}>Delete permanently</ListItemText>
+                    </MenuItem>
+                </Menu>
             </Box>
         );
     };
