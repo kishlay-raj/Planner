@@ -390,27 +390,10 @@ export default function AntiGravityHabitTracker() {
                     onDelete={handleDeleteHabit}
                     onArchive={(id) => handleArchiveHabit(id, true)}
                     onUpdateNotes={handleUpdateNotes}
+                    onCatchUpClick={() => handleCatchUpClick(habit.id)}
+                    catchUpDatesCount={getCatchUpDates(habit.id).length}
+                    onReviewHistory={() => { setBackfillHabitId(habit.id); setIsBackfillOpen(true); }}
                   />
-                  <Box sx={{ mt: 0.5, display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                    <Button 
-                      size="small" 
-                      startIcon={<EventRepeat />} 
-                      sx={{ fontSize: '0.7rem', textTransform: 'none' }}
-                      color="success"
-                      onClick={() => handleCatchUpClick(habit.id)}
-                      disabled={getCatchUpDates(habit.id).length === 0}
-                    >
-                      Catch Up ({getCatchUpDates(habit.id).length})
-                    </Button>
-                    <Button 
-                      size="small" 
-                      startIcon={<History />} 
-                      sx={{ fontSize: '0.7rem', textTransform: 'none' }}
-                      onClick={() => { setBackfillHabitId(habit.id); setIsBackfillOpen(true); }}
-                    >
-                      Review History
-                    </Button>
-                  </Box>
                 </Box>
               ))}
               {criticalHabits.length === 0 && (
@@ -454,35 +437,12 @@ export default function AntiGravityHabitTracker() {
                     onDelete={handleDeleteHabit} 
                     onArchive={(id) => handleArchiveHabit(id, true)}
                     onUpdateNotes={handleUpdateNotes}
+                    onCatchUpClick={handleCatchUpClick}
+                    getCatchUpDates={getCatchUpDates}
+                    onReviewHistory={(id) => { setBackfillHabitId(id); setIsBackfillOpen(true); }}
                  />
               ) : (
                  <Typography variant="body2" color="text.secondary">No routines yet.</Typography>
-              )}
-              {normalHabits.length > 0 && (
-                <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {normalHabits.map(h => (
-                    <React.Fragment key={h.id}>
-                      <Button
-                        size="small"
-                        startIcon={<EventRepeat />}
-                        sx={{ fontSize: '0.7rem', textTransform: 'none' }}
-                        color="success"
-                        onClick={() => handleCatchUpClick(h.id)}
-                        disabled={getCatchUpDates(h.id).length === 0}
-                      >
-                        Catch Up: {h.name} ({getCatchUpDates(h.id).length})
-                      </Button>
-                      <Button
-                        size="small"
-                        startIcon={<History />}
-                        sx={{ fontSize: '0.7rem', textTransform: 'none' }}
-                        onClick={() => { setBackfillHabitId(h.id); setIsBackfillOpen(true); }}
-                      >
-                        Review History ({h.name})
-                      </Button>
-                    </React.Fragment>
-                  ))}
-                </Box>
               )}
             </Box>
           </Collapse>

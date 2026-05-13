@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Box, Typography, Collapse, Checkbox, Paper, List, ListItem, ListItemText, IconButton, LinearProgress, TextField, Tooltip } from '@mui/material';
-import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined } from '@mui/icons-material';
+import { Box, Typography, Collapse, Checkbox, Paper, List, ListItem, ListItemText, IconButton, LinearProgress, TextField, Tooltip, Button } from '@mui/material';
+import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined, EventRepeat, History } from '@mui/icons-material';
 import { format } from 'date-fns';
 import MilestoneBadges from './MilestoneBadges';
 import HabitHeatmap from './HabitHeatmap';
 
-function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes }) {
+function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes, onCatchUpClick, getCatchUpDates, onReviewHistory }) {
   const [expanded, setExpanded] = useState(false);
   const [localNotes, setLocalNotes] = useState(habit.notes || '');
   const streak = habit.streak || 0;
@@ -15,6 +15,7 @@ function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive,
   const isComplete = progress >= 100;
   const targetDateStr = selectedDate || format(new Date(), 'yyyy-MM-dd');
   const completedToday = (habit.completionDates || []).includes(targetDateStr);
+  const catchUpDatesCount = getCatchUpDates ? getCatchUpDates(habit.id).length : 0;
 
   return (
     <Paper sx={{ mb: 1, borderRadius: 1, opacity: completedToday ? 0.75 : 1 }} elevation={0} variant="outlined">
@@ -44,6 +45,13 @@ function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive,
         />
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+           {catchUpDatesCount > 0 && (
+             <Tooltip title={`Catch up ${catchUpDatesCount} missed day(s)`}>
+               <IconButton size="small" color="success" onClick={(e) => { e.stopPropagation(); onCatchUpClick(habit.id); }}>
+                 <EventRepeat fontSize="small" />
+               </IconButton>
+             </Tooltip>
+           )}
            <Typography variant="caption" color={isComplete ? 'success.main' : 'text.secondary'} fontWeight={isComplete ? 700 : 500}>
              {isComplete ? '🎯' : `${Math.round(progress)}%`}
            </Typography>
@@ -103,21 +111,28 @@ function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive,
             />
           </Box>
 
-          <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-            {onArchive && (
-              <Tooltip title="Archive">
-                <IconButton size="small" onClick={() => onArchive(habit.id)}>
-                  <ArchiveOutlined fontSize="small" />
-                </IconButton>
-              </Tooltip>
+          <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+            {onReviewHistory && (
+              <Button size="small" startIcon={<History />} onClick={() => onReviewHistory(habit.id)} sx={{ textTransform: 'none', color: 'text.secondary' }}>
+                Review History
+              </Button>
             )}
-            {onDelete && (
-              <Tooltip title="Delete">
-                <IconButton size="small" color="error" onClick={() => onDelete(habit.id)}>
-                  <DeleteOutline fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            )}
+            <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+              {onArchive && (
+                <Tooltip title="Archive">
+                  <IconButton size="small" onClick={() => onArchive(habit.id)}>
+                    <ArchiveOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {onDelete && (
+                <Tooltip title="Delete">
+                  <IconButton size="small" color="error" onClick={() => onDelete(habit.id)}>
+                    <DeleteOutline fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
           </Box>
         </Box>
       </Collapse>
@@ -125,7 +140,7 @@ function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive,
   );
 }
 
-export default function NormalHabitsCore({ habits, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes }) {
+export default function NormalHabitsCore({ habits, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes, onCatchUpClick, getCatchUpDates, onReviewHistory }) {
   const grouped = habits.reduce((acc, habit) => {
     const group = habit.identity || 'General';
     if (!acc[group]) acc[group] = [];
@@ -142,7 +157,7 @@ export default function NormalHabitsCore({ habits, selectedDate, onComplete, onD
           </Typography>
           <List disablePadding>
             {grouped[identity].map(habit => (
-              <NormalHabitItem key={habit.id} habit={habit} selectedDate={selectedDate} onComplete={onComplete} onDelete={onDelete} onArchive={onArchive} onUpdateNotes={onUpdateNotes} />
+              <NormalHabitItem key={habit.id} habit={habit} selectedDate={selectedDate} onComplete={onComplete} onDelete={onDelete} onArchive={onArchive} onUpdateNotes={onUpdateNotes} onCatchUpClick={onCatchUpClick} getCatchUpDates={getCatchUpDates} onReviewHistory={onReviewHistory} />
             ))}
           </List>
         </Box>

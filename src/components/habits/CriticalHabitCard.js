@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, Checkbox, Chip, LinearProgress, Collapse, IconButton, TextField, Tooltip } from '@mui/material';
-import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined } from '@mui/icons-material';
+import { Box, Typography, Paper, Checkbox, Chip, LinearProgress, Collapse, IconButton, TextField, Tooltip, Button } from '@mui/material';
+import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined, EventRepeat, History } from '@mui/icons-material';
 import { format } from 'date-fns';
 import MilestoneBadges from './MilestoneBadges';
 import HabitHeatmap from './HabitHeatmap';
@@ -11,7 +11,10 @@ export default function CriticalHabitCard({
   onDelete, 
   onArchive, 
   onUpdateNotes,
-  selectedDate
+  selectedDate,
+  onCatchUpClick,
+  catchUpDatesCount,
+  onReviewHistory
 }) {
   const [expanded, setExpanded] = useState(false);
   const [localNotes, setLocalNotes] = useState(habit.notes || '');
@@ -72,6 +75,13 @@ export default function CriticalHabitCard({
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
+          {catchUpDatesCount > 0 && (
+            <Tooltip title={`Catch up ${catchUpDatesCount} missed day(s)`}>
+              <IconButton size="small" color="success" onClick={(e) => { e.stopPropagation(); onCatchUpClick(); }}>
+                <EventRepeat fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
           <Chip 
             label={`🔥 ${streak}`} 
             color={streak >= 7 ? "warning" : "default"} 
@@ -148,21 +158,28 @@ export default function CriticalHabitCard({
             />
           </Box>
 
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-            {onArchive && (
-              <Tooltip title="Archive">
-                <IconButton size="small" onClick={() => onArchive(habit.id)}>
-                  <ArchiveOutlined fontSize="small" />
-                </IconButton>
-              </Tooltip>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+            {onReviewHistory && (
+              <Button size="small" startIcon={<History />} onClick={onReviewHistory} sx={{ textTransform: 'none', color: 'text.secondary' }}>
+                Review History
+              </Button>
             )}
-            {onDelete && (
-              <Tooltip title="Delete">
-                <IconButton size="small" color="error" onClick={() => onDelete(habit.id)}>
-                  <DeleteOutline fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            )}
+            <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+              {onArchive && (
+                <Tooltip title="Archive">
+                  <IconButton size="small" onClick={() => onArchive(habit.id)}>
+                    <ArchiveOutlined fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+              {onDelete && (
+                <Tooltip title="Delete">
+                  <IconButton size="small" color="error" onClick={() => onDelete(habit.id)}>
+                    <DeleteOutline fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
           </Box>
         </Box>
       </Collapse>
