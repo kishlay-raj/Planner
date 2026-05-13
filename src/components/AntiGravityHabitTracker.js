@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, TextField, Select, MenuItem, 
   DialogActions, Grid, IconButton, Tooltip, List, ListItem, ListItemText, ListItemSecondaryAction,
-  Divider, useMediaQuery, useTheme, Collapse, Paper } from '@mui/material';
-import { Add, RocketLaunch, Settings, Delete, History, Archive, Unarchive, ExpandMore, ExpandLess, ChevronLeft, ChevronRight } from '@mui/icons-material';
+  Divider, useMediaQuery, useTheme, Collapse, Paper, Chip } from '@mui/material';
+import { Add, RocketLaunch, Settings, Delete, History, Archive, Unarchive, ExpandMore, ExpandLess, ChevronLeft, ChevronRight, EventRepeat } from '@mui/icons-material';
 import { useAntiGravityHabits } from '../hooks/useAntiGravityHabits';
 import AtmosphereQuote from './habits/AtmosphereQuote';
 import CriticalHabitCard from './habits/CriticalHabitCard';
@@ -90,6 +90,7 @@ export default function AntiGravityHabitTracker() {
   const [isRoutinesExpanded, setIsRoutinesExpanded] = useState(true);
   const [backfillHabitId, setBackfillHabitId] = useState(null);
   const [hurdlePrompt, setHurdlePrompt] = useState({ open: false, dateStr: '', text: '' });
+  const [catchUpConfirm, setCatchUpConfirm] = useState({ open: false, habitId: null, dates: [] });
   const [newQuote, setNewQuote] = useState({ text: '', author: '' });
   const [newHabit, setNewHabit] = useState({ 
     name: '', behavior: '', time: '', location: '', 
@@ -197,6 +198,67 @@ export default function AntiGravityHabitTracker() {
   // === Update Notes ===
   const handleUpdateNotes = async (habitId, notes) => {
     await updateHabit(habitId, { notes });
+  };
+
+  // === Catch Up: Mark all days since last marked as done ===
+  const getCatchUpDates = (habitId) => {
+    const target = allTrackable.find(h => h.id === habitId);
+    if (!target) return [];
+    const dates = target.completionDates || [];
+    if (dates.length === 0) return [];
+
+    const sorted = [...dates].sort();
+    const lastMarked = sorted[sorted.length - 1];
+    const lastDate = parseISO(lastMarked);
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+
+    // Generate all dates from the day after last marked through today
+    const missingDates = [];
+    let cursor = addDays(lastDate, 1);
+    while (cursor <= todayDate) {
+      const dateStr = format(cursor, 'yyyy-MM-dd');
+      if (!dates.includes(dateStr)) {
+        missingDates.push(dateStr);
+      }
+      cursor = addDays(cursor, 1);
+    }
+    return missingDates;
+  };
+
+  const handleCatchUpClick = (habitId) => {
+    const missingDates = getCatchUpDates(habitId);
+    if (missingDates.length === 0) {
+      return; // Nothing to catch up
+    }
+    setCatchUpConfirm({ open: true, habitId, dates: missingDates });
+  };
+
+  const handleCatchUpConfirm = async () => {
+    const { habitId, dates: datesToMark } = catchUpConfirm;
+    const target = allTrackable.find(h => h.id === habitId);
+    if (!target || datesToMark.length === 0) {
+      setCatchUpConfirm({ open: false, habitId: null, dates: [] });
+      return;
+    }
+
+    const existingDates = target.completionDates || [];
+    const newDates = [...new Set([...existingDates, ...datesToMark])].sort();
+    const newStreak = recalcStreak(newDates);
+    const newBestStreak = recalcBestStreak(newDates);
+
+    // Remove friction logs for caught-up dates
+    const updatedFrictionLogs = { ...(target.frictionLogs || {}) };
+    datesToMark.forEach(d => delete updatedFrictionLogs[d]);
+
+    await updateHabit(habitId, {
+      completionDates: newDates,
+      streak: newStreak,
+      bestStreak: newBestStreak,
+      completedToday: newDates.includes(format(new Date(), 'yyyy-MM-dd')),
+      frictionLogs: updatedFrictionLogs
+    });
+    setCatchUpConfirm({ open: false, habitId: null, dates: [] });
   };
 
   const handleAddHabit = async () => {
@@ -332,6 +394,16 @@ export default function AntiGravityHabitTracker() {
                   <Box sx={{ mt: 0.5, display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                     <Button 
                       size="small" 
+                      startIcon={<EventRepeat />} 
+                      sx={{ fontSize: '0.7rem', textTransform: 'none' }}
+                      color="success"
+                      onClick={() => handleCatchUpClick(habit.id)}
+                      disabled={getCatchUpDates(habit.id).length === 0}
+                    >
+                      Catch Up ({getCatchUpDates(habit.id).length})
+                    </Button>
+                    <Button 
+                      size="small" 
                       startIcon={<History />} 
                       sx={{ fontSize: '0.7rem', textTransform: 'none' }}
                       onClick={() => { setBackfillHabitId(habit.id); setIsBackfillOpen(true); }}
@@ -389,15 +461,26 @@ export default function AntiGravityHabitTracker() {
               {normalHabits.length > 0 && (
                 <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {normalHabits.map(h => (
-                    <Button
-                      key={h.id}
-                      size="small"
-                      startIcon={<History />}
-                      sx={{ fontSize: '0.7rem', textTransform: 'none' }}
-                      onClick={() => { setBackfillHabitId(h.id); setIsBackfillOpen(true); }}
-                    >
-                      Review History ({h.name})
-                    </Button>
+                    <React.Fragment key={h.id}>
+                      <Button
+                        size="small"
+                        startIcon={<EventRepeat />}
+                        sx={{ fontSize: '0.7rem', textTransform: 'none' }}
+                        color="success"
+                        onClick={() => handleCatchUpClick(h.id)}
+                        disabled={getCatchUpDates(h.id).length === 0}
+                      >
+                        Catch Up: {h.name} ({getCatchUpDates(h.id).length})
+                      </Button>
+                      <Button
+                        size="small"
+                        startIcon={<History />}
+                        sx={{ fontSize: '0.7rem', textTransform: 'none' }}
+                        onClick={() => { setBackfillHabitId(h.id); setIsBackfillOpen(true); }}
+                      >
+                        Review History ({h.name})
+                      </Button>
+                    </React.Fragment>
                   ))}
                 </Box>
               )}
@@ -573,6 +656,39 @@ export default function AntiGravityHabitTracker() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setIsBackfillOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ===== CATCH UP CONFIRMATION DIALOG ===== */}
+      <Dialog open={catchUpConfirm.open} onClose={() => setCatchUpConfirm({ open: false, habitId: null, dates: [] })} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <EventRepeat color="success" />
+            Catch Up — {allTrackable.find(h => h.id === catchUpConfirm.habitId)?.name}
+          </Box>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            This will mark <strong>{catchUpConfirm.dates.length} day{catchUpConfirm.dates.length !== 1 ? 's' : ''}</strong> as completed — from the day after your last marked date through today.
+          </Typography>
+          <Box sx={{ maxHeight: 200, overflowY: 'auto', mb: 1 }}>
+            {catchUpConfirm.dates.map(dateStr => (
+              <Chip
+                key={dateStr}
+                label={format(parseISO(dateStr), 'MMM d, EEE')}
+                size="small"
+                color="success"
+                variant="outlined"
+                sx={{ mr: 0.5, mb: 0.5 }}
+              />
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCatchUpConfirm({ open: false, habitId: null, dates: [] })}>Cancel</Button>
+          <Button variant="contained" color="success" onClick={handleCatchUpConfirm}>
+            Mark All as Done ✅
+          </Button>
         </DialogActions>
       </Dialog>
 
