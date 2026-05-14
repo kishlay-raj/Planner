@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getAnalytics, logEvent } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -26,7 +26,11 @@ if (isDev) {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-export const db = getFirestore(app);
+
+// Initialize Firestore with offline persistence
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
 
 // Initialize Analytics (only in production or when measurementId is present)
 let analytics = null;
@@ -46,21 +50,5 @@ export const logAnalyticsEvent = (eventName, eventParams = {}) => {
     }
 };
 
-try {
-    // enableIndexedDbPersistence is deprecated in favor of initializeFirestore with cache settings
-    // checking if we can use the new API or just suppress for now
-    enableIndexedDbPersistence(db)
-        .catch((err) => {
-            if (err.code === 'failed-precondition') {
-                // Multiple tabs open, persistence can only be enabled in one tab at a time.
-                // Silently ignore or warn if needed
-                console.warn('Persistence failed: Multiple tabs open');
-            } else if (err.code === 'unimplemented') {
-                // The current browser does not support all of the features required to enable persistence
-                // Silently ignore
-            }
-        });
-} catch (e) {
-    console.warn("Error enabling persistence", e);
-}
+// Persistent cache is now initialized directly when calling initializeFirestore above.
 

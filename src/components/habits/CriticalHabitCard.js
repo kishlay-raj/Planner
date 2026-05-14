@@ -77,7 +77,7 @@ export default function CriticalHabitCard({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
           <Tooltip title={catchUpDatesCount > 0 ? `Catch up ${catchUpDatesCount} missed day(s)` : 'No missed days to catch up'}>
             <span>
-              <IconButton size="small" color="success" disabled={catchUpDatesCount === 0} onClick={(e) => { e.stopPropagation(); onCatchUpClick(); }}>
+              <IconButton size="small" color="success" disabled={catchUpDatesCount === 0} onClick={(e) => { e.currentTarget.blur(); e.stopPropagation(); onCatchUpClick(); }}>
                 <EventRepeat fontSize="small" />
               </IconButton>
             </span>
