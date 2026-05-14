@@ -377,15 +377,56 @@ function PomodoroPanel({
           <ToggleButton value="longBreak">Long Break</ToggleButton>
         </ToggleButtonGroup>
 
-        <ScrollTimePicker
-          timeLeft={timeLeft}
-          isActive={isActive}
-          settings={settings}
-          handleSettingChange={handleSettingChange}
-          resetTimer={resetTimer}
-          mode={mode}
-        />
-
+        {/* Inline Duration Control */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mt: 6, mb: 3 }}>
+          {/* Minute stepper */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+            {!isActive && (
+              <IconButton
+                onClick={() => handleSettingChange(
+                  mode === 'pomodoro' ? 'pomodoro' : mode === 'shortBreak' ? 'shortBreak' : 'longBreak',
+                  Math.min(90, Math.floor(timeLeft / 60) + 1)
+                )}
+                sx={{
+                  color: 'white', bgcolor: 'rgba(255,255,255,0.12)', borderRadius: 2,
+                  width: 40, height: 36, fontSize: '1.3rem', fontWeight: 700,
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.25)', transform: 'translateY(-1px)' },
+                  transition: 'all 0.15s'
+                }}
+              >▲</IconButton>
+            )}
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: '110px', fontWeight: 'bold', fontFamily: 'monospace',
+                letterSpacing: 4, userSelect: 'none', lineHeight: 1,
+                cursor: isActive ? 'default' : 'pointer',
+                transition: 'opacity 0.2s',
+              }}
+            >
+              {`${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`}
+            </Typography>
+            {!isActive && (
+              <IconButton
+                onClick={() => handleSettingChange(
+                  mode === 'pomodoro' ? 'pomodoro' : mode === 'shortBreak' ? 'shortBreak' : 'longBreak',
+                  Math.max(1, Math.floor(timeLeft / 60) - 1)
+                )}
+                sx={{
+                  color: 'white', bgcolor: 'rgba(255,255,255,0.12)', borderRadius: 2,
+                  width: 40, height: 36, fontSize: '1.3rem', fontWeight: 700,
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.25)', transform: 'translateY(1px)' },
+                  transition: 'all 0.15s'
+                }}
+              >▼</IconButton>
+            )}
+          </Box>
+        </Box>
+        {!isActive && (
+          <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', letterSpacing: 1.5, textTransform: 'uppercase', mt: -2, mb: 3, textAlign: 'center' }}>
+            ▲ ▼ to adjust duration
+          </Typography>
+        )}
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
             variant="contained"

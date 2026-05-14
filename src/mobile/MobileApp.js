@@ -1024,6 +1024,8 @@ function MobileApp() {
     );
     const mPomodoroSettings = { pomodoro: 25, shortBreak: 5, longBreak: 15, longBreakInterval: 4 };
     const mModeColors = { pomodoro: '#b74b4b', shortBreak: '#4c9195', longBreak: '#457ca3' };
+    const [mPomodoroStats] = useFirestore('pomodoroStats', { total: 0, today: 0, lastDate: new Date().toDateString() });
+    const [mSessionHistory] = useFirestore('pomodoroSessionHistory', []);
 
     const mRequestNotifPermission = async () => {
         if (typeof Notification === 'undefined') return;
@@ -1033,16 +1035,26 @@ function MobileApp() {
 
     const mFireNotification = (title, body, icon = '/icon-192.png') => {
         if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-        try {
-            const n = new Notification(title, { body, icon, badge: '/icon-192.png', silent: false });
-            setTimeout(() => n.close(), 8000);
-        } catch (e) {
-            // Service worker notifications as fallback (for iOS PWA)
-            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.showNotification(title, { body, icon, badge: '/icon-192.png' });
-                }).catch(() => { });
-            }
+
+        // Always prefer SW showNotification — required for iOS PWA, also works on Android
+        if (navigator.serviceWorker) {
+            navigator.serviceWorker.ready.then(reg => {
+                reg.showNotification(title, {
+                    body,
+                    icon,
+                    badge: '/icon-192.png',
+                    vibrate: [200, 100, 200],
+                    tag: 'pomodoro-alert',       // replaces previous notification instead of stacking
+                    renotify: true,              // vibrate even if same tag
+                    requireInteraction: false,
+                });
+            }).catch(() => {
+                // Final fallback for desktop browsers without SW
+                try { new Notification(title, { body, icon }); } catch (_) {}
+            });
+        } else {
+            // Desktop fallback
+            try { new Notification(title, { body, icon }); } catch (_) {}
         }
     };
 
@@ -1162,6 +1174,45 @@ function MobileApp() {
                         >{label}</Button>
                     ))}
                 </Box>
+
+                {/* Stats Bar */}
+                {(() => {
+                    const todayStr = new Date().toDateString();
+                    const todaySessions = Array.isArray(mSessionHistory)
+                        ? mSessionHistory.filter(s => s.date === todayStr && s.workType)
+                        : [];
+                    const todayMinutes = todaySessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+                    const todayCount = todaySessions.length + (mCycles > 0 ? mCycles : 0);
+                    const totalSessions = (mPomodoroStats?.total || 0) + mCycles;
+                    const focusDisplay = todayMinutes >= 60
+                        ? `${Math.floor(todayMinutes / 60)}h ${todayMinutes % 60}m`
+                        : `${todayMinutes || (mCycles * (mPomodoroSettings.pomodoro || 25))}m`;
+                    return (
+                        <Box sx={{
+                            display: 'flex', justifyContent: 'center', gap: 0, mx: 2, mb: 2,
+                            bgcolor: 'rgba(0,0,0,0.18)', borderRadius: 3, overflow: 'hidden',
+                            border: '1px solid rgba(255,255,255,0.12)'
+                        }}>
+                            {[
+                                { label: 'Today', value: todayCount, icon: '🍅' },
+                                { label: 'Focus', value: focusDisplay, icon: '⏱' },
+                                { label: 'All time', value: totalSessions, icon: '🏆' },
+                            ].map(({ label, value, icon }, i) => (
+                                <Box key={label} sx={{
+                                    flex: 1, py: 1.2, px: 1, textAlign: 'center',
+                                    borderRight: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                                }}>
+                                    <Typography sx={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: 0.5, textTransform: 'uppercase', mb: 0.2 }}>
+                                        {icon} {label}
+                                    </Typography>
+                                    <Typography sx={{ fontSize: '1.1rem', fontWeight: 800, color: 'white', fontFamily: 'monospace', lineHeight: 1 }}>
+                                        {value}
+                                    </Typography>
+                                </Box>
+                            ))}
+                        </Box>
+                    );
+                })()}
 
                 {/* Timer - Swipeable Drum Picker */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

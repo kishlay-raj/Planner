@@ -104,3 +104,24 @@ self.addEventListener('fetch', (event) => {
     // 3. Default -> Network Only (API calls, etc.)
     // We let the browser handle this normally.
 });
+
+// ── Notification Click Handler ──────────────────────────────────────────────
+// When the user taps a Pomodoro notification, bring the app into focus.
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            // If a window is already open, focus it
+            for (const client of clientList) {
+                if (client.url && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // Otherwise open a new window
+            if (self.clients.openWindow) {
+                return self.clients.openWindow('/');
+            }
+        })
+    );
+});
