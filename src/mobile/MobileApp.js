@@ -951,10 +951,34 @@ function MobileApp() {
     const [mLocalSecondary, setMLocalSecondary] = useState('');
     const [mTimeLeft, setMTimeLeft] = useState(25 * 60);
     const [mIsActive, setMIsActive] = useState(false);
-    const [mMode, setMMode] = useState('pomodoro'); // 'pomodoro' | 'shortBreak' | 'longBreak'
+    const [mMode, setMMode] = useState('pomodoro');
     const [mCycles, setMCycles] = useState(0);
+    const [mNotifPermission, setMNotifPermission] = useState(
+        typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+    );
     const mPomodoroSettings = { pomodoro: 25, shortBreak: 5, longBreak: 15, longBreakInterval: 4 };
     const mModeColors = { pomodoro: '#b74b4b', shortBreak: '#4c9195', longBreak: '#457ca3' };
+
+    const mRequestNotifPermission = async () => {
+        if (typeof Notification === 'undefined') return;
+        const result = await Notification.requestPermission();
+        setMNotifPermission(result);
+    };
+
+    const mFireNotification = (title, body, icon = '/icon-192.png') => {
+        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+        try {
+            const n = new Notification(title, { body, icon, badge: '/icon-192.png', silent: false });
+            setTimeout(() => n.close(), 8000);
+        } catch (e) {
+            // Service worker notifications as fallback (for iOS PWA)
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification(title, { body, icon, badge: '/icon-192.png' });
+                }).catch(() => {});
+            }
+        }
+    };
 
     useEffect(() => {
         setMLocalPrimary(mPrimaryTask || '');
@@ -972,13 +996,25 @@ function MobileApp() {
                     setMMode('longBreak');
                     setMTimeLeft(mPomodoroSettings.longBreak * 60);
                     setMCycles(0);
+                    mFireNotification(
+                        '🎉 Pomodoro Complete!',
+                        `Time for a long break (${mPomodoroSettings.longBreak} min). Great work!`
+                    );
                 } else {
                     setMMode('shortBreak');
                     setMTimeLeft(mPomodoroSettings.shortBreak * 60);
+                    mFireNotification(
+                        '✅ Focus Session Done!',
+                        `Take a short break (${mPomodoroSettings.shortBreak} min). You earned it!`
+                    );
                 }
             } else {
                 setMMode('pomodoro');
                 setMTimeLeft(mPomodoroSettings.pomodoro * 60);
+                mFireNotification(
+                    '⏰ Break Over!',
+                    'Time to focus again. Let\'s go!'
+                );
             }
             setMIsActive(false);
         }
@@ -1006,9 +1042,35 @@ function MobileApp() {
         return (
             <Box sx={{ pb: 10, minHeight: '100vh', bgcolor: bgColor, color: 'white', display: 'flex', flexDirection: 'column' }}>
                 {/* Header */}
-                <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                     <Typography variant="h6" fontWeight="700" sx={{ letterSpacing: 1 }}>Pomodoro</Typography>
+                    {mNotifPermission !== 'granted' && mNotifPermission !== 'unsupported' && (
+                        <Chip
+                            icon={<span style={{ fontSize: '1rem' }}>🔔</span>}
+                            label={mNotifPermission === 'denied' ? 'Notifications blocked — enable in browser settings' : 'Tap to enable completion alerts'}
+                            onClick={mNotifPermission !== 'denied' ? mRequestNotifPermission : undefined}
+                            size="small"
+                            sx={{
+                                bgcolor: mNotifPermission === 'denied' ? 'rgba(255,100,100,0.25)' : 'rgba(255,255,255,0.2)',
+                                color: 'white',
+                                fontSize: '0.7rem',
+                                cursor: mNotifPermission !== 'denied' ? 'pointer' : 'default',
+                                border: '1px solid rgba(255,255,255,0.3)',
+                                '& .MuiChip-icon': { ml: 0.5 },
+                                '&:hover': { bgcolor: mNotifPermission !== 'denied' ? 'rgba(255,255,255,0.3)' : undefined }
+                            }}
+                        />
+                    )}
+                    {mNotifPermission === 'granted' && (
+                        <Chip
+                            icon={<span style={{ fontSize: '0.9rem' }}>✅</span>}
+                            label="Notifications enabled"
+                            size="small"
+                            sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: 'white', fontSize: '0.65rem', border: '1px solid rgba(255,255,255,0.2)' }}
+                        />
+                    )}
                 </Box>
+
 
                 {/* Mode Selector */}
                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, px: 2, mb: 2 }}>

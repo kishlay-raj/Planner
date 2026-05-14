@@ -34,8 +34,118 @@ import {
   AccessTime
 } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
-
 import { useFirestore } from '../hooks/useFirestore';
+
+// ─── Touch-Scroll Drum Picker ─────────────────────────────────────────────────
+function DrumColumn({ value, min, max, onChange, disabled }) {
+  const ITEM_H = 64; // px per item
+  const startY = React.useRef(null);
+  const startVal = React.useRef(value);
+
+  const handleTouchStart = (e) => {
+    if (disabled) return;
+    startY.current = e.touches[0].clientY;
+    startVal.current = value;
+  };
+
+  const handleTouchMove = (e) => {
+    if (disabled || startY.current === null) return;
+    const dy = startY.current - e.touches[0].clientY;
+    const delta = Math.round(dy / ITEM_H);
+    let next = startVal.current + delta;
+    next = Math.max(min, Math.min(max, next));
+    if (next !== value) onChange(next);
+  };
+
+  const handleTouchEnd = () => {
+    startY.current = null;
+  };
+
+  // Mouse wheel support for desktop testing
+  const handleWheel = (e) => {
+    if (disabled) return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 1 : -1;
+    const next = Math.max(min, Math.min(max, value + delta));
+    onChange(next);
+  };
+
+  const prev = Math.max(min, value - 1);
+  const next = Math.min(max, value + 1);
+
+  return (
+    <Box
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onWheel={handleWheel}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        cursor: disabled ? 'default' : 'ns-resize',
+        userSelect: 'none',
+        touchAction: 'none',
+        position: 'relative',
+        height: `${ITEM_H * 3}px`,
+        overflow: 'hidden',
+      }}
+    >
+      {/* Fade top */}
+      <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_H, background: 'linear-gradient(to bottom, rgba(0,0,0,0.35), transparent)', zIndex: 2, pointerEvents: 'none', borderRadius: 1 }} />
+      {/* Fade bottom */}
+      <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_H, background: 'linear-gradient(to top, rgba(0,0,0,0.35), transparent)', zIndex: 2, pointerEvents: 'none', borderRadius: 1 }} />
+      {/* Center highlight */}
+      <Box sx={{ position: 'absolute', top: ITEM_H, left: 0, right: 0, height: ITEM_H, border: '2px solid rgba(255,255,255,0.4)', borderRadius: 1, zIndex: 1, pointerEvents: 'none' }} />
+
+      {/* Previous */}
+      <Box sx={{ height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.35 }}>
+        <Typography sx={{ fontSize: '2.8rem', fontFamily: 'monospace', fontWeight: 700, color: 'white' }}>
+          {String(prev).padStart(2, '0')}
+        </Typography>
+      </Box>
+      {/* Current */}
+      <Box sx={{ height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Typography sx={{ fontSize: '3.6rem', fontFamily: 'monospace', fontWeight: 900, color: 'white', lineHeight: 1 }}>
+          {String(value).padStart(2, '0')}
+        </Typography>
+      </Box>
+      {/* Next */}
+      <Box sx={{ height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.35 }}>
+        <Typography sx={{ fontSize: '2.8rem', fontFamily: 'monospace', fontWeight: 700, color: 'white' }}>
+          {String(next).padStart(2, '0')}
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
+function ScrollTimePicker({ timeLeft, isActive, settings, handleSettingChange, resetTimer, mode }) {
+  const totalSeconds = timeLeft;
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  const handleMinuteChange = (newMin) => {
+    if (isActive) return;
+    handleSettingChange(mode === 'pomodoro' ? 'pomodoro' : mode === 'shortBreak' ? 'shortBreak' : 'longBreak', newMin);
+    setTimeout(() => resetTimer(), 50);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 6, mb: 4 }}>
+      <DrumColumn value={minutes} min={1} max={90} onChange={handleMinuteChange} disabled={isActive} />
+      <Typography sx={{ fontSize: '3.6rem', fontWeight: 900, fontFamily: 'monospace', color: 'white', opacity: isActive ? 1 : 0.5, lineHeight: 1, mx: 0.5, mt: isActive ? 0 : 0 }}>
+        :
+      </Typography>
+      <DrumColumn value={seconds} min={0} max={59} onChange={() => {}} disabled={true} />
+      {!isActive && (
+        <Typography sx={{ position: 'absolute', mt: 28, fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', letterSpacing: 1, textTransform: 'uppercase' }}>
+          scroll to set time
+        </Typography>
+      )}
+    </Box>
+  );
+}
 
 
 function PomodoroPanel({
@@ -267,20 +377,14 @@ function PomodoroPanel({
           <ToggleButton value="longBreak">Long Break</ToggleButton>
         </ToggleButtonGroup>
 
-        <Typography
-          variant="h1"
-          sx={{
-            fontSize: '120px',
-            fontWeight: 'bold',
-            mt: 8,
-            mb: 6,
-            fontFamily: 'monospace',
-            letterSpacing: 4,
-            userSelect: 'none'
-          }}
-        >
-          {`${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`}
-        </Typography>
+        <ScrollTimePicker
+          timeLeft={timeLeft}
+          isActive={isActive}
+          settings={settings}
+          handleSettingChange={handleSettingChange}
+          resetTimer={resetTimer}
+          mode={mode}
+        />
 
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
