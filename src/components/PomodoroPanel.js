@@ -137,7 +137,7 @@ function ScrollTimePicker({ timeLeft, isActive, settings, handleSettingChange, r
       <Typography sx={{ fontSize: '3.6rem', fontWeight: 900, fontFamily: 'monospace', color: 'white', opacity: isActive ? 1 : 0.5, lineHeight: 1, mx: 0.5, mt: isActive ? 0 : 0 }}>
         :
       </Typography>
-      <DrumColumn value={seconds} min={0} max={59} onChange={() => {}} disabled={true} />
+      <DrumColumn value={seconds} min={0} max={59} onChange={() => { }} disabled={true} />
       {!isActive && (
         <Typography sx={{ position: 'absolute', mt: 28, fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', letterSpacing: 1, textTransform: 'uppercase' }}>
           scroll to set time

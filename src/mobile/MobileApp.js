@@ -17,7 +17,73 @@ import { format, addDays, subDays, isSameDay, parseISO, startOfWeek, endOfWeek, 
 
 
 
+// ── Self-contained Drum Picker for Mobile Pomodoro ────────────────────────────
+function MobileDrumColumn({ value, min, max, onChange, disabled }) {
+    const ITEM_H = 72;
+    const startY = React.useRef(null);
+    const startVal = React.useRef(value);
+    const handleTouchStart = (e) => {
+        if (disabled) return;
+        e.preventDefault();
+        startY.current = e.touches[0].clientY;
+        startVal.current = value;
+    };
+    const handleTouchMove = (e) => {
+        if (disabled || startY.current === null) return;
+        e.preventDefault();
+        const dy = startY.current - e.touches[0].clientY;
+        const delta = Math.round(dy / (ITEM_H * 0.6));
+        const next = Math.max(min, Math.min(max, startVal.current + delta));
+        if (next !== value) onChange(next);
+    };
+    const handleTouchEnd = () => { startY.current = null; };
+    const handleWheel = (e) => {
+        if (disabled) return;
+        e.preventDefault();
+        onChange(Math.max(min, Math.min(max, value + (e.deltaY > 0 ? 1 : -1))));
+    };
+    const prev = Math.max(min, value - 1);
+    const next = Math.min(max, value + 1);
+    return (
+        <Box onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} onWheel={handleWheel}
+            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: disabled ? 'default' : 'ns-resize', userSelect: 'none', touchAction: 'none', position: 'relative', height: `${ITEM_H * 3}px`, overflow: 'hidden', width: 90 }}>
+            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: ITEM_H, background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)', zIndex: 2, pointerEvents: 'none' }} />
+            <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: ITEM_H, background: 'linear-gradient(to top, rgba(0,0,0,0.4), transparent)', zIndex: 2, pointerEvents: 'none' }} />
+            <Box sx={{ position: 'absolute', top: ITEM_H, left: 4, right: 4, height: ITEM_H, border: '2px solid rgba(255,255,255,0.5)', borderRadius: 2, zIndex: 1, pointerEvents: 'none' }} />
+            <Box sx={{ height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3 }}>
+                <Typography sx={{ fontSize: '2.6rem', fontFamily: 'monospace', fontWeight: 700, color: 'white' }}>{String(prev).padStart(2, '0')}</Typography>
+            </Box>
+            <Box sx={{ height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography sx={{ fontSize: '3.8rem', fontFamily: 'monospace', fontWeight: 900, color: 'white', lineHeight: 1 }}>{String(value).padStart(2, '0')}</Typography>
+            </Box>
+            <Box sx={{ height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3 }}>
+                <Typography sx={{ fontSize: '2.6rem', fontFamily: 'monospace', fontWeight: 700, color: 'white' }}>{String(next).padStart(2, '0')}</Typography>
+            </Box>
+        </Box>
+    );
+}
+
+function MobileScrollTimePicker({ timeLeft, isActive, onMinuteChange }) {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 2, mb: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <MobileDrumColumn value={minutes} min={1} max={90} onChange={onMinuteChange} disabled={isActive} />
+                <Typography sx={{ fontSize: '3.8rem', fontWeight: 900, fontFamily: 'monospace', color: 'white', opacity: 0.7, lineHeight: 1, mb: 0.5 }}>:</Typography>
+                <MobileDrumColumn value={seconds} min={0} max={59} onChange={() => {}} disabled={true} />
+            </Box>
+            {!isActive && (
+                <Typography sx={{ mt: 1.5, fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                    swipe minutes to set time
+                </Typography>
+            )}
+        </Box>
+    );
+}
+
 const MOBILE_JOURNAL_PROMPTS = [
+
     { id: '1', section: 'Morning', text: 'Who is the person I want to become today?' },
     { id: '2', section: 'Morning', text: 'The "Big Rock": What is the one thing I must accomplish today?' },
     { id: '3', section: 'Morning', text: 'The Obstacle: What is most likely to distract me today?' },
@@ -249,7 +315,7 @@ function MobileApp() {
 
     // --- COLLAPSIBLE SECTIONS STATE ---
     const [collapsedSections, setCollapsedSections] = useState([]);
-    
+
     // --- JOURNAL SETTINGS STATE ---
     const [disabledSections, setDisabledSections] = useFirestore('journalDisabledSections', []);
     const [disabledPrompts, setDisabledPrompts] = useFirestore('journalDisabledPrompts', []);
@@ -287,7 +353,7 @@ function MobileApp() {
     };
 
     const handleToggleJournalSection = (section) => {
-        setDisabledSections(prev => 
+        setDisabledSections(prev =>
             prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
         );
     };
@@ -313,7 +379,7 @@ function MobileApp() {
         setCollapsedSections(prev => {
             // Start with user-defined defaults
             let newCollapsed = [...defaultCollapsedSections];
-            
+
             // Add automatic Morning collapse logic (if not already there)
             if (isPastDate || (isToday && currentHour >= 15)) {
                 if (!newCollapsed.includes('Morning')) {
@@ -975,7 +1041,7 @@ function MobileApp() {
             if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.ready.then(reg => {
                     reg.showNotification(title, { body, icon, badge: '/icon-192.png' });
-                }).catch(() => {});
+                }).catch(() => { });
             }
         }
     };
@@ -1035,6 +1101,11 @@ function MobileApp() {
         setMEditingTasks(false);
     };
 
+    const mHandleMinuteChange = (newMin) => {
+        if (mIsActive) return;
+        setMTimeLeft(newMin * 60);
+    };
+
     const renderPomodoroView = () => {
         const bgColor = mModeColors[mMode];
         const mins = Math.floor(mTimeLeft / 60).toString().padStart(2, '0');
@@ -1092,12 +1163,14 @@ function MobileApp() {
                     ))}
                 </Box>
 
-                {/* Timer */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
-                    <Typography sx={{ fontSize: '90px', fontWeight: 'bold', fontFamily: 'monospace', letterSpacing: 4, lineHeight: 1 }}>
-                        {mins}:{secs}
-                    </Typography>
-                    <Typography sx={{ mt: 1, opacity: 0.7, fontSize: '0.9rem' }}>
+                {/* Timer - Swipeable Drum Picker */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <MobileScrollTimePicker
+                        timeLeft={mTimeLeft}
+                        isActive={mIsActive}
+                        onMinuteChange={mHandleMinuteChange}
+                    />
+                    <Typography sx={{ mt: 0.5, opacity: 0.7, fontSize: '0.9rem' }}>
                         #{mCycles + 1} · {mMode === 'pomodoro' ? 'Time to focus!' : 'Take a break!'}
                     </Typography>
                 </Box>
@@ -1464,16 +1537,16 @@ function MobileApp() {
             <Dialog open={addQuestionDialogOpen} onClose={() => setAddQuestionDialogOpen(false)} fullWidth maxWidth="xs">
                 <DialogTitle>Add Question to {newQuestionCategory}</DialogTitle>
                 <DialogContent>
-                    <TextField 
-                        autoFocus 
-                        margin="dense" 
-                        label="Question Text" 
-                        fullWidth 
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Question Text"
+                        fullWidth
                         multiline
                         minRows={2}
-                        variant="outlined" 
-                        value={newQuestionText} 
-                        onChange={(e) => setNewQuestionText(e.target.value)} 
+                        variant="outlined"
+                        value={newQuestionText}
+                        onChange={(e) => setNewQuestionText(e.target.value)}
                     />
                 </DialogContent>
                 <DialogActions>
