@@ -726,148 +726,161 @@ function PomodoroPanel({
         onClose={() => setSettingsOpen(false)}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+            color: 'white',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+          }
+        }}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          Timer Settings
+        <DialogTitle sx={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          pb: 0, pt: 3, px: 3,
+          borderBottom: '1px solid rgba(255,255,255,0.08)'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2, p: 0.8, display: 'flex' }}>
+              <Settings sx={{ fontSize: 20, color: 'rgba(255,255,255,0.9)' }} />
+            </Box>
+            <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: 'white' }}>Timer Settings</Typography>
+          </Box>
+          <IconButton onClick={() => setSettingsOpen(false)} sx={{ color: 'rgba(255,255,255,0.5)', '&:hover': { color: 'white', bgcolor: 'rgba(255,255,255,0.1)' } }}>
+            ✕
+          </IconButton>
         </DialogTitle>
-        <DialogContent>
-          <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
-            Time (minutes)
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <TextField
-              label="Pomodoro"
-              type="number"
-              value={settings.pomodoro}
-              onChange={(e) => handleSettingChange('pomodoro', e.target.value)}
-              size="small"
-            />
-            <TextField
-              label="Short Break"
-              type="number"
-              value={settings.shortBreak}
-              onChange={(e) => handleSettingChange('shortBreak', e.target.value)}
-              size="small"
-            />
-            <TextField
-              label="Long Break"
-              type="number"
-              value={settings.longBreak}
-              onChange={(e) => handleSettingChange('longBreak', e.target.value)}
-              size="small"
-            />
-          </Box>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={settings.autoStartBreaks}
-                onChange={(e) => handleSettingChange('autoStartBreaks', e.target.checked)}
-              />
-            }
-            label="Auto Start Breaks"
-          />
+        <DialogContent sx={{ px: 3, pt: 3, pb: 3 }}>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={settings.autoStartPomodoros}
-                onChange={(e) => handleSettingChange('autoStartPomodoros', e.target.checked)}
-              />
-            }
-            label="Auto Start Pomodoros"
-          />
-
-          <TextField
-            label="Long Break interval"
-            type="number"
-            value={settings.longBreakInterval}
-            onChange={(e) => handleSettingChange('longBreakInterval', e.target.value)}
-            size="small"
-            sx={{ mt: 2, mb: 3 }}
-          />
-
-          <Divider sx={{ my: 2 }} />
-
-          <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
-            SOUND
+          {/* ── Timer Durations ── */}
+          <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.5)', letterSpacing: 2, fontSize: '0.65rem', fontWeight: 700 }}>
+            Timer Durations (minutes)
           </Typography>
 
-          <Box sx={{ mb: 2 }}>
-            <Select
-              value={settings.alarmSound}
-              onChange={(e) => handleSettingChange('alarmSound', e.target.value)}
-              size="small"
-              fullWidth
-            >
-              <MenuItem value="Kitchen">Kitchen</MenuItem>
-              <MenuItem value="Bell">Bell</MenuItem>
-              <MenuItem value="Birds">Birds</MenuItem>
-            </Select>
-            <Box sx={{ mt: 1 }}>
-              <Slider
-                value={settings.alarmVolume}
-                onChange={(e, value) => handleSettingChange('alarmVolume', value)}
-                valueLabelDisplay="auto"
-              />
+          {[
+            { key: 'pomodoro', label: 'Focus', color: '#b74b4b', emoji: '🍅' },
+            { key: 'shortBreak', label: 'Short Break', color: '#4c9195', emoji: '☕' },
+            { key: 'longBreak', label: 'Long Break', color: '#457ca3', emoji: '🌿' },
+          ].map(({ key, label, color, emoji }) => (
+            <Box key={key} sx={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              mt: 2, p: 2, borderRadius: 2.5,
+              bgcolor: 'rgba(255,255,255,0.05)',
+              border: `1px solid rgba(255,255,255,0.08)`,
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' },
+              transition: 'background 0.2s'
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: color }} />
+                <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: 'white' }}>
+                  {emoji} {label}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <IconButton
+                  size="small"
+                  onClick={() => handleSettingChange(key, Math.max(1, settings[key] - 1))}
+                  sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.12)', width: 32, height: 32, borderRadius: 1.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' } }}
+                >−</IconButton>
+                <Box sx={{
+                  minWidth: 52, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.1)',
+                  borderRadius: 1.5, py: 0.5, px: 1,
+                  border: '1px solid rgba(255,255,255,0.15)'
+                }}>
+                  <Typography sx={{ fontWeight: 800, fontSize: '1.15rem', fontFamily: 'monospace', color: 'white', lineHeight: 1.4 }}>
+                    {String(settings[key]).padStart(2, '0')}
+                  </Typography>
+                </Box>
+                <IconButton
+                  size="small"
+                  onClick={() => handleSettingChange(key, Math.min(90, settings[key] + 1))}
+                  sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.12)', width: 32, height: 32, borderRadius: 1.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' } }}
+                >+</IconButton>
+              </Box>
             </Box>
-            <TextField
-              label="Repeat"
-              type="number"
-              value={settings.alarmRepeat}
-              onChange={(e) => handleSettingChange('alarmRepeat', e.target.value)}
-              size="small"
-            />
-          </Box>
+          ))}
 
-          <Box sx={{ mb: 3 }}>
-            <Select
-              value={settings.tickingSound}
-              onChange={(e) => handleSettingChange('tickingSound', e.target.value)}
-              size="small"
-              fullWidth
-            >
-              <MenuItem value="Ticking Slow">Ticking Slow</MenuItem>
-              <MenuItem value="Ticking Fast">Ticking Fast</MenuItem>
-            </Select>
-            <Box sx={{ mt: 1 }}>
-              <Slider
-                value={settings.tickingVolume}
-                onChange={(e, value) => handleSettingChange('tickingVolume', value)}
-                valueLabelDisplay="auto"
-              />
+          {/* ── Long Break Interval ── */}
+          <Box sx={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            mt: 2, p: 2, borderRadius: 2.5,
+            bgcolor: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}>
+            <Box>
+              <Typography sx={{ fontWeight: 600, fontSize: '0.95rem', color: 'white' }}>🔁 Long Break Every</Typography>
+              <Typography sx={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', mt: 0.3 }}>sessions before a long break</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <IconButton size="small" onClick={() => handleSettingChange('longBreakInterval', Math.max(1, settings.longBreakInterval - 1))}
+                sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.12)', width: 32, height: 32, borderRadius: 1.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' } }}>−</IconButton>
+              <Box sx={{ minWidth: 52, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1.5, py: 0.5, px: 1, border: '1px solid rgba(255,255,255,0.15)' }}>
+                <Typography sx={{ fontWeight: 800, fontSize: '1.15rem', fontFamily: 'monospace', color: 'white', lineHeight: 1.4 }}>{settings.longBreakInterval}</Typography>
+              </Box>
+              <IconButton size="small" onClick={() => handleSettingChange('longBreakInterval', Math.min(10, settings.longBreakInterval + 1))}
+                sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.12)', width: 32, height: 32, borderRadius: 1.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' } }}>+</IconButton>
             </Box>
           </Box>
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.08)' }} />
 
-          <Typography variant="subtitle2" sx={{ mb: 2, color: 'text.secondary' }}>
-            THEME
+          {/* ── Auto Start ── */}
+          <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.5)', letterSpacing: 2, fontSize: '0.65rem', fontWeight: 700 }}>
+            Automation
           </Typography>
 
-          <Box sx={{ mb: 2 }}>
-            <Select
-              value={settings.hourFormat}
-              onChange={(e) => handleSettingChange('hourFormat', e.target.value)}
-              size="small"
-              fullWidth
-            >
-              <MenuItem value="24-hour">24-hour</MenuItem>
-              <MenuItem value="12-hour">12-hour</MenuItem>
+          {[
+            { key: 'autoStartBreaks', label: 'Auto-start Breaks', sub: 'Breaks begin automatically after focus ends' },
+            { key: 'autoStartPomodoros', label: 'Auto-start Focus', sub: 'Focus timer restarts automatically after breaks' },
+            { key: 'darkMode', label: 'Dark Mode while running', sub: 'Dims the screen when a session is active' },
+          ].map(({ key, label, sub }) => (
+            <Box key={key} sx={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              mt: 1.5, p: 2, borderRadius: 2.5,
+              bgcolor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <Box>
+                <Typography sx={{ fontWeight: 600, fontSize: '0.9rem', color: 'white' }}>{label}</Typography>
+                <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', mt: 0.2 }}>{sub}</Typography>
+              </Box>
+              <Switch
+                checked={!!settings[key]}
+                onChange={(e) => handleSettingChange(key, e.target.checked)}
+                sx={{
+                  '& .MuiSwitch-switchBase.Mui-checked': { color: '#4ade80' },
+                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#4ade80' },
+                  '& .MuiSwitch-track': { bgcolor: 'rgba(255,255,255,0.2)' },
+                }}
+              />
+            </Box>
+          ))}
+
+          <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.08)' }} />
+
+          {/* ── Sound ── */}
+          <Typography variant="overline" sx={{ color: 'rgba(255,255,255,0.5)', letterSpacing: 2, fontSize: '0.65rem', fontWeight: 700 }}>
+            Sound
+          </Typography>
+
+          <Box sx={{ mt: 2, p: 2, borderRadius: 2.5, bgcolor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <Typography sx={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.55)', mb: 1 }}>🔔 Alarm Sound</Typography>
+            <Select value={settings.alarmSound} onChange={(e) => handleSettingChange('alarmSound', e.target.value)} size="small" fullWidth
+              sx={{ color: 'white', '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.15)' }, '.MuiSvgIcon-root': { color: 'white' }, bgcolor: 'rgba(255,255,255,0.07)', borderRadius: 1.5 }}>
+              <MenuItem value="Kitchen">🍳 Kitchen</MenuItem>
+              <MenuItem value="Bell">🔔 Bell</MenuItem>
+              <MenuItem value="Birds">🐦 Birds</MenuItem>
             </Select>
+            <Box sx={{ mt: 2 }}>
+              <Typography sx={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', mb: 0.5 }}>Volume</Typography>
+              <Slider value={settings.alarmVolume} onChange={(e, v) => handleSettingChange('alarmVolume', v)} valueLabelDisplay="auto"
+                sx={{ color: '#4ade80', '& .MuiSlider-rail': { bgcolor: 'rgba(255,255,255,0.15)' } }} />
+            </Box>
           </Box>
 
-          <FormControlLabel
-            control={
-              <Switch
-                checked={settings.darkMode}
-                onChange={(e) => handleSettingChange('darkMode', e.target.checked)}
-              />
-            }
-            label="Dark Mode when running"
-          />
         </DialogContent>
       </Dialog>
+
     </Box>
   );
 }
