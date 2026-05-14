@@ -45,13 +45,13 @@ function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive,
         />
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-           {catchUpDatesCount > 0 && (
-             <Tooltip title={`Catch up ${catchUpDatesCount} missed day(s)`}>
-               <IconButton size="small" color="success" onClick={(e) => { e.stopPropagation(); onCatchUpClick(habit.id); }}>
+           <Tooltip title={catchUpDatesCount > 0 ? `Catch up ${catchUpDatesCount} missed day(s)` : 'No missed days to catch up'}>
+             <span>
+               <IconButton size="small" color="success" disabled={catchUpDatesCount === 0} onClick={(e) => { e.stopPropagation(); onCatchUpClick(habit.id); }}>
                  <EventRepeat fontSize="small" />
                </IconButton>
-             </Tooltip>
-           )}
+             </span>
+           </Tooltip>
            <Typography variant="caption" color={isComplete ? 'success.main' : 'text.secondary'} fontWeight={isComplete ? 700 : 500}>
              {isComplete ? '🎯' : `${Math.round(progress)}%`}
            </Typography>
