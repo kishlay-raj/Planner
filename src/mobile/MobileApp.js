@@ -1026,6 +1026,7 @@ function MobileApp() {
     const mModeColors = { pomodoro: '#b74b4b', shortBreak: '#4c9195', longBreak: '#457ca3' };
     const [mPomodoroStats] = useFirestore('pomodoroStats', { total: 0, today: 0, lastDate: new Date().toDateString() });
     const [mSessionHistory] = useFirestore('pomodoroSessionHistory', []);
+    const [mVibrateOnEnd, setMVibrateOnEnd] = useFirestore('pomodoroVibrateOnEnd', true);
 
     const mRequestNotifPermission = async () => {
         if (typeof Notification === 'undefined') return;
@@ -1095,6 +1096,10 @@ function MobileApp() {
                 );
             }
             setMIsActive(false);
+            // Vibrate on session end if enabled and supported
+            if (mVibrateOnEnd && navigator.vibrate) {
+                navigator.vibrate([300, 100, 300, 100, 600]);
+            }
         }
         return () => clearInterval(interval);
     }, [mIsActive, mTimeLeft, mMode, mCycles]);
@@ -1288,6 +1293,27 @@ function MobileApp() {
                     >
                         RESET
                     </Button>
+                </Box>
+
+                {/* Quick Settings Row */}
+                <Box sx={{ mx: 2, mb: 3, p: 1.5, borderRadius: 3, bgcolor: 'rgba(0,0,0,0.18)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography sx={{ fontSize: '1.1rem' }}>📳</Typography>
+                        <Box>
+                            <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', lineHeight: 1.2 }}>Vibrate on end</Typography>
+                            <Typography sx={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)' }}>Buzz when session completes</Typography>
+                        </Box>
+                    </Box>
+                    <Switch
+                        checked={!!mVibrateOnEnd}
+                        onChange={(e) => setMVibrateOnEnd(e.target.checked)}
+                        size="small"
+                        sx={{
+                            '& .MuiSwitch-switchBase.Mui-checked': { color: '#4ade80' },
+                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#4ade80' },
+                            '& .MuiSwitch-track': { bgcolor: 'rgba(255,255,255,0.25)' },
+                        }}
+                    />
                 </Box>
 
                 {/* Task Section */}
