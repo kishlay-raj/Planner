@@ -1099,6 +1099,43 @@ function MobileApp() {
         return () => clearInterval(interval);
     }, [mIsActive, mTimeLeft, mMode, mCycles]);
 
+    // ── Live Ongoing Notification (updates every minute while active) ──────────
+    const mMinutesLeft = Math.floor(mTimeLeft / 60);
+    useEffect(() => {
+        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+        if (!navigator.serviceWorker) return;
+
+        if (!mIsActive) {
+            // Dismiss the live notification when the timer is paused / stopped
+            navigator.serviceWorker.ready.then(reg => {
+                reg.getNotifications({ tag: 'pomodoro-live' })
+                    .then(notes => notes.forEach(n => n.close()))
+                    .catch(() => {});
+            }).catch(() => {});
+            return;
+        }
+
+        const modeLabel = mMode === 'pomodoro' ? '🍅 Focus' : mMode === 'shortBreak' ? '☕ Short Break' : '🌿 Long Break';
+        const secs = mTimeLeft % 60;
+        const timeStr = `${mMinutesLeft}:${String(secs).padStart(2, '0')}`;
+        const bodyText = mMode === 'pomodoro'
+            ? `Stay locked in — ${mMinutesLeft} min remaining`
+            : `Rest up — ${mMinutesLeft} min left`;
+
+        navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(`${modeLabel}  ${timeStr}`, {
+                body: bodyText,
+                icon: '/icon-192.png',
+                badge: '/icon-192.png',
+                tag: 'pomodoro-live',   // same tag = replaces old one, no stacking
+                renotify: false,         // no sound/vibration on each update
+                silent: true,
+                requireInteraction: false,
+            });
+        }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mIsActive, mMinutesLeft, mMode]);
+
     const mHandleModeChange = (newMode) => {
         setMMode(newMode);
         setMIsActive(false);
