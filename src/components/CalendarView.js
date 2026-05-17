@@ -152,12 +152,14 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
   }, [onTaskSchedule, selectedDate]);
 
   const handleEventDrop = useCallback(({ event, start, end }) => {
+    if (event.resource.isPomodoro) return;
     // Calculate new duration based on the drop
     const duration = (end - start) / (1000 * 60); // Convert to minutes
     onTaskSchedule(event.id, start, duration);
   }, [onTaskSchedule]);
 
   const handleEventResize = useCallback(({ event, start, end }) => {
+    if (event.resource.isPomodoro) return;
     // Calculate new duration based on the resize
     const duration = (end - start) / (1000 * 60); // Convert to minutes
     onTaskSchedule(event.id, start, duration);
@@ -199,6 +201,7 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
   };
 
   const handleEventDoubleClick = (event) => {
+    if (event.resource.isPomodoro) return;
     setEditDialog({
       open: true,
       task: event.resource
@@ -243,9 +246,9 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
         eventPropGetter={(event) => ({
           className: 'calendar-event',
           style: {
-            backgroundColor: event.completed ? '#66bb6a' : '#1976d2',
-            opacity: event.completed ? 0.7 : 1,
-            textDecoration: event.completed ? 'line-through' : 'none'
+            backgroundColor: event.resource.isPomodoro ? '#b74b4b' : (event.completed ? '#66bb6a' : '#1976d2'),
+            opacity: event.completed || event.resource.isPomodoro ? 0.8 : 1,
+            textDecoration: event.completed && !event.resource.isPomodoro ? 'line-through' : 'none'
           }
         })}
       />

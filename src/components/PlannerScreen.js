@@ -16,7 +16,7 @@ import './PlannerScreen.css';
 
 const emptyObject = {};
 
-function PlannerScreen() {
+function PlannerScreen({ sessionHistory = [] }) {
   const { currentUser, loginWithGoogle, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const [migrating, setMigrating] = useState(false);
@@ -137,6 +137,23 @@ function PlannerScreen() {
 
   // Get scheduled tasks (tasks with scheduledTime)
   const scheduledTasks = tasks.filter(t => t.scheduledTime);
+
+  // Map Pomodoro sessions to calendar events
+  const pomodoroEvents = sessionHistory.map(session => {
+    const endTime = new Date(session.timestamp);
+    const startTime = new Date(endTime.getTime() - session.duration * 60000);
+    return {
+      id: `pomodoro-${session.id}`,
+      name: `🍅 ${session.workType === 'deep' ? 'Deep Work' : 'Shallow Work'}${session.primaryTask ? `: ${session.primaryTask}` : ''}`,
+      duration: session.duration,
+      scheduledTime: startTime.toISOString(),
+      completed: true,
+      isPomodoro: true,
+      notes: session.notes
+    };
+  });
+
+  const allScheduledEvents = [...scheduledTasks, ...pomodoroEvents];
 
   return (
     <div className="planner-screen">
@@ -275,7 +292,7 @@ function PlannerScreen() {
         <Grid item xs={12} md={6}>
           <Paper className="calendar-container">
             <CalendarView
-              scheduledTasks={scheduledTasks}
+              scheduledTasks={allScheduledEvents}
               onTaskSchedule={handleTaskSchedule}
               onTaskCreate={handleTaskCreate}
               onTaskUpdate={handleTaskUpdate}

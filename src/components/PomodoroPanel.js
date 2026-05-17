@@ -166,18 +166,22 @@ function PomodoroPanel({
   const [analyticsView, setAnalyticsView] = useState(0); // 0: Daily, 1: Weekly, 2: Monthly
   const [primaryTask, setPrimaryTask] = useFirestore('pomodoroPrimaryTask', '');
   const [secondaryTask, setSecondaryTask] = useFirestore('pomodoroSecondaryTask', '');
+  const [pomodoroNotes, setPomodoroNotes] = useFirestore('pomodoroNotes', '');
   const [editingTasks, setEditingTasks] = useState(false);
   const [localPrimary, setLocalPrimary] = useState('');
   const [localSecondary, setLocalSecondary] = useState('');
+  const [localNotes, setLocalNotes] = useState('');
 
   React.useEffect(() => {
     setLocalPrimary(primaryTask || '');
     setLocalSecondary(secondaryTask || '');
-  }, [primaryTask, secondaryTask]);
+    setLocalNotes(pomodoroNotes || '');
+  }, [primaryTask, secondaryTask, pomodoroNotes]);
 
   const handleSaveTasks = () => {
     setPrimaryTask(localPrimary);
     setSecondaryTask(localSecondary);
+    setPomodoroNotes(localNotes);
     setEditingTasks(false);
   };
 
@@ -563,10 +567,22 @@ function PomodoroPanel({
                       </Box>
                     </Box>
                   )}
+                  {pomodoroNotes && (
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, pl: 0.5, opacity: 0.7, borderTop: '1px solid rgba(255,255,255,0.15)', pt: 1.5, mt: 1.5 }}>
+                      <Box sx={{
+                        width: 8, height: 8, borderRadius: '50%',
+                        border: '1px dashed rgba(255,255,255,0.7)', flexShrink: 0, mt: 0.5
+                      }} />
+                      <Box>
+                        <Typography sx={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase', lineHeight: 1 }}>Session Notes</Typography>
+                        <Typography sx={{ fontWeight: 400, fontSize: '0.85rem', lineHeight: 1.4, fontStyle: 'italic', mt: 0.5 }}>{pomodoroNotes}</Typography>
+                      </Box>
+                    </Box>
+                  )}
                 </>
               ) : (
                 <Typography sx={{ opacity: 0.5, fontSize: '0.95rem', textAlign: 'center' }}>
-                  + Set focus tasks for this session
+                  + Set focus tasks and notes for this session
                 </Typography>
               )}
             </Box>
@@ -598,6 +614,21 @@ function PomodoroPanel({
                   style: { color: 'white', fontSize: '0.95rem' }
                 }}
                 sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white' }, '& input::placeholder': { color: 'rgba(255,255,255,0.4)' } }}
+              />
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 1 }}>Session Notes</Typography>
+              <TextField
+                fullWidth
+                multiline
+                minRows={2}
+                variant="standard"
+                placeholder="Any specific thoughts or goals..."
+                value={localNotes}
+                onChange={e => setLocalNotes(e.target.value)}
+                InputProps={{
+                  disableUnderline: false,
+                  style: { color: 'white', fontSize: '0.9rem' }
+                }}
+                sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white', '& textarea::placeholder': { color: 'rgba(255,255,255,0.4)' } } }}
               />
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
@@ -759,6 +790,75 @@ function PomodoroPanel({
               </ResponsiveContainer>
             </Box>
           </Paper>
+        </Container>
+      </Box>
+
+      {/* History Section */}
+      <Box sx={{
+        bgcolor: 'rgba(255, 255, 255, 0.05)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        py: 4,
+        px: 3,
+        mt: 4
+      }}>
+        <Container maxWidth="lg">
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 1 }}>
+            <AccessTime sx={{ color: 'white', opacity: 0.9 }} />
+            <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+              Session History
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {sessionHistory.slice().reverse().map(session => (
+              <Paper key={session.id} sx={{
+                p: 3, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: 'white', borderRadius: 2
+              }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                  <Typography variant="subtitle2" sx={{ opacity: 0.7, fontWeight: 600, letterSpacing: 0.5 }}>
+                    {new Date(session.timestamp).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    icon={session.workType === 'deep' ? <Psychology sx={{ fontSize: '1rem' }} /> : <WorkOutline sx={{ fontSize: '1rem' }} />}
+                    label={`${session.duration}m ${session.workType === 'deep' ? 'Deep Work' : 'Shallow Work'}`}
+                    sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', height: 24, '& .MuiChip-icon': { color: 'white' } }}
+                  />
+                </Box>
+                {session.primaryTask && (
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#4ade80', mt: 0.8, flexShrink: 0 }} />
+                    <Box>
+                      <Typography sx={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 }}>Primary</Typography>
+                      <Typography sx={{ fontWeight: 500 }}>{session.primaryTask}</Typography>
+                    </Box>
+                  </Box>
+                )}
+                {session.secondaryTask && (
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #60a5fa', mt: 0.8, flexShrink: 0 }} />
+                    <Box>
+                      <Typography sx={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 }}>Secondary</Typography>
+                      <Typography sx={{ fontWeight: 400, opacity: 0.9 }}>{session.secondaryTask}</Typography>
+                    </Box>
+                  </Box>
+                )}
+                {session.notes && (
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 1.5, pt: 1.5, borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '1px dashed rgba(255,255,255,0.6)', mt: 0.8, flexShrink: 0 }} />
+                    <Box>
+                      <Typography sx={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 }}>Notes</Typography>
+                      <Typography sx={{ fontStyle: 'italic', opacity: 0.8, fontSize: '0.9rem' }}>{session.notes}</Typography>
+                    </Box>
+                  </Box>
+                )}
+              </Paper>
+            ))}
+            {sessionHistory.length === 0 && (
+              <Box sx={{ p: 4, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
+                <Typography sx={{ opacity: 0.6 }}>No completed sessions yet.</Typography>
+              </Box>
+            )}
+          </Box>
         </Container>
       </Box>
 

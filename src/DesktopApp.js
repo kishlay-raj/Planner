@@ -194,6 +194,7 @@ function DesktopApp() {
   const [sessionHistory, setSessionHistory] = useFirestore('pomodoroSessionHistory', []); // Track all completed sessions
   const [primaryTask] = useFirestore('pomodoroPrimaryTask', '');
   const [secondaryTask] = useFirestore('pomodoroSecondaryTask', '');
+  const [pomodoroNotes] = useFirestore('pomodoroNotes', '');
 
   // --- PIP WIDGET STATE ---
   const [pipWindow, setPipWindow] = useState(null);
@@ -344,7 +345,10 @@ function DesktopApp() {
           workType: workType, // 'deep' or 'shallow'
           duration: settings.pomodoro, // duration in minutes
           timestamp: new Date().toISOString(),
-          date: new Date().toDateString()
+          date: new Date().toDateString(),
+          primaryTask: primaryTask,
+          secondaryTask: secondaryTask,
+          notes: pomodoroNotes
         };
         setSessionHistory(prev => [...prev, session]);
       }
@@ -459,7 +463,7 @@ function DesktopApp() {
   const renderPanel = () => {
     switch (activePanel) {
       case 'planner':
-        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
+        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} sessionHistory={sessionHistory} />;
       case 'planner-week':
         return <WeeklyPlanner />;
       case 'planner-month':
@@ -506,7 +510,7 @@ function DesktopApp() {
           onToggleDarkMode={toggleDarkMode}
         />;
       default:
-        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} />;
+        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} sessionHistory={sessionHistory} />;
     }
   };
 
