@@ -8,8 +8,10 @@ A modern, intuitive, and comprehensive task management and scheduling applicatio
 
 ## ✨ Features and Capabilities
 
-### 1. Advanced Task Management (Eisenhower Matrix)
-Stop relying on simple checklists. Flow Planner integrates an interactive **Eisenhower Matrix** allowing you to categorize your tasks based on urgency and importance. Prioritize what needs to be done *now*, schedule the rest, delegate, or eliminate tasks holding you back.
+### 1. Advanced Task Management (Eisenhower Matrix & Priority Reordering)
+Stop relying on simple checklists. Flow Planner integrates an interactive **Eisenhower Matrix** allowing you to categorize your tasks based on urgency and importance.
+- **Priority Columns**: Prioritize what needs to be done *now*, schedule the rest, delegate, or eliminate tasks holding you back.
+- **High-Performance Same-List Reordering**: Drag-and-drop to reorder tasks directly within the same priority column. Powered by an atomic batch-updating mechanism, order updates are saved to Firestore in parallel without any layout lag or excessive React re-renders.
 
 ![Eisenhower Matrix](./screenshots/eisenhower_matrix.png)
 
@@ -21,8 +23,11 @@ Visualize your timeline perfectly. Whether you are planning your year, mapping y
 
 ![Calendar View](./screenshots/calendar_view.png)
 
-### 3. Focus & Productivity (Pomodoro Timer)
-Integrated directly into the planner, Flow Planner features a sleek floating Pomodoro mechanism. Start working on a specific task and use work/break cycles to avoid burnout and maintain a state of flow without leaving the app.
+### 3. Focus & Productivity (Pomodoro Timer & Always-On-Top Widget)
+Integrated directly into the planner, Flow Planner features a comprehensive, state-of-the-art floating Pomodoro mechanism:
+- **Always-On-Top Widget**: Pop out a compact always-on-top mini widget using the native **Document Picture-in-Picture API**. Keep your current primary & secondary focus tasks and live timer countdown visible over all other desktop applications.
+- **Live Tab Timer**: The browser tab title dynamically ticks down (e.g., `🍅 24:59 — Flow Planner`) so you can track your state even when the browser is minimized.
+- **System Notifications**: Triggers system-level desktop notifications on complete so you never miss a transition.
 
 ![Pomodoro Timer](./screenshots/pomodoro_timer.png)
 
