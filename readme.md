@@ -28,6 +28,8 @@ Integrated directly into the planner, Flow Planner features a comprehensive, sta
 - **Always-On-Top Widget**: Pop out a compact always-on-top mini widget using the native **Document Picture-in-Picture API**. Keep your current primary & secondary focus tasks and live timer countdown visible over all other desktop applications.
 - **Live Tab Timer**: The browser tab title dynamically ticks down (e.g., `🍅 24:59 — Flow Planner`) so you can track your state even when the browser is minimized.
 - **System Notifications**: Triggers system-level desktop notifications on complete so you never miss a transition.
+- **Session Notes & History Log**: Add specific notes and context for each Pomodoro session. Completed sessions are permanently archived in a dedicated Session History view.
+- **Daily Calendar Integration**: Completed Pomodoro sessions automatically populate onto your daily calendar view with distinct styling.
 
 ![Pomodoro Timer](./screenshots/pomodoro_timer.png)
 
