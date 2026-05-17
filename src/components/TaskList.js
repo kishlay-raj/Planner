@@ -39,6 +39,14 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
   });
   const completedSectionRef = React.useRef(null);
 
+  // Sort helper: tasks with explicit sortOrder come first (ascending),
+  // then tasks without sortOrder are ordered by createdAt
+  const sortByOrder = (a, b) => {
+    const orderA = a.sortOrder !== undefined ? a.sortOrder : (a.createdAt || 0);
+    const orderB = b.sortOrder !== undefined ? b.sortOrder : (b.createdAt || 0);
+    return orderA - orderB;
+  };
+
   // Filter tasks to only show those created for the selected date
   const filteredTasks = taskList.filter(task => {
     if (!task.date) return false;
@@ -47,12 +55,12 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
     return taskDate === selectedDateString;
   });
 
-  // Tasks for priority sections (active only)
+  // Tasks for priority sections (active only), sorted by sortOrder
   const priorityTasksByLevel = {
-    P1: filteredTasks.filter(task => task.priority === 'P1' && !task.completed),
-    P2: filteredTasks.filter(task => task.priority === 'P2' && !task.completed),
-    P3: filteredTasks.filter(task => task.priority === 'P3' && !task.completed),
-    P4: filteredTasks.filter(task => task.priority === 'P4' && !task.completed)
+    P1: filteredTasks.filter(task => task.priority === 'P1' && !task.completed).sort(sortByOrder),
+    P2: filteredTasks.filter(task => task.priority === 'P2' && !task.completed).sort(sortByOrder),
+    P3: filteredTasks.filter(task => task.priority === 'P3' && !task.completed).sort(sortByOrder),
+    P4: filteredTasks.filter(task => task.priority === 'P4' && !task.completed).sort(sortByOrder)
   };
 
   // Tasks for completed section
@@ -71,6 +79,27 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
       const taskToMove = taskList.find(task => String(task.id) === result.draggableId);
       if (!taskToMove) return;
 
+      // Same-list reorder: user dragged a task up/down within the same priority
+      if (result.source.droppableId === result.destination.droppableId &&
+          result.source.droppableId !== 'completed-list') {
+        const priority = result.source.droppableId.split('-')[0]; // e.g. "P1" from "P1-priority-list"
+        const items = [...(priorityTasksByLevel[priority] || [])];
+
+        // Remove from old position and insert at new position
+        const [removed] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, removed);
+
+        // Send only {id, sortOrder} — minimal write, no risk of overwriting other fields
+        const sortOrderUpdates = items.map((task, index) => ({
+          id: task.id,
+          sortOrder: index
+        }));
+
+        onTaskUpdate(sortOrderUpdates);
+        return;
+      }
+
+      // Cross-list move (priority change or mark completed)
       let updatedTask = { ...taskToMove };
 
       if (result.destination.droppableId === 'completed-list') {

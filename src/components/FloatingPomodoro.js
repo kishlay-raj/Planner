@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, Paper, Typography, IconButton, Fab, Zoom, Chip, Tooltip } from '@mui/material';
-import { PlayArrow, Pause, Stop, Psychology, WorkOutline } from '@mui/icons-material';
+import { Box, Paper, Typography, IconButton, Zoom, Chip, Tooltip } from '@mui/material';
+import { PlayArrow, Pause, Psychology, WorkOutline, OpenInNew } from '@mui/icons-material';
 
 const FloatingPomodoro = ({
     timeLeft,
@@ -9,7 +9,11 @@ const FloatingPomodoro = ({
     mode,
     visible,
     workType = 'deep',
-    onWorkTypeToggle
+    onWorkTypeToggle,
+    primaryTask = '',
+    secondaryTask = '',
+    onOpenWidget,
+    widgetOpen = false
 }) => {
     // Format time
     const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
@@ -39,7 +43,8 @@ const FloatingPomodoro = ({
                     display: 'flex',
                     alignItems: 'center',
                     overflow: 'hidden',
-                    pr: 1
+                    pr: 1,
+                    maxWidth: 340
                 }}
             >
                 <Box
@@ -50,7 +55,9 @@ const FloatingPomodoro = ({
                         flexDirection: 'column',
                         alignItems: 'center',
                         cursor: 'default',
-                        gap: 0.5
+                        gap: 0.5,
+                        minWidth: 0,
+                        flex: 1
                     }}
                 >
                     <Typography variant="h6" sx={{ fontWeight: 'bold', lineHeight: 1 }}>
@@ -79,19 +86,79 @@ const FloatingPomodoro = ({
                             />
                         </Tooltip>
                     )}
+                    {/* Primary task — truncated */}
+                    {primaryTask && (
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                opacity: 0.85,
+                                fontSize: '0.65rem',
+                                fontWeight: 600,
+                                maxWidth: '100%',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                bgcolor: 'rgba(255,255,255,0.15)',
+                                borderRadius: 1,
+                                px: 1, py: 0.25
+                            }}
+                        >
+                            {primaryTask}
+                        </Typography>
+                    )}
+                    {/* Secondary task — lighter */}
+                    {secondaryTask && (
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                opacity: 0.6,
+                                fontSize: '0.6rem',
+                                fontWeight: 500,
+                                maxWidth: '100%',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                bgcolor: 'rgba(255,255,255,0.08)',
+                                borderRadius: 1,
+                                px: 1, py: 0.15
+                            }}
+                        >
+                            {secondaryTask}
+                        </Typography>
+                    )}
                 </Box>
 
-                <IconButton
-                    size="small"
-                    onClick={onToggle}
-                    sx={{
-                        color: 'white',
-                        bgcolor: 'rgba(255,255,255,0.2)',
-                        '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
-                    }}
-                >
-                    {isActive ? <Pause /> : <PlayArrow />}
-                </IconButton>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'center' }}>
+                    <IconButton
+                        size="small"
+                        onClick={onToggle}
+                        sx={{
+                            color: 'white',
+                            bgcolor: 'rgba(255,255,255,0.2)',
+                            '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                        }}
+                    >
+                        {isActive ? <Pause /> : <PlayArrow />}
+                    </IconButton>
+
+                    {/* Pop-out widget button */}
+                    {onOpenWidget && !widgetOpen && (
+                        <Tooltip title="Pop out as always-on-top widget">
+                            <IconButton
+                                size="small"
+                                onClick={onOpenWidget}
+                                sx={{
+                                    color: 'white',
+                                    opacity: 0.6,
+                                    p: '3px',
+                                    '&:hover': { opacity: 1, bgcolor: 'rgba(255,255,255,0.15)' }
+                                }}
+                            >
+                                <OpenInNew sx={{ fontSize: '0.9rem' }} />
+                            </IconButton>
+                        </Tooltip>
+                    )}
+                </Box>
             </Paper>
         </Zoom>
     );

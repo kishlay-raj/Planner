@@ -399,6 +399,62 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
         }
     }, [currentUser, collectionPath, getCollectionRef]);
 
+    /**
+     * Batch-update multiple items in a single React state update + parallel Firestore writes.
+     * Use this instead of calling updateItem N times to avoid N re-renders.
+     * @param {Array<{id: string, ...fields}>} updates - Array of objects with id + changed fields
+     */
+    const batchUpdateItems = useCallback(async (updates) => {
+        if (!updates || updates.length === 0) return;
+
+        const timestamp = Date.now();
+
+        if (!currentUser) {
+            setItems(prev => {
+                const updatesMap = new Map(updates.map(u => [u.id, u]));
+                const updated = prev.map(item => {
+                    if (updatesMap.has(item.id)) {
+                        const { id: _id, ...fields } = updatesMap.get(item.id);
+                        return { ...item, ...fields };
+                    }
+                    return item;
+                });
+                localStorage.setItem(`firestore_collection_${collectionPath}`, JSON.stringify(updated));
+                return updated;
+            });
+            return;
+        }
+
+        // Register all IDs so incoming snapshots don't overwrite our optimistic state
+        updates.forEach(u => updatingIdsRef.current.add(u.id));
+
+        // ONE setItems call → ONE React re-render for all N tasks
+        const updatesMap = new Map(updates.map(u => [u.id, u]));
+        setItems(prev => prev.map(item => {
+            if (updatesMap.has(item.id)) {
+                const { id: _id, ...fields } = updatesMap.get(item.id);
+                return { ...item, ...fields, updatedAt: timestamp };
+            }
+            return item;
+        }));
+
+        const colRef = getCollectionRef();
+        if (!colRef) return;
+
+        // Fire all Firestore writes in parallel (not sequential)
+        const writePromises = updates.map(({ id, ...fields }) => {
+            const docRef = doc(colRef, id);
+            return setDoc(docRef, { ...fields, updatedAt: timestamp }, { merge: true })
+                .then(() => console.log(`✅ Batch updated ${collectionPath}/${id}`))
+                .catch(e => console.error(`❌ Batch update failed for ${collectionPath}/${id}:`, e));
+        });
+
+        // Clear all IDs together after writes settle
+        Promise.all(writePromises).finally(() => {
+            setTimeout(() => updates.forEach(u => updatingIdsRef.current.delete(u.id)), 1000);
+        });
+    }, [currentUser, collectionPath, getCollectionRef]);
+
     // Delete item
     const deleteItemFn = useCallback(async (id) => {
         if (!currentUser) {
@@ -428,7 +484,7 @@ export function useFirestoreCollection(collectionPath, orderByField = null) {
         }
     }, [currentUser, collectionPath, getCollectionRef]);
 
-    return [items, addItem, updateItem, deleteItemFn, loading];
+    return [items, addItem, updateItem, deleteItemFn, loading, batchUpdateItems];
 }
 
 // Re-export old hook for backward compatibility during migration

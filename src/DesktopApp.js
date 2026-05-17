@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { ThemeProvider, createTheme, CssBaseline, Box, Typography, IconButton, Tooltip, Popover, Link } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import PlannerScreen from './components/PlannerScreen';
@@ -19,6 +20,7 @@ import './App.css';
 import FloatingPomodoro from './components/FloatingPomodoro';
 import AntiGravityHabitTracker from './components/AntiGravityHabitTracker';
 import MistakesJournal from './components/MistakesJournal';
+import PomodoroWidgetContent from './components/PomodoroWidgetContent';
 
 // Moved theme creation inside component or useMemo to depend on mode
 // But since we need it in JSX, we will refactor to use a useMemo hook for theme creation.
@@ -190,6 +192,37 @@ function DesktopApp() {
   const [tickInterval, setTickInterval] = useState(null);
   const [workType, setWorkType] = useFirestore('pomodoroWorkType', 'deep'); // 'deep' or 'shallow'
   const [sessionHistory, setSessionHistory] = useFirestore('pomodoroSessionHistory', []); // Track all completed sessions
+  const [primaryTask] = useFirestore('pomodoroPrimaryTask', '');
+  const [secondaryTask] = useFirestore('pomodoroSecondaryTask', '');
+
+  // --- PIP WIDGET STATE ---
+  const [pipWindow, setPipWindow] = useState(null);
+  const pipWindowRef = useRef(null);
+
+  const handleOpenWidget = async () => {
+    if (!('documentPictureInPicture' in window)) {
+      alert('Picture-in-Picture widget requires Chrome 116+. The timer countdown is still visible in your browser tab title.');
+      return;
+    }
+    try {
+      const pip = await window.documentPictureInPicture.requestWindow({
+        width: 320, height: 180,
+      });
+      const style = pip.document.createElement('style');
+      style.textContent = '* { margin:0; padding:0; box-sizing:border-box; } body { overflow:hidden; }';
+      pip.document.head.appendChild(style);
+      pip.addEventListener('pagehide', () => { setPipWindow(null); pipWindowRef.current = null; });
+      pipWindowRef.current = pip;
+      setPipWindow(pip);
+    } catch (e) {
+      console.error('PiP widget failed:', e);
+    }
+  };
+
+  // Cleanup PiP window on unmount
+  useEffect(() => {
+    return () => { try { pipWindowRef.current?.close(); } catch(e) {} };
+  }, []);
 
   // Audio Context
   const [audioContext] = useState(() => {
@@ -200,6 +233,25 @@ function DesktopApp() {
       return null;
     }
   });
+
+  // --- REQUEST NOTIFICATION PERMISSION ON MOUNT ---
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // --- LIVE BROWSER-TAB TITLE (visible even when window is minimised) ---
+  useEffect(() => {
+    if (isActive) {
+      const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const secs = (timeLeft % 60).toString().padStart(2, '0');
+      const modeLabel = mode === 'pomodoro' ? '🍅' : mode === 'shortBreak' ? '☕' : '🛌';
+      document.title = `${modeLabel} ${mins}:${secs} — Flow Planner`;
+    } else {
+      document.title = 'Flow Planner';
+    }
+  }, [isActive, timeLeft, mode]);
 
   const playBeep = () => {
     if (!audioContext) return;
@@ -257,6 +309,25 @@ function DesktopApp() {
           if (count < settings.alarmRepeat) { playBeep(); count++; }
           else clearInterval(alarmInt);
         }, 1500);
+      }
+
+      // --- DESKTOP NOTIFICATION ---
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const isPomodoro = mode === 'pomodoro';
+        const title = isPomodoro ? '🍅 Focus session complete!' : '☕ Break time over!';
+        const body = isPomodoro
+          ? 'Great work! Time for a break.'
+          : 'Break is done. Ready to focus again?';
+        try {
+          new Notification(title, {
+            body,
+            icon: '/favicon.ico',
+            tag: 'pomodoro-complete',  // Replace previous if still showing
+            requireInteraction: false,
+          });
+        } catch (e) {
+          console.warn('Desktop notification failed:', e);
+        }
       }
 
       // Update stats and cycles
@@ -461,7 +532,7 @@ function DesktopApp() {
             {renderPanel()}
           </Box>
 
-          {/* Floating Pomodoro Bubble */}
+          {/* Floating Pomodoro Bubble — visible on all panels while timer runs */}
           <FloatingPomodoro
             timeLeft={timeLeft}
             isActive={isActive}
@@ -470,7 +541,25 @@ function DesktopApp() {
             visible={isActive && activePanel !== 'pomodoro'}
             workType={workType}
             onWorkTypeToggle={toggleWorkType}
+            primaryTask={primaryTask}
+            secondaryTask={secondaryTask}
+            onOpenWidget={handleOpenWidget}
+            widgetOpen={!!pipWindow}
           />
+
+          {/* PiP Widget Portal — renders into the always-on-top mini window */}
+          {pipWindow && createPortal(
+            <PomodoroWidgetContent
+              timeLeft={timeLeft}
+              isActive={isActive}
+              mode={mode}
+              workType={workType}
+              primaryTask={primaryTask}
+              secondaryTask={secondaryTask}
+              onToggle={toggleTimer}
+            />,
+            pipWindow.document.body
+          )}
 
           <Box sx={{
             py: 1.5,

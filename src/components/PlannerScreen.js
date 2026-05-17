@@ -65,7 +65,7 @@ function PlannerScreen() {
   };
 
   // Use new collection-based hooks for tasks
-  const [tasks, addTask, updateTask, deleteTask, tasksLoading] = useFirestoreCollection('tasks/active', 'createdAt');
+  const [tasks, addTask, updateTask, deleteTask, tasksLoading, batchUpdateTasks] = useFirestoreCollection('tasks/active', 'createdAt');
 
   // Weekly planner data for focus display
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
@@ -102,11 +102,16 @@ function PlannerScreen() {
   };
 
   const handleTaskUpdate = async (updatedTasks) => {
-    // Convert single task to array if needed
     const tasksToUpdate = Array.isArray(updatedTasks) ? updatedTasks : [updatedTasks];
 
-    for (const taskUpdate of tasksToUpdate) {
-      if (taskUpdate.id) {
+    if (tasksToUpdate.length > 1) {
+      // Batch path: single React re-render + parallel Firestore writes
+      // Used for reorders where all tasks in a priority group get a new sortOrder
+      await batchUpdateTasks(tasksToUpdate);
+    } else {
+      // Single-task path: complete toggle, priority change, field edit
+      const taskUpdate = tasksToUpdate[0];
+      if (taskUpdate?.id) {
         await updateTask(taskUpdate.id.toString(), taskUpdate);
       }
     }

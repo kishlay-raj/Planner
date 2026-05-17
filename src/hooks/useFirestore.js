@@ -64,6 +64,9 @@ export function useFirestore(location, initialValue, merge = true) {
                 // Unwrap array if it was wrapped
                 if (rawData && rawData._isArray && Array.isArray(rawData.items)) {
                     setData(rawData.items);
+                } else if (rawData && rawData._isPrimitive && 'value' in rawData) {
+                    // Unwrap primitive (string, number, boolean) that was wrapped for Firestore
+                    setData(rawData.value);
                 } else {
                     setData(rawData);
                 }
@@ -117,10 +120,16 @@ export function useFirestore(location, initialValue, merge = true) {
                 if (isDev) console.log("📍 Document path:", docPath);
                 const docRef = doc(db, 'users', currentUser.uid, 'userData', Array.isArray(location) ? location.join('_') : location);
                 try {
-                    // Wrap arrays in an object since Firestore requires objects at root
-                    const dataToSave = Array.isArray(newData)
-                        ? { _isArray: true, items: newData }
-                        : newData;
+                    // Wrap arrays and primitives since Firestore requires objects at root
+                    let dataToSave;
+                    if (Array.isArray(newData)) {
+                        dataToSave = { _isArray: true, items: newData };
+                    } else if (newData !== null && typeof newData !== 'object') {
+                        // String, number, boolean — wrap in an object for Firestore
+                        dataToSave = { _isPrimitive: true, value: newData };
+                    } else {
+                        dataToSave = newData;
+                    }
 
                     // Safety check for undefined/null data
                     if (dataToSave === undefined || dataToSave === null) {
