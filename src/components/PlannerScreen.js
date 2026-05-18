@@ -142,9 +142,18 @@ function PlannerScreen({ sessionHistory = [] }) {
   const pomodoroEvents = sessionHistory.map(session => {
     const endTime = new Date(session.timestamp);
     const startTime = new Date(endTime.getTime() - session.duration * 60000);
+    
+    let taskName = session.workType === 'deep' ? 'Deep Work' : 'Shallow Work';
+    if (session.primaryTask || session.secondaryTask) {
+      const parts = [];
+      if (session.primaryTask) parts.push(session.primaryTask);
+      if (session.secondaryTask) parts.push(session.secondaryTask);
+      taskName = parts.join(' / ');
+    }
+
     return {
       id: `pomodoro-${session.id}`,
-      name: `🍅 ${session.workType === 'deep' ? 'Deep Work' : 'Shallow Work'}${session.primaryTask ? `: ${session.primaryTask}` : ''}`,
+      name: `🍅 ${taskName}`,
       duration: session.duration,
       scheduledTime: startTime.toISOString(),
       completed: true,

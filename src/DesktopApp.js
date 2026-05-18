@@ -195,6 +195,7 @@ function DesktopApp() {
   const [primaryTask] = useFirestore('pomodoroPrimaryTask', '');
   const [secondaryTask] = useFirestore('pomodoroSecondaryTask', '');
   const [pomodoroNotes] = useFirestore('pomodoroNotes', '');
+  const earlyCompleteElapsedRef = useRef(null);
 
   // --- PIP WIDGET STATE ---
   const [pipWindow, setPipWindow] = useState(null);
@@ -340,17 +341,20 @@ function DesktopApp() {
 
       // Save session to history if it was a pomodoro (focus session)
       if (mode === 'pomodoro') {
+        const actualDuration = earlyCompleteElapsedRef.current !== null ? earlyCompleteElapsedRef.current : settings.pomodoro;
+        const notePrefix = earlyCompleteElapsedRef.current !== null ? "(Completed early) " : "";
         const session = {
           id: Date.now(),
           workType: workType, // 'deep' or 'shallow'
-          duration: settings.pomodoro, // duration in minutes
+          duration: actualDuration, // duration in minutes
           timestamp: new Date().toISOString(),
           date: new Date().toDateString(),
           primaryTask: primaryTask,
           secondaryTask: secondaryTask,
-          notes: pomodoroNotes
+          notes: pomodoroNotes ? notePrefix + pomodoroNotes : (earlyCompleteElapsedRef.current !== null ? "Completed early" : "")
         };
         setSessionHistory(prev => [...prev, session]);
+        earlyCompleteElapsedRef.current = null;
       }
 
       // Auto-switch logic
@@ -392,6 +396,27 @@ function DesktopApp() {
       setMode('pomodoro');
       setTimeLeft(settings.pomodoro * 60);
     }
+  };
+
+  const completeTimer = () => {
+    // Record elapsed time if completed early
+    const expectedTime = mode === 'pomodoro' ? settings.pomodoro * 60 : (mode === 'shortBreak' ? settings.shortBreak * 60 : settings.longBreak * 60);
+    const elapsedMinutes = Math.max(1, Math.round((expectedTime - Math.max(0, timeLeft)) / 60));
+    if (elapsedMinutes < settings.pomodoro && mode === 'pomodoro') {
+       earlyCompleteElapsedRef.current = elapsedMinutes;
+    }
+    
+    // Try to find the primary task in tasks and mark it complete
+    if (mode === 'pomodoro' && primaryTask) {
+       const taskToComplete = tasks.find(t => !t.completed && t.name.trim().toLowerCase() === primaryTask.trim().toLowerCase());
+       if (taskToComplete) {
+         const updatedTasks = tasks.map(t => t.id === taskToComplete.id ? { ...t, completed: true } : t);
+         setTasks(updatedTasks);
+       }
+    }
+    
+    // Setting timeLeft to 0 triggers the completion logic in the useEffect
+    setTimeLeft(0);
   };
 
   const handleSettingChange = (key, value) => {
@@ -489,6 +514,7 @@ function DesktopApp() {
           cycles={cycles}
           toggleTimer={toggleTimer}
           resetTimer={resetTimer}
+          completeTimer={completeTimer}
           settings={settings}
           handleSettingChange={handleSettingChange}
           workType={workType}

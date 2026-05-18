@@ -494,6 +494,32 @@ function MobileApp() {
         // Filter for scheduled tasks
         const scheduledTasks = tasks.filter(t => t.scheduledTime);
 
+        // Map Pomodoro sessions to calendar events
+        const pomodoroEvents = mSessionHistory.map(session => {
+            const endTime = new Date(session.timestamp);
+            const startTime = new Date(endTime.getTime() - session.duration * 60000);
+            
+            let taskName = session.workType === 'deep' ? 'Deep Work' : 'Shallow Work';
+            if (session.primaryTask || session.secondaryTask) {
+                const parts = [];
+                if (session.primaryTask) parts.push(session.primaryTask);
+                if (session.secondaryTask) parts.push(session.secondaryTask);
+                taskName = parts.join(' / ');
+            }
+
+            return {
+                id: `pomodoro-${session.id}`,
+                name: `🍅 ${taskName}`,
+                duration: session.duration,
+                scheduledTime: startTime.toISOString(),
+                completed: true,
+                isPomodoro: true,
+                notes: session.notes
+            };
+        });
+
+        const allScheduledEvents = [...scheduledTasks, ...pomodoroEvents];
+
         return (
             <Box sx={{ pb: 10, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Paper elevation={0} sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee', position: 'sticky', top: 0, zIndex: 10, borderRadius: 0 }}>
@@ -507,7 +533,7 @@ function MobileApp() {
 
                 <Box sx={{ flex: 1, p: 1, overflow: 'hidden' }}>
                     <CalendarView
-                        scheduledTasks={scheduledTasks}
+                        scheduledTasks={allScheduledEvents}
                         onTaskSchedule={handleTaskSchedule}
                         onTaskCreate={handleCalendarTaskCreate}
                         onTaskUpdate={handleTaskUpdate}
@@ -1025,7 +1051,7 @@ function MobileApp() {
     const mPomodoroSettings = { pomodoro: 25, shortBreak: 5, longBreak: 15, longBreakInterval: 4 };
     const mModeColors = { pomodoro: '#b74b4b', shortBreak: '#4c9195', longBreak: '#457ca3' };
     const [mPomodoroStats] = useFirestore('pomodoroStats', { total: 0, today: 0, lastDate: new Date().toDateString() });
-    const [mSessionHistory] = useFirestore('pomodoroSessionHistory', []);
+    const [mSessionHistory, setMSessionHistory] = useFirestore('pomodoroSessionHistory', []);
     const [mVibrateOnEnd, setMVibrateOnEnd] = useFirestore('pomodoroVibrateOnEnd', true);
 
     const mRequestNotifPermission = async () => {
@@ -1064,13 +1090,46 @@ function MobileApp() {
         setMLocalSecondary(mSecondaryTask || '');
     }, [mPrimaryTask, mSecondaryTask]);
 
+    const mEarlyCompleteElapsedRef = React.useRef(null);
+    const mHandleCompleteEarly = () => {
+        const expectedTime = mMode === 'pomodoro' ? mPomodoroSettings.pomodoro * 60 : (mMode === 'shortBreak' ? mPomodoroSettings.shortBreak * 60 : mPomodoroSettings.longBreak * 60);
+        const elapsedMinutes = Math.max(1, Math.round((expectedTime - Math.max(0, mTimeLeft)) / 60));
+        if (elapsedMinutes < mPomodoroSettings.pomodoro && mMode === 'pomodoro') {
+            mEarlyCompleteElapsedRef.current = elapsedMinutes;
+        }
+
+        if (mMode === 'pomodoro' && mPrimaryTask) {
+            const taskToComplete = tasks.find(t => !t.completed && t.name.trim().toLowerCase() === mPrimaryTask.trim().toLowerCase());
+            if (taskToComplete) {
+                updateTask(taskToComplete.id.toString(), { completed: true });
+            }
+        }
+        setMTimeLeft(0);
+    };
+
     useEffect(() => {
         let interval = null;
         if (mIsActive && mTimeLeft > 0) {
             interval = setInterval(() => setMTimeLeft(t => t - 1), 1000);
         } else if (mTimeLeft === 0) {
             setMCycles(c => c + 1);
+
             if (mMode === 'pomodoro') {
+                const actualDuration = mEarlyCompleteElapsedRef.current !== null ? mEarlyCompleteElapsedRef.current : mPomodoroSettings.pomodoro;
+                const notePrefix = mEarlyCompleteElapsedRef.current !== null ? "(Completed early) " : "";
+                const session = {
+                    id: Date.now(),
+                    workType: 'deep', // Default for mobile
+                    duration: actualDuration,
+                    timestamp: new Date().toISOString(),
+                    date: new Date().toDateString(),
+                    primaryTask: mPrimaryTask,
+                    secondaryTask: mSecondaryTask,
+                    notes: mEarlyCompleteElapsedRef.current !== null ? "Completed early" : ""
+                };
+                setMSessionHistory(prev => [...prev, session]);
+                mEarlyCompleteElapsedRef.current = null;
+
                 if ((mCycles + 1) >= mPomodoroSettings.longBreakInterval) {
                     setMMode('longBreak');
                     setMTimeLeft(mPomodoroSettings.longBreak * 60);
@@ -1292,6 +1351,12 @@ function MobileApp() {
                         sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 2, px: 2, fontWeight: 700, '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' } }}
                     >
                         RESET
+                    </Button>
+                    <Button
+                        onClick={mHandleCompleteEarly}
+                        sx={{ color: '#1a1a2e', bgcolor: '#4ade80', borderRadius: 2, px: 2, fontWeight: 700, '&:hover': { bgcolor: '#22c55e' } }}
+                    >
+                        COMPLETE
                     </Button>
                 </Box>
 

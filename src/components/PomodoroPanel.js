@@ -156,6 +156,7 @@ function PomodoroPanel({
   cycles,
   toggleTimer,
   resetTimer,
+  completeTimer,
   settings,
   handleSettingChange,
   workType = 'deep',
@@ -477,6 +478,27 @@ function PomodoroPanel({
             }}
           >
             SKIP
+          </Button>
+          <Button
+            variant="contained"
+            onClick={completeTimer}
+            sx={{
+              bgcolor: '#4ade80',
+              color: '#1a1a2e',
+              px: 3,
+              py: 2,
+              borderRadius: 2,
+              minWidth: 'auto',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              transition: 'all 0.2s',
+              '&:hover': {
+                bgcolor: '#22c55e',
+                transform: 'translateY(-1px)'
+              }
+            }}
+          >
+            COMPLETE
           </Button>
         </Box>
 
