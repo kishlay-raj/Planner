@@ -520,6 +520,8 @@ function DesktopApp() {
           workType={workType}
           onWorkTypeToggle={toggleWorkType}
           sessionHistory={sessionHistory}
+          onOpenWidget={handleOpenWidget}
+          widgetOpen={!!pipWindow}
         />;
       case 'eisenhower':
         return <EisenhowerMatrix />;
@@ -575,6 +577,7 @@ function DesktopApp() {
             secondaryTask={secondaryTask}
             onOpenWidget={handleOpenWidget}
             widgetOpen={!!pipWindow}
+            onSkip={completeTimer}
           />
 
           {/* PiP Widget Portal — renders into the always-on-top mini window */}
@@ -587,6 +590,7 @@ function DesktopApp() {
               primaryTask={primaryTask}
               secondaryTask={secondaryTask}
               onToggle={toggleTimer}
+              onSkip={completeTimer}
             />,
             pipWindow.document.body
           )}

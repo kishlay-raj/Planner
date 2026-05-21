@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Typography, Paper, TextField, Button, List, ListItem, IconButton, Divider, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Typography, Paper, TextField, Button, List, ListItem, IconButton, Divider, useTheme, useMediaQuery, Switch, FormControlLabel } from '@mui/material';
 import { DeleteOutline, AutoAwesome } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useFirestoreCollection } from '../hooks/useFirestoreNew';
@@ -15,24 +15,32 @@ export default function MistakesJournal() {
 
     const [newMistake, setNewMistake] = useState('');
     const [newLesson, setNewLesson] = useState('');
+    const [isRant, setIsRant] = useState(false);
     const [visibleCount, setVisibleCount] = useState(3);
+    const [visibleRantCount, setVisibleRantCount] = useState(3);
 
     const handleAddMistake = async () => {
-        if (!newMistake.trim() || !newLesson.trim()) return;
+        if (!newMistake.trim() || (!isRant && !newLesson.trim())) return;
         
         await addMistake({
             mistake: newMistake,
             lesson: newLesson,
+            isRant: isRant,
             date: format(new Date(), 'MMM d, yyyy')
         });
 
         setNewMistake('');
         setNewLesson('');
+        setIsRant(false);
     };
 
     // Sort descending by creation time (newest first)
-    const sortedMistakes = [...mistakes].sort((a, b) => b.createdAt - a.createdAt);
-    const visibleMistakes = sortedMistakes.slice(0, visibleCount);
+    const sortedLogs = [...mistakes].sort((a, b) => b.createdAt - a.createdAt);
+    const regularMistakes = sortedLogs.filter(log => !log.isRant);
+    const rants = sortedLogs.filter(log => log.isRant);
+    
+    const visibleMistakes = regularMistakes.slice(0, visibleCount);
+    const visibleRants = rants.slice(0, visibleRantCount);
 
     return (
         <Box sx={{ 
@@ -72,9 +80,13 @@ export default function MistakesJournal() {
                         LOG A NEW LESSON
                     </Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <FormControlLabel 
+                            control={<Switch checked={isRant} onChange={(e) => setIsRant(e.target.checked)} color="warning" />} 
+                            label="This is a Rant (No lesson required)" 
+                        />
                         <TextField 
-                            label="The Mistake" 
-                            placeholder="What went wrong?"
+                            label={isRant ? "The Rant" : "The Mistake"} 
+                            placeholder={isRant ? "Just let it out..." : "What went wrong?"}
                             variant="outlined" 
                             fullWidth 
                             multiline 
@@ -82,25 +94,27 @@ export default function MistakesJournal() {
                             value={newMistake} 
                             onChange={e => setNewMistake(e.target.value)}
                         />
-                        <TextField 
-                            label="The Fix / Lesson" 
-                            placeholder="What did you learn? How will you prevent this?"
-                            variant="outlined" 
-                            fullWidth 
-                            multiline 
-                            rows={2}
-                            value={newLesson} 
-                            onChange={e => setNewLesson(e.target.value)}
-                        />
+                        {!isRant && (
+                            <TextField 
+                                label="The Fix / Lesson" 
+                                placeholder="What did you learn? How will you prevent this?"
+                                variant="outlined" 
+                                fullWidth 
+                                multiline 
+                                rows={2}
+                                value={newLesson} 
+                                onChange={e => setNewLesson(e.target.value)}
+                            />
+                        )}
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
                             <Button 
                                 variant="contained" 
-                                color="primary" 
+                                color={isRant ? "warning" : "primary"}
                                 onClick={handleAddMistake}
-                                disabled={!newMistake.trim() || !newLesson.trim() || loading}
+                                disabled={!newMistake.trim() || (!isRant && !newLesson.trim()) || loading}
                                 sx={{ px: 4, py: 1, borderRadius: 2 }}
                             >
-                                Log Lesson
+                                {isRant ? "Log Rant" : "Log Lesson"}
                             </Button>
                         </Box>
                     </Box>
@@ -113,7 +127,7 @@ export default function MistakesJournal() {
                     Previous Logs
                 </Typography>
                 
-                {sortedMistakes.length === 0 && !loading && (
+                {regularMistakes.length === 0 && !loading && (
                     <Box sx={{ textAlign: 'center', py: 8, opacity: 0.5 }}>
                         <Typography variant="body1">No mistakes logged yet.</Typography>
                         <Typography variant="body2">Start building your wisdom library above.</Typography>
@@ -159,10 +173,10 @@ export default function MistakesJournal() {
                 </List>
 
                 {/* Show More Button */}
-                {visibleCount < sortedMistakes.length && (
+                {visibleCount < regularMistakes.length && (
                     <Box sx={{ textAlign: 'center', mt: 1, mb: 3 }}>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
-                            Showing {visibleMistakes.length} of {sortedMistakes.length}
+                            Showing {visibleMistakes.length} of {regularMistakes.length}
                         </Typography>
                         <Button
                             variant="outlined"
@@ -173,6 +187,55 @@ export default function MistakesJournal() {
                             Show More
                         </Button>
                     </Box>
+                )}
+
+                {/* Rants Section */}
+                {rants.length > 0 && (
+                    <>
+                        <Divider sx={{ my: 4 }} />
+                        <Typography variant="h6" fontWeight="bold" sx={{ mb: 3, color: 'warning.main' }}>
+                            Rants
+                        </Typography>
+                        <List disablePadding>
+                            {visibleRants.map((log) => (
+                                <Paper key={log.id} sx={{ mb: 3, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'warning.main' }} elevation={0}>
+                                    <Box sx={{ p: 2, bgcolor: 'warning.main', color: 'warning.contrastText', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="caption" fontWeight="bold" color="inherit">
+                                            {log.date || 'Unknown Date'}
+                                        </Typography>
+                                        <IconButton size="small" onClick={() => {
+                                            if(window.confirm('Delete this rant permanently?')) {
+                                                deleteMistake(log.id);
+                                            }
+                                        }} color="inherit" sx={{ opacity: 0.7, '&:hover': { opacity: 1 } }}>
+                                            <DeleteOutline fontSize="small" />
+                                        </IconButton>
+                                    </Box>
+                                    <Box sx={{ p: 2.5 }}>
+                                        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                                            {log.mistake}
+                                        </Typography>
+                                    </Box>
+                                </Paper>
+                            ))}
+                        </List>
+
+                        {visibleRantCount < rants.length && (
+                            <Box sx={{ textAlign: 'center', mt: 1, mb: 3 }}>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+                                    Showing {visibleRants.length} of {rants.length}
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    color="warning"
+                                    onClick={() => setVisibleRantCount(c => c + 3)}
+                                    sx={{ borderRadius: 2, px: 4 }}
+                                >
+                                    Show More Rants
+                                </Button>
+                            </Box>
+                        )}
+                    </>
                 )}
             </Box>
         </Box>

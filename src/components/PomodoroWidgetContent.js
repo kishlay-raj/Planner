@@ -6,7 +6,7 @@ import React from 'react';
  * without access to MUI's theme/styled-components.
  */
 export default function PomodoroWidgetContent({
-  timeLeft, isActive, mode, workType, primaryTask, secondaryTask, onToggle
+  timeLeft, isActive, mode, workType, primaryTask, secondaryTask, onToggle, onSkip
 }) {
   const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
   const secs = (timeLeft % 60).toString().padStart(2, '0');
@@ -75,7 +75,7 @@ export default function PomodoroWidgetContent({
             </div>
           )}
           {/* Secondary task */}
-          {secondaryTask && (
+          {secondaryTask && workType !== 'deep' && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               background: 'rgba(255,255,255,0.08)',
@@ -98,22 +98,43 @@ export default function PomodoroWidgetContent({
         </div>
       )}
 
-      {/* Play / Pause button */}
-      <button
-        onClick={onToggle}
-        style={{
-          marginTop: '3px',
-          background: 'rgba(255,255,255,0.2)',
-          border: '1px solid rgba(255,255,255,0.3)',
-          borderRadius: '50%',
-          width: '34px', height: '34px',
-          color: 'white', fontSize: '14px',
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}
-      >
-        {isActive ? '⏸' : '▶'}
-      </button>
+      {/* Controls */}
+      <div style={{ display: 'flex', gap: '10px', marginTop: '3px' }}>
+        {/* Play / Pause button */}
+        <button
+          onClick={onToggle}
+          style={{
+            background: 'rgba(255,255,255,0.2)',
+            border: '1px solid rgba(255,255,255,0.3)',
+            borderRadius: '50%',
+            width: '34px', height: '34px',
+            color: 'white', fontSize: '14px',
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          {isActive ? '⏸' : '▶'}
+        </button>
+
+        {/* Skip Break button */}
+        {(mode === 'shortBreak' || mode === 'longBreak') && (
+          <button
+            onClick={onSkip}
+            title="Skip Break"
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              borderRadius: '50%',
+              width: '34px', height: '34px',
+              color: 'white', fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            ⏭
+          </button>
+        )}
+      </div>
     </div>
   );
 }

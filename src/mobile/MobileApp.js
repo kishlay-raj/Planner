@@ -1322,7 +1322,28 @@ function MobileApp() {
                         isActive={mIsActive}
                         onMinuteChange={mHandleMinuteChange}
                     />
-                    <Typography sx={{ mt: 0.5, opacity: 0.7, fontSize: '0.9rem' }}>
+                    {!mIsActive && mMode === 'pomodoro' && (
+                        <Box sx={{ display: 'flex', gap: 1.5, mt: 1.5, mb: 0 }}>
+                            {[10, 20, 40].map(mins => (
+                                <Box
+                                    key={mins}
+                                    onClick={() => mHandleMinuteChange(mins)}
+                                    sx={{
+                                        border: '1px solid rgba(255,255,255,0.3)',
+                                        borderRadius: 2,
+                                        px: 2.5,
+                                        py: 0.8,
+                                        cursor: 'pointer',
+                                        bgcolor: 'rgba(255,255,255,0.05)',
+                                        '&:active': { bgcolor: 'rgba(255,255,255,0.2)' }
+                                    }}
+                                >
+                                    <Typography sx={{ fontWeight: 600, fontSize: '0.9rem' }}>{mins} min</Typography>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
+                    <Typography sx={{ mt: 1.5, opacity: 0.7, fontSize: '0.9rem' }}>
                         #{mCycles + 1} · {mMode === 'pomodoro' ? 'Time to focus!' : 'Take a break!'}
                     </Typography>
                 </Box>
@@ -1404,15 +1425,7 @@ function MobileApp() {
                                             <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>{mPrimaryTask}</Typography>
                                         </Box>
                                     </Box>
-                                    {mSecondaryTask && (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, opacity: 0.75, borderTop: '1px solid rgba(255,255,255,0.15)', pt: 1.5 }}>
-                                            <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.8)', flexShrink: 0 }} />
-                                            <Box>
-                                                <Typography sx={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase' }}>Gap Filler</Typography>
-                                                <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>{mSecondaryTask}</Typography>
-                                            </Box>
-                                        </Box>
-                                    )}
+                                    {/* Secondary Task (Gap Filler) removed for Deep Work */}
                                 </>
                             ) : (
                                 <Typography sx={{ opacity: 0.5, textAlign: 'center', fontSize: '0.95rem' }}>
@@ -1432,17 +1445,7 @@ function MobileApp() {
                                 sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white', fontSize: '1rem', fontWeight: 600 }, '& input::placeholder': { color: 'rgba(255,255,255,0.35)' } }}
                                 InputProps={{ disableUnderline: false }}
                             />
-                            <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 0.25 }}>Gap Filler (Secondary)</Typography>
-                            <Typography sx={{ fontSize: '0.68rem', opacity: 0.5, mb: 0.5 }}>For breaks, waiting, or low-energy moments</Typography>
-                            <TextField
-                                fullWidth
-                                variant="standard"
-                                placeholder="Quick task to fill small gaps..."
-                                value={mLocalSecondary}
-                                onChange={e => setMLocalSecondary(e.target.value)}
-                                sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white', fontSize: '0.95rem' }, '& input::placeholder': { color: 'rgba(255,255,255,0.35)' } }}
-                                InputProps={{ disableUnderline: false }}
-                            />
+                            {/* Secondary Task (Gap Filler) removed for Deep Work */}
                             <Box sx={{ display: 'flex', gap: 1 }}>
                                 <Button
                                     variant="contained"

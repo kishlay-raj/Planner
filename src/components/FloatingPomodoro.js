@@ -13,7 +13,8 @@ const FloatingPomodoro = ({
     primaryTask = '',
     secondaryTask = '',
     onOpenWidget,
-    widgetOpen = false
+    widgetOpen = false,
+    onSkip
 }) => {
     // Format time
     const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
@@ -107,7 +108,7 @@ const FloatingPomodoro = ({
                         </Typography>
                     )}
                     {/* Secondary task — lighter */}
-                    {secondaryTask && (
+                    {secondaryTask && workType !== 'deep' && (
                         <Typography
                             variant="caption"
                             sx={{
@@ -129,17 +130,34 @@ const FloatingPomodoro = ({
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'center' }}>
-                    <IconButton
-                        size="small"
-                        onClick={onToggle}
-                        sx={{
-                            color: 'white',
-                            bgcolor: 'rgba(255,255,255,0.2)',
-                            '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
-                        }}
-                    >
-                        {isActive ? <Pause /> : <PlayArrow />}
-                    </IconButton>
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        <IconButton
+                            size="small"
+                            onClick={onToggle}
+                            sx={{
+                                color: 'white',
+                                bgcolor: 'rgba(255,255,255,0.2)',
+                                '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                            }}
+                        >
+                            {isActive ? <Pause /> : <PlayArrow />}
+                        </IconButton>
+                        {(mode === 'shortBreak' || mode === 'longBreak') && onSkip && (
+                            <Tooltip title="Skip Break">
+                                <IconButton
+                                    size="small"
+                                    onClick={onSkip}
+                                    sx={{
+                                        color: 'white',
+                                        bgcolor: 'rgba(255,255,255,0.2)',
+                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                                    }}
+                                >
+                                    <span style={{ fontSize: '0.9rem' }}>⏭</span>
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                    </Box>
 
                     {/* Pop-out widget button */}
                     {onOpenWidget && !widgetOpen && (

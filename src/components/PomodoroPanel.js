@@ -24,14 +24,16 @@ import {
   Card,
   CardContent,
   Tabs,
-  Tab
+  Tab,
+  Tooltip
 } from '@mui/material';
 import {
   Settings,
   Psychology,
   WorkOutline,
   TrendingUp,
-  AccessTime
+  AccessTime,
+  OpenInNew
 } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useFirestore } from '../hooks/useFirestore';
@@ -161,7 +163,9 @@ function PomodoroPanel({
   handleSettingChange,
   workType = 'deep',
   onWorkTypeToggle,
-  sessionHistory = []
+  sessionHistory = [],
+  onOpenWidget,
+  widgetOpen = false
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [analyticsView, setAnalyticsView] = useState(0); // 0: Daily, 1: Weekly, 2: Monthly
@@ -316,31 +320,62 @@ function PomodoroPanel({
         }}>
           Pomodoro
         </Typography>
-        <IconButton
-          color="inherit"
-          onClick={() => setSettingsOpen(true)}
-          aria-label="Settings"
-          sx={{
-            bgcolor: 'rgba(255, 255, 255, 0.1)',
-            width: 36,
-            height: 36,
-            padding: 2,
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            position: 'relative',
-            right: 32,
-            '&:hover': {
-              bgcolor: 'rgba(255, 255, 255, 0.2)',
-              border: '1px solid rgba(255, 255, 255, 0.3)'
-            },
-            transition: 'all 0.2s',
-            '& svg': {
-              fontSize: 22,
-              color: 'rgba(255, 255, 255, 0.9)'
-            }
-          }}
-        >
-          <Settings />
-        </IconButton>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {onOpenWidget && !widgetOpen && (
+            <Tooltip title="Pop out as always-on-top widget">
+              <IconButton
+                color="inherit"
+                onClick={onOpenWidget}
+                aria-label="Pop out widget"
+                sx={{
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  width: 36,
+                  height: 36,
+                  padding: 2,
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  position: 'relative',
+                  right: 32,
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  },
+                  transition: 'all 0.2s',
+                  '& svg': {
+                    fontSize: 22,
+                    color: 'rgba(255, 255, 255, 0.9)'
+                  }
+                }}
+              >
+                <OpenInNew />
+              </IconButton>
+            </Tooltip>
+          )}
+          <IconButton
+            color="inherit"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Settings"
+            sx={{
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              width: 36,
+              height: 36,
+              padding: 2,
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              position: 'relative',
+              right: 32,
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.3)'
+              },
+              transition: 'all 0.2s',
+              '& svg': {
+                fontSize: 22,
+                color: 'rgba(255, 255, 255, 0.9)'
+              }
+            }}
+          >
+            <Settings />
+          </IconButton>
+        </Box>
       </Box>
 
       <Container maxWidth="sm" sx={{
@@ -431,6 +466,34 @@ function PomodoroPanel({
           <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', letterSpacing: 1.5, textTransform: 'uppercase', mt: -2, mb: 3, textAlign: 'center' }}>
             ▲ ▼ to adjust duration
           </Typography>
+        )}
+        {!isActive && mode === 'pomodoro' && (
+          <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
+            {[10, 20, 40].map(mins => (
+              <Button
+                key={mins}
+                variant="outlined"
+                onClick={() => handleSettingChange('pomodoro', mins)}
+                sx={{
+                  color: 'white',
+                  borderColor: 'rgba(255,255,255,0.3)',
+                  borderRadius: 2,
+                  px: 2.5,
+                  py: 1,
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    bgcolor: 'rgba(255,255,255,0.15)',
+                    borderColor: 'white',
+                    transform: 'translateY(-2px)'
+                  }
+                }}
+              >
+                {mins} min
+              </Button>
+            ))}
+          </Box>
         )}
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
@@ -577,7 +640,7 @@ function PomodoroPanel({
                       <Typography sx={{ fontWeight: 700, fontSize: '1rem', lineHeight: 1.3 }}>{primaryTask}</Typography>
                     </Box>
                   </Box>
-                  {secondaryTask && (
+                  {secondaryTask && workType !== 'deep' && (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 0.5, opacity: 0.7, borderTop: '1px solid rgba(255,255,255,0.15)', pt: 1.5 }}>
                       <Box sx={{
                         width: 8, height: 8, borderRadius: '50%',
@@ -623,20 +686,24 @@ function PomodoroPanel({
                 }}
                 sx={{ mb: 2, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white' }, '& input::placeholder': { color: 'rgba(255,255,255,0.4)' } }}
               />
-              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 1 }}>Gap Filler (Secondary)</Typography>
-              <Typography sx={{ fontSize: '0.7rem', opacity: 0.5, mb: 1 }}>For breaks, waiting, or low-energy moments</Typography>
-              <TextField
-                fullWidth
-                variant="standard"
-                placeholder="Quick task to fill small gaps..."
-                value={localSecondary}
-                onChange={e => setLocalSecondary(e.target.value)}
-                InputProps={{
-                  disableUnderline: false,
-                  style: { color: 'white', fontSize: '0.95rem' }
-                }}
-                sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white' }, '& input::placeholder': { color: 'rgba(255,255,255,0.4)' } }}
-              />
+              {workType !== 'deep' && (
+                <>
+                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 1 }}>Gap Filler (Secondary)</Typography>
+                  <Typography sx={{ fontSize: '0.7rem', opacity: 0.5, mb: 1 }}>For breaks, waiting, or low-energy moments</Typography>
+                  <TextField
+                    fullWidth
+                    variant="standard"
+                    placeholder="Quick task to fill small gaps..."
+                    value={localSecondary}
+                    onChange={e => setLocalSecondary(e.target.value)}
+                    InputProps={{
+                      disableUnderline: false,
+                      style: { color: 'white', fontSize: '0.95rem' }
+                    }}
+                    sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white' }, '& input::placeholder': { color: 'rgba(255,255,255,0.4)' } }}
+                  />
+                </>
+              )}
               <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 1 }}>Session Notes</Typography>
               <TextField
                 fullWidth
