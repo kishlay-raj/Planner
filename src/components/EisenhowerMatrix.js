@@ -144,9 +144,7 @@ const Quadrant = ({ title, tasks, color, bgColor, icon, onEdit, onDelete, onTogg
                                                 textDecoration: task.completed ? 'line-through' : 'none',
                                                 color: task.completed ? theme.palette.text.disabled : theme.palette.text.primary,
                                                 cursor: 'pointer',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
+                                                wordBreak: 'break-word'
                                             }}
                                         >
                                             {task.name}

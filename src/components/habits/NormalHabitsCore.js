@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
 import { Box, Typography, Collapse, Checkbox, Paper, List, ListItem, ListItemText, IconButton, LinearProgress, TextField, Tooltip, Button } from '@mui/material';
-import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined, EventRepeat, History } from '@mui/icons-material';
+import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined, EventRepeat, History, EditOutlined } from '@mui/icons-material';
 import { format } from 'date-fns';
 import MilestoneBadges from './MilestoneBadges';
 import HabitHeatmap from './HabitHeatmap';
 
-function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes, onCatchUpClick, getCatchUpDates, onReviewHistory }) {
+function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes, onCatchUpClick, getCatchUpDates, onReviewHistory, onUpdateName }) {
   const [expanded, setExpanded] = useState(false);
   const [localNotes, setLocalNotes] = useState(habit.notes || '');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [localName, setLocalName] = useState(habit.name || '');
+
+  const handleNameSave = () => {
+    setIsEditingName(false);
+    if (localName.trim() && localName !== habit.name) {
+      if (onUpdateName) onUpdateName(habit.id, localName);
+    } else {
+      setLocalName(habit.name); // revert if empty
+    }
+  };
   const streak = habit.streak || 0;
   const bestStreak = habit.bestStreak || 0;
   const targetDays = habit.targetDays || 30;
@@ -33,7 +44,32 @@ function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive,
           color="primary"
         />
         <ListItemText 
-          primary={habit.name} 
+          primary={
+            isEditingName ? (
+              <TextField 
+                value={localName}
+                onChange={(e) => setLocalName(e.target.value)}
+                onBlur={handleNameSave}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleNameSave(); } }}
+                autoFocus
+                size="small"
+                variant="standard"
+                onClick={(e) => e.stopPropagation()}
+                sx={{ input: { fontWeight: 500, fontSize: '1rem', py: 0 } }}
+              />
+            ) : (
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
+                <span style={{ wordBreak: 'break-word', marginTop: '2px' }}>{habit.name}</span>
+                <IconButton 
+                  size="small" 
+                  onClick={(e) => { e.stopPropagation(); setIsEditingName(true); }} 
+                  sx={{ opacity: 0.3, '&:hover': { opacity: 1 }, width: 20, height: 20 }}
+                >
+                  <EditOutlined sx={{ fontSize: '0.9rem' }} />
+                </IconButton>
+              </Box>
+            )
+          } 
           primaryTypographyProps={{ 
             fontWeight: 500,
             sx: { textDecoration: completedToday ? 'line-through' : 'none' }
@@ -41,7 +77,7 @@ function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive,
           secondary={`Day ${streak} of ${targetDays}${bestStreak > 0 ? ` · Best: ${bestStreak} ⭐` : ''}`}
           secondaryTypographyProps={{ variant: 'caption' }}
           sx={{ ml: 1, cursor: 'pointer' }}
-          onClick={() => setExpanded(!expanded)}
+          onClick={() => { if (!isEditingName) setExpanded(!expanded); }}
         />
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -140,7 +176,7 @@ function NormalHabitItem({ habit, selectedDate, onComplete, onDelete, onArchive,
   );
 }
 
-export default function NormalHabitsCore({ habits, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes, onCatchUpClick, getCatchUpDates, onReviewHistory }) {
+export default function NormalHabitsCore({ habits, selectedDate, onComplete, onDelete, onArchive, onUpdateNotes, onCatchUpClick, getCatchUpDates, onReviewHistory, onUpdateName }) {
   const grouped = habits.reduce((acc, habit) => {
     const group = habit.identity || 'General';
     if (!acc[group]) acc[group] = [];
@@ -157,7 +193,7 @@ export default function NormalHabitsCore({ habits, selectedDate, onComplete, onD
           </Typography>
           <List disablePadding>
             {grouped[identity].map(habit => (
-              <NormalHabitItem key={habit.id} habit={habit} selectedDate={selectedDate} onComplete={onComplete} onDelete={onDelete} onArchive={onArchive} onUpdateNotes={onUpdateNotes} onCatchUpClick={onCatchUpClick} getCatchUpDates={getCatchUpDates} onReviewHistory={onReviewHistory} />
+              <NormalHabitItem key={habit.id} habit={habit} selectedDate={selectedDate} onComplete={onComplete} onDelete={onDelete} onArchive={onArchive} onUpdateNotes={onUpdateNotes} onCatchUpClick={onCatchUpClick} getCatchUpDates={getCatchUpDates} onReviewHistory={onReviewHistory} onUpdateName={onUpdateName} />
             ))}
           </List>
         </Box>

@@ -14,8 +14,27 @@ const FloatingPomodoro = ({
     secondaryTask = '',
     onOpenWidget,
     widgetOpen = false,
-    onSkip
+    onSkip,
+    onUpdatePrimaryTask,
+    onUpdateSecondaryTask
 }) => {
+    const [editingPrimary, setEditingPrimary] = React.useState(false);
+    const [localPrimary, setLocalPrimary] = React.useState(primaryTask);
+    const [editingSecondary, setEditingSecondary] = React.useState(false);
+    const [localSecondary, setLocalSecondary] = React.useState(secondaryTask);
+
+    React.useEffect(() => { setLocalPrimary(primaryTask); }, [primaryTask]);
+    React.useEffect(() => { setLocalSecondary(secondaryTask); }, [secondaryTask]);
+
+    const handlePrimarySave = () => {
+        setEditingPrimary(false);
+        if (onUpdatePrimaryTask) onUpdatePrimaryTask(localPrimary);
+    };
+
+    const handleSecondarySave = () => {
+        setEditingSecondary(false);
+        if (onUpdateSecondaryTask) onUpdateSecondaryTask(localSecondary);
+    };
     // Format time
     const minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
     const seconds = (timeLeft % 60).toString().padStart(2, '0');
@@ -89,43 +108,91 @@ const FloatingPomodoro = ({
                     )}
                     {/* Primary task — truncated */}
                     {primaryTask && (
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                opacity: 0.85,
-                                fontSize: '0.65rem',
-                                fontWeight: 600,
-                                maxWidth: '100%',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                bgcolor: 'rgba(255,255,255,0.15)',
-                                borderRadius: 1,
-                                px: 1, py: 0.25
-                            }}
-                        >
-                            {primaryTask}
-                        </Typography>
+                        editingPrimary ? (
+                            <input
+                                autoFocus
+                                value={localPrimary}
+                                onChange={(e) => setLocalPrimary(e.target.value)}
+                                onBlur={handlePrimarySave}
+                                onKeyDown={(e) => { if (e.key === 'Enter') handlePrimarySave(); }}
+                                style={{
+                                    background: 'rgba(255,255,255,0.2)',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    color: 'white',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 600,
+                                    padding: '2px 6px',
+                                    width: '100%',
+                                    outline: 'none',
+                                    textAlign: 'center'
+                                }}
+                            />
+                        ) : (
+                            <Typography
+                                variant="caption"
+                                onClick={() => setEditingPrimary(true)}
+                                sx={{
+                                    opacity: 0.85,
+                                    fontSize: '0.65rem',
+                                    fontWeight: 600,
+                                    maxWidth: '100%',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    bgcolor: 'rgba(255,255,255,0.15)',
+                                    borderRadius: 1,
+                                    px: 1, py: 0.25,
+                                    cursor: 'text'
+                                }}
+                            >
+                                {primaryTask}
+                            </Typography>
+                        )
                     )}
                     {/* Secondary task — lighter */}
                     {secondaryTask && workType !== 'deep' && (
-                        <Typography
-                            variant="caption"
-                            sx={{
-                                opacity: 0.6,
-                                fontSize: '0.6rem',
-                                fontWeight: 500,
-                                maxWidth: '100%',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                bgcolor: 'rgba(255,255,255,0.08)',
-                                borderRadius: 1,
-                                px: 1, py: 0.15
-                            }}
-                        >
-                            {secondaryTask}
-                        </Typography>
+                        editingSecondary ? (
+                            <input
+                                autoFocus
+                                value={localSecondary}
+                                onChange={(e) => setLocalSecondary(e.target.value)}
+                                onBlur={handleSecondarySave}
+                                onKeyDown={(e) => { if (e.key === 'Enter') handleSecondarySave(); }}
+                                style={{
+                                    background: 'rgba(255,255,255,0.15)',
+                                    border: '1px solid rgba(255,255,255,0.5)',
+                                    borderRadius: '4px',
+                                    color: 'white',
+                                    fontSize: '0.6rem',
+                                    fontWeight: 500,
+                                    padding: '2px 6px',
+                                    width: '100%',
+                                    outline: 'none',
+                                    textAlign: 'center'
+                                }}
+                            />
+                        ) : (
+                            <Typography
+                                variant="caption"
+                                onClick={() => setEditingSecondary(true)}
+                                sx={{
+                                    opacity: 0.6,
+                                    fontSize: '0.6rem',
+                                    fontWeight: 500,
+                                    maxWidth: '100%',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    bgcolor: 'rgba(255,255,255,0.08)',
+                                    borderRadius: 1,
+                                    px: 1, py: 0.15,
+                                    cursor: 'text'
+                                }}
+                            >
+                                {secondaryTask}
+                            </Typography>
+                        )
                     )}
                 </Box>
 

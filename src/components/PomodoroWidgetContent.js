@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * Presentational component rendered inside the PiP (Picture-in-Picture) window.
@@ -6,8 +6,25 @@ import React from 'react';
  * without access to MUI's theme/styled-components.
  */
 export default function PomodoroWidgetContent({
-  timeLeft, isActive, mode, workType, primaryTask, secondaryTask, onToggle, onSkip
+  timeLeft, isActive, mode, workType, primaryTask, secondaryTask, onToggle, onSkip, onUpdatePrimaryTask, onUpdateSecondaryTask
 }) {
+  const [editingPrimary, setEditingPrimary] = useState(false);
+  const [localPrimary, setLocalPrimary] = useState(primaryTask);
+  const [editingSecondary, setEditingSecondary] = useState(false);
+  const [localSecondary, setLocalSecondary] = useState(secondaryTask);
+
+  useEffect(() => { setLocalPrimary(primaryTask); }, [primaryTask]);
+  useEffect(() => { setLocalSecondary(secondaryTask); }, [secondaryTask]);
+
+  const handlePrimarySave = () => {
+      setEditingPrimary(false);
+      if (onUpdatePrimaryTask) onUpdatePrimaryTask(localPrimary);
+  };
+
+  const handleSecondarySave = () => {
+      setEditingSecondary(false);
+      if (onUpdateSecondaryTask) onUpdateSecondaryTask(localSecondary);
+  };
   const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
   const secs = (timeLeft % 60).toString().padStart(2, '0');
 
@@ -56,44 +73,94 @@ export default function PomodoroWidgetContent({
         }}>
           {/* Primary task */}
           {primaryTask && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              background: 'rgba(255,255,255,0.15)',
-              borderRadius: '6px', padding: '3px 10px',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                width: '7px', height: '7px', borderRadius: '50%',
-                background: 'rgba(255,255,255,0.9)', flexShrink: 0,
-              }} />
-              <div style={{
-                fontSize: '11px', fontWeight: 700, opacity: 0.95,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                {primaryTask}
+            editingPrimary ? (
+              <input
+                  autoFocus
+                  value={localPrimary}
+                  onChange={(e) => setLocalPrimary(e.target.value)}
+                  onBlur={handlePrimarySave}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handlePrimarySave(); }}
+                  style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      color: 'white',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      padding: '2px 6px',
+                      width: '100%',
+                      outline: 'none',
+                      textAlign: 'center'
+                  }}
+              />
+            ) : (
+              <div 
+                onClick={() => setEditingPrimary(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  background: 'rgba(255,255,255,0.15)',
+                  borderRadius: '6px', padding: '3px 10px',
+                  overflow: 'hidden', cursor: 'text'
+                }}
+              >
+                <div style={{
+                  width: '7px', height: '7px', borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.9)', flexShrink: 0,
+                }} />
+                <div style={{
+                  fontSize: '11px', fontWeight: 700, opacity: 0.95,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {primaryTask}
+                </div>
               </div>
-            </div>
+            )
           )}
           {/* Secondary task */}
           {secondaryTask && workType !== 'deep' && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              background: 'rgba(255,255,255,0.08)',
-              borderRadius: '6px', padding: '3px 10px',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                width: '7px', height: '7px', borderRadius: '50%',
-                border: '1.5px solid rgba(255,255,255,0.7)',
-                flexShrink: 0,
-              }} />
-              <div style={{
-                fontSize: '10px', fontWeight: 500, opacity: 0.7,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                {secondaryTask}
+            editingSecondary ? (
+              <input
+                  autoFocus
+                  value={localSecondary}
+                  onChange={(e) => setLocalSecondary(e.target.value)}
+                  onBlur={handleSecondarySave}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSecondarySave(); }}
+                  style={{
+                      background: 'rgba(255,255,255,0.15)',
+                      border: '1px solid rgba(255,255,255,0.5)',
+                      borderRadius: '4px',
+                      color: 'white',
+                      fontSize: '10px',
+                      fontWeight: 500,
+                      padding: '2px 6px',
+                      width: '100%',
+                      outline: 'none',
+                      textAlign: 'center'
+                  }}
+              />
+            ) : (
+              <div 
+                onClick={() => setEditingSecondary(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  background: 'rgba(255,255,255,0.08)',
+                  borderRadius: '6px', padding: '3px 10px',
+                  overflow: 'hidden', cursor: 'text'
+                }}
+              >
+                <div style={{
+                  width: '7px', height: '7px', borderRadius: '50%',
+                  border: '1.5px solid rgba(255,255,255,0.7)',
+                  flexShrink: 0,
+                }} />
+                <div style={{
+                  fontSize: '10px', fontWeight: 500, opacity: 0.7,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {secondaryTask}
+                </div>
               </div>
-            </div>
+            )
           )}
         </div>
       )}

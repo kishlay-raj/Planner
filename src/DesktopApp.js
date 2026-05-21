@@ -192,8 +192,8 @@ function DesktopApp() {
   const [tickInterval, setTickInterval] = useState(null);
   const [workType, setWorkType] = useFirestore('pomodoroWorkType', 'deep'); // 'deep' or 'shallow'
   const [sessionHistory, setSessionHistory] = useFirestore('pomodoroSessionHistory', []); // Track all completed sessions
-  const [primaryTask] = useFirestore('pomodoroPrimaryTask', '');
-  const [secondaryTask] = useFirestore('pomodoroSecondaryTask', '');
+  const [primaryTask, setPrimaryTask] = useFirestore('pomodoroPrimaryTask', '');
+  const [secondaryTask, setSecondaryTask] = useFirestore('pomodoroSecondaryTask', '');
   const [pomodoroNotes] = useFirestore('pomodoroNotes', '');
   const earlyCompleteElapsedRef = useRef(null);
 
@@ -578,6 +578,8 @@ function DesktopApp() {
             onOpenWidget={handleOpenWidget}
             widgetOpen={!!pipWindow}
             onSkip={completeTimer}
+            onUpdatePrimaryTask={setPrimaryTask}
+            onUpdateSecondaryTask={setSecondaryTask}
           />
 
           {/* PiP Widget Portal — renders into the always-on-top mini window */}
@@ -591,6 +593,8 @@ function DesktopApp() {
               secondaryTask={secondaryTask}
               onToggle={toggleTimer}
               onSkip={completeTimer}
+              onUpdatePrimaryTask={setPrimaryTask}
+              onUpdateSecondaryTask={setSecondaryTask}
             />,
             pipWindow.document.body
           )}

@@ -393,6 +393,7 @@ export default function AntiGravityHabitTracker() {
                     onCatchUpClick={() => handleCatchUpClick(habit.id)}
                     catchUpDatesCount={getCatchUpDates(habit.id).length}
                     onReviewHistory={() => { setBackfillHabitId(habit.id); setIsBackfillOpen(true); }}
+                    onUpdateName={(id, newName) => updateHabit(id, { name: newName })}
                   />
                 </Box>
               ))}
@@ -440,6 +441,7 @@ export default function AntiGravityHabitTracker() {
                     onCatchUpClick={handleCatchUpClick}
                     getCatchUpDates={getCatchUpDates}
                     onReviewHistory={(id) => { setBackfillHabitId(id); setIsBackfillOpen(true); }}
+                    onUpdateName={(id, newName) => updateHabit(id, { name: newName })}
                  />
               ) : (
                  <Typography variant="body2" color="text.secondary">No routines yet.</Typography>

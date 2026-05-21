@@ -26,6 +26,7 @@ Visualize your timeline perfectly. Whether you are planning your year, mapping y
 ### 3. Focus & Productivity (Pomodoro Timer & Always-On-Top Widget)
 Integrated directly into the planner, Flow Planner features a comprehensive, state-of-the-art floating Pomodoro mechanism:
 - **Always-On-Top Widget**: Pop out a compact always-on-top mini widget using the native **Document Picture-in-Picture API**. Keep your current primary & secondary focus tasks and live timer countdown visible over all other desktop applications. Easily launchable directly from the main Pomodoro screen.
+- **Inline Task Editing**: Quickly edit your primary and secondary tasks on the fly directly from the Floating Pomodoro bubble or the PiP widget.
 - **Skip Break Options**: Instantly bypass break periods directly from the floating bubble or PiP widget to jump straight back into focus sessions.
 - **Deep Work Single-Focus**: When toggled into "Deep Work" mode, the application hides secondary "gap fillers" to enforce absolute prioritization on your primary task.
 - **Quick-Select Cards**: Seamlessly choose 10, 20, or 40-minute focus durations on both desktop and mobile layouts for faster setup.
@@ -42,6 +43,8 @@ Productivity is more than just getting things done. Maintain healthy mindsets an
 - **Daily Reflection Journal**: Assess how your day went and how you can naturally improve tomorrow.
 - **Gratitude Journal**: Bring positivity and awareness to parts of your life that mean the most.
 - **Habit Tracking**: Advanced tracking sections built intrinsically into the UI.
+  - **Seamless Habit Renaming**: Edit the name of your critical or routine habits inline across desktop and mobile.
+  - **Mobile Readability**: Fully optimized layouts ensuring long habits seamlessly wrap to the next line without getting cut off.
 - **Mistakes Journal**: Log mistakes alongside corrective lessons. Features a dedicated "Rants" toggle to quickly vent without requiring a corresponding fix, partitioning standard mistakes from raw vents at the bottom.
 
 ![Journals View](./screenshots/journals_view.png)

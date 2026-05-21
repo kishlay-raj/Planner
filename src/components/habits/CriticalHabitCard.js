@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Typography, Paper, Checkbox, Chip, LinearProgress, Collapse, IconButton, TextField, Tooltip, Button } from '@mui/material';
-import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined, EventRepeat, History } from '@mui/icons-material';
+import { ExpandMore, ExpandLess, DeleteOutline, ArchiveOutlined, EventRepeat, History, EditOutlined } from '@mui/icons-material';
 import { format } from 'date-fns';
 import MilestoneBadges from './MilestoneBadges';
 import HabitHeatmap from './HabitHeatmap';
@@ -14,10 +14,22 @@ export default function CriticalHabitCard({
   selectedDate,
   onCatchUpClick,
   catchUpDatesCount,
-  onReviewHistory
+  onReviewHistory,
+  onUpdateName
 }) {
   const [expanded, setExpanded] = useState(false);
   const [localNotes, setLocalNotes] = useState(habit.notes || '');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [localName, setLocalName] = useState(habit.name || '');
+
+  const handleNameSave = () => {
+    setIsEditingName(false);
+    if (localName.trim() && localName !== habit.name) {
+      if (onUpdateName) onUpdateName(habit.id, localName);
+    } else {
+      setLocalName(habit.name); // revert if empty
+    }
+  };
   const streak = habit.streak || 0;
   const bestStreak = habit.bestStreak || 0;
   const targetDays = habit.targetDays || 30;
@@ -57,18 +69,39 @@ export default function CriticalHabitCard({
           sx={{ p: 0.5 }} 
         />
         
-        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-          <Typography 
-            variant="subtitle1" 
-            fontWeight={600} 
-            color="text.primary"
-            sx={{ textDecoration: completedToday ? 'line-through' : 'none' }}
-            noWrap
-          >
-            {habit.name}
-          </Typography>
+        <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          {isEditingName ? (
+            <TextField 
+               value={localName}
+               onChange={(e) => setLocalName(e.target.value)}
+               onBlur={handleNameSave}
+               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleNameSave(); } }}
+               autoFocus
+               size="small"
+               variant="standard"
+               sx={{ input: { fontWeight: 600, fontSize: '1rem', py: 0 } }}
+            />
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.5 }}>
+              <Typography 
+                variant="subtitle1" 
+                fontWeight={600} 
+                color="text.primary"
+                sx={{ textDecoration: completedToday ? 'line-through' : 'none', wordBreak: 'break-word' }}
+              >
+                {habit.name}
+              </Typography>
+              <IconButton 
+                size="small" 
+                onClick={(e) => { e.stopPropagation(); setIsEditingName(true); }} 
+                sx={{ opacity: 0.3, '&:hover': { opacity: 1 }, width: 24, height: 24 }}
+              >
+                 <EditOutlined sx={{ fontSize: '1rem' }} />
+              </IconButton>
+            </Box>
+          )}
           {habit.behavior && (
-            <Typography variant="caption" color="text.secondary" noWrap>
+            <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-word', mt: 0.5 }}>
               {habit.behavior} · {habit.time} · {habit.location}
             </Typography>
           )}
