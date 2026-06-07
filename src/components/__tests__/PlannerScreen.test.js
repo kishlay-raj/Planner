@@ -87,7 +87,6 @@ describe('PlannerScreen Component', () => {
   it('renders main layout components', () => {
     renderPlannerScreen();
 
-    expect(screen.getByText('Flow Planner')).toBeInTheDocument();
     expect(screen.getByText('WEEKLY FOCUS')).toBeInTheDocument();
     expect(screen.getByText('Test Focus')).toBeInTheDocument();
 

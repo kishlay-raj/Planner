@@ -35,10 +35,6 @@ describe('Catch Up Feature UI Tests', () => {
     // but easier: find the button that triggers our mock
     
     // We can find the button that contains the EventRepeat SVG (by getting the button whose parent or self triggers the click)
-    // Let's just find the first button, actually the Catch Up button is the first IconButton in the row
-    // Let's add a quick mock to check
-    fireEvent.click(buttons[1]); // Index might vary, let's just use a more robust selector:
-    
     // Since we know catchUpDatesCount is 2, the tooltip title is "Catch up 2 missed day(s)"
     // In MUI, Tooltip adds aria-label to its child (the span)
     const tooltipSpan = screen.getByLabelText('Catch up 2 missed day(s)', { exact: false });

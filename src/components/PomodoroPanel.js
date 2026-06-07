@@ -165,13 +165,16 @@ function PomodoroPanel({
   onWorkTypeToggle,
   sessionHistory = [],
   onOpenWidget,
-  widgetOpen = false
+  widgetOpen = false,
+  primaryTask = '',
+  setPrimaryTask = () => {},
+  secondaryTask = '',
+  setSecondaryTask = () => {},
+  pomodoroNotes = '',
+  setPomodoroNotes = () => {},
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [analyticsView, setAnalyticsView] = useState(0); // 0: Daily, 1: Weekly, 2: Monthly
-  const [primaryTask, setPrimaryTask] = useFirestore('pomodoroPrimaryTask', '');
-  const [secondaryTask, setSecondaryTask] = useFirestore('pomodoroSecondaryTask', '');
-  const [pomodoroNotes, setPomodoroNotes] = useFirestore('pomodoroNotes', '');
   const [editingTasks, setEditingTasks] = useState(false);
   const [localPrimary, setLocalPrimary] = useState('');
   const [localSecondary, setLocalSecondary] = useState('');
@@ -425,7 +428,7 @@ function PomodoroPanel({
               <IconButton
                 onClick={() => handleSettingChange(
                   mode === 'pomodoro' ? 'pomodoro' : mode === 'shortBreak' ? 'shortBreak' : 'longBreak',
-                  Math.min(90, Math.floor(timeLeft / 60) + 1)
+                  Math.min(90, Math.floor(timeLeft / 60) + 5)
                 )}
                 sx={{
                   color: 'white', bgcolor: 'rgba(255,255,255,0.12)', borderRadius: 2,
@@ -450,7 +453,7 @@ function PomodoroPanel({
               <IconButton
                 onClick={() => handleSettingChange(
                   mode === 'pomodoro' ? 'pomodoro' : mode === 'shortBreak' ? 'shortBreak' : 'longBreak',
-                  Math.max(1, Math.floor(timeLeft / 60) - 1)
+                  Math.max(1, Math.floor(timeLeft / 60) - 5)
                 )}
                 sx={{
                   color: 'white', bgcolor: 'rgba(255,255,255,0.12)', borderRadius: 2,
@@ -1010,7 +1013,7 @@ function PomodoroPanel({
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <IconButton
                   size="small"
-                  onClick={() => handleSettingChange(key, Math.max(1, settings[key] - 1))}
+                  onClick={() => handleSettingChange(key, Math.max(1, settings[key] - 5))}
                   sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.12)', width: 32, height: 32, borderRadius: 1.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' } }}
                 >−</IconButton>
                 <Box sx={{
@@ -1024,7 +1027,7 @@ function PomodoroPanel({
                 </Box>
                 <IconButton
                   size="small"
-                  onClick={() => handleSettingChange(key, Math.min(90, settings[key] + 1))}
+                  onClick={() => handleSettingChange(key, Math.min(90, settings[key] + 5))}
                   sx={{ color: 'white', bgcolor: 'rgba(255,255,255,0.12)', width: 32, height: 32, borderRadius: 1.5, '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' } }}
                 >+</IconButton>
               </Box>

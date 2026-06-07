@@ -69,13 +69,47 @@ function MobileScrollTimePicker({ timeLeft, isActive, onMinuteChange }) {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 2, mb: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <MobileDrumColumn value={minutes} min={1} max={90} onChange={onMinuteChange} disabled={isActive} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                    {!isActive && (
+                        <IconButton
+                            onClick={() => onMinuteChange(Math.min(90, minutes + 5))}
+                            sx={{
+                                color: 'white',
+                                bgcolor: 'rgba(255,255,255,0.12)',
+                                borderRadius: 2,
+                                width: 44,
+                                height: 32,
+                                fontSize: '1.1rem',
+                                fontWeight: 700,
+                                p: 0,
+                                '&:active': { bgcolor: 'rgba(255,255,255,0.25)' }
+                            }}
+                        >▲</IconButton>
+                    )}
+                    <MobileDrumColumn value={minutes} min={1} max={90} onChange={onMinuteChange} disabled={isActive} />
+                    {!isActive && (
+                        <IconButton
+                            onClick={() => onMinuteChange(Math.max(1, minutes - 5))}
+                            sx={{
+                                color: 'white',
+                                bgcolor: 'rgba(255,255,255,0.12)',
+                                borderRadius: 2,
+                                width: 44,
+                                height: 32,
+                                fontSize: '1.1rem',
+                                fontWeight: 700,
+                                p: 0,
+                                '&:active': { bgcolor: 'rgba(255,255,255,0.25)' }
+                            }}
+                        >▼</IconButton>
+                    )}
+                </Box>
                 <Typography sx={{ fontSize: '3.8rem', fontWeight: 900, fontFamily: 'monospace', color: 'white', opacity: 0.7, lineHeight: 1, mb: 0.5 }}>:</Typography>
                 <MobileDrumColumn value={seconds} min={0} max={59} onChange={() => {}} disabled={true} />
             </Box>
             {!isActive && (
                 <Typography sx={{ mt: 1.5, fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', letterSpacing: 1.5, textTransform: 'uppercase' }}>
-                    swipe minutes to set time
+                    swipe or use ▲ ▼ to set time
                 </Typography>
             )}
         </Box>

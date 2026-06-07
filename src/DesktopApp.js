@@ -194,7 +194,7 @@ function DesktopApp() {
   const [sessionHistory, setSessionHistory] = useFirestore('pomodoroSessionHistory', []); // Track all completed sessions
   const [primaryTask, setPrimaryTask] = useFirestore('pomodoroPrimaryTask', '');
   const [secondaryTask, setSecondaryTask] = useFirestore('pomodoroSecondaryTask', '');
-  const [pomodoroNotes] = useFirestore('pomodoroNotes', '');
+  const [pomodoroNotes, setPomodoroNotes] = useFirestore('pomodoroNotes', '');
   const earlyCompleteElapsedRef = useRef(null);
 
   // --- PIP WIDGET STATE ---
@@ -522,6 +522,12 @@ function DesktopApp() {
           sessionHistory={sessionHistory}
           onOpenWidget={handleOpenWidget}
           widgetOpen={!!pipWindow}
+          primaryTask={primaryTask}
+          setPrimaryTask={setPrimaryTask}
+          secondaryTask={secondaryTask}
+          setSecondaryTask={setSecondaryTask}
+          pomodoroNotes={pomodoroNotes}
+          setPomodoroNotes={setPomodoroNotes}
         />;
       case 'eisenhower':
         return <EisenhowerMatrix />;

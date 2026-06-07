@@ -170,7 +170,7 @@ describe('PomodoroPanel Component', () => {
         fireEvent.click(settingsButton);
 
         expect(screen.getByText('Timer Settings')).toBeInTheDocument();
-        // Check for specific input
-        expect(screen.getByRole('spinbutton', { name: /Pomodoro/i })).toBeInTheDocument();
+        // Check that the Focus timer setting is rendered
+        expect(screen.getByText('🍅 Focus')).toBeInTheDocument();
     });
 });
