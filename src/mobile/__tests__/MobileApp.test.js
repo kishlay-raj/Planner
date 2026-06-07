@@ -82,12 +82,12 @@ describe('MobileApp Component', () => {
         // Journal Mock (useFirestore - legacy)
         useFirestore.mockImplementation((key, defaultValue) => {
             if (key === 'journalPrompts') {
-                return [[{ id: 'p1', section: 'Morning', text: 'Morning Prompt?' }], jest.fn()];
+                return [[{ id: 'p1', section: 'Morning', text: 'Morning Prompt?' }], jest.fn(), false];
             }
             if (key === 'dailyJournalData') {
                 return [{
                     '2026-01-10': { responses: { 'p1': 'My Answer' }, notes: 'Daily Note' }
-                }, mockSetJournalData];
+                }, mockSetJournalData, false];
             }
             // Put Journal and Weekly in visible tab slots so tests can click them directly
             if (key === 'mobileTabOrder') {
@@ -95,7 +95,7 @@ describe('MobileApp Component', () => {
             }
             // Return the hook's default value for all other keys
             // (darkMode → false, githubSettings → {...}, gratitudeJournalData → {}, etc.)
-            return [defaultValue !== undefined ? defaultValue : {}, jest.fn()];
+            return [defaultValue !== undefined ? defaultValue : {}, jest.fn(), false];
         });
     });
 

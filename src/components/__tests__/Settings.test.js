@@ -102,4 +102,86 @@ describe('Settings Component', () => {
         });
         expect(mockSetTasks).not.toHaveBeenCalled();
     });
+
+    describe('Hard Refresh', () => {
+        let originalLocation;
+        let originalCaches;
+        let originalServiceWorker;
+        let mockConfirm;
+        let mockReload;
+        let mockCacheDelete;
+        let mockUnregister;
+
+        beforeEach(() => {
+            originalLocation = window.location;
+            originalCaches = window.caches;
+            originalServiceWorker = navigator.serviceWorker;
+
+            mockReload = jest.fn();
+            delete window.location;
+            window.location = { reload: mockReload };
+
+            mockConfirm = jest.spyOn(window, 'confirm');
+
+            mockCacheDelete = jest.fn().mockResolvedValue(true);
+            window.caches = {
+                keys: jest.fn().mockResolvedValue(['cache-1', 'cache-2']),
+                delete: mockCacheDelete
+            };
+
+            mockUnregister = jest.fn().mockResolvedValue(true);
+            Object.defineProperty(navigator, 'serviceWorker', {
+                writable: true,
+                value: {
+                    getRegistrations: jest.fn().mockResolvedValue([
+                        { unregister: mockUnregister }
+                    ])
+                }
+            });
+        });
+
+        afterEach(() => {
+            window.location = originalLocation;
+            window.caches = originalCaches;
+            Object.defineProperty(navigator, 'serviceWorker', {
+                writable: true,
+                value: originalServiceWorker
+            });
+            mockConfirm.mockRestore();
+        });
+
+        it('shows a confirmation dialog and performs hard refresh when confirmed', async () => {
+            mockConfirm.mockReturnValue(true);
+            renderSettings();
+
+            const refreshBtn = screen.getByRole('button', { name: /Hard Refresh/i });
+            expect(refreshBtn).toBeInTheDocument();
+
+            fireEvent.click(refreshBtn);
+
+            expect(mockConfirm).toHaveBeenCalledWith(
+                expect.stringContaining('This will reload the app and clear cached data')
+            );
+
+            await waitFor(() => {
+                expect(window.caches.keys).toHaveBeenCalled();
+                expect(mockCacheDelete).toHaveBeenCalledTimes(2);
+                expect(navigator.serviceWorker.getRegistrations).toHaveBeenCalled();
+                expect(mockUnregister).toHaveBeenCalled();
+                expect(mockReload).toHaveBeenCalled();
+            });
+        });
+
+        it('does nothing when confirmation is cancelled', async () => {
+            mockConfirm.mockReturnValue(false);
+            renderSettings();
+
+            const refreshBtn = screen.getByRole('button', { name: /Hard Refresh/i });
+            fireEvent.click(refreshBtn);
+
+            expect(mockConfirm).toHaveBeenCalled();
+            expect(mockReload).not.toHaveBeenCalled();
+            expect(mockCacheDelete).not.toHaveBeenCalled();
+        });
+    });
 });
