@@ -102,7 +102,7 @@ function DailyJournal() {
     const [currentDate, setCurrentDate] = useState(new Date());
 
     // State for prompts configuration
-    const [prompts, setPrompts] = useFirestore('journalPrompts', DEFAULT_PROMPTS);
+    const [prompts, setPrompts, loadingPrompts] = useFirestore('journalPrompts', DEFAULT_PROMPTS);
 
     // State for journal entries (answers)
     // State for journal entries (answers)
@@ -132,11 +132,12 @@ function DailyJournal() {
 
     // Migration & Deduplication: Ensure new sections exist and remove duplicates
     useEffect(() => {
+        if (loadingPrompts) return;
+
         setPrompts(currentPrompts => {
             let updatedPrompts = [...currentPrompts];
             let changed = false;
 
-            // 1. Add missing sections/prompts
             // 1. Add missing prompts by ID (ensure new questions appear)
             const existingIds = new Set(updatedPrompts.map(p => p.id));
             const newDefaults = DEFAULT_PROMPTS.filter(dp => !existingIds.has(dp.id));
@@ -160,7 +161,7 @@ function DailyJournal() {
 
             return changed ? unique : currentPrompts;
         });
-    }, []);
+    }, [loadingPrompts]);
 
 
 

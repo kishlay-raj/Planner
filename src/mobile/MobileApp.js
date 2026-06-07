@@ -338,8 +338,41 @@ function MobileApp() {
 
     // Journal Data
     const journalDateKey = format(journalDate, 'yyyy-MM-dd');
-    const [prompts, setPrompts] = useFirestore('journalPrompts', MOBILE_JOURNAL_PROMPTS);
+    const [prompts, setPrompts, loadingPrompts] = useFirestore('journalPrompts', MOBILE_JOURNAL_PROMPTS);
     const [journalData, setJournalData] = useFirestore('dailyJournalData', {});
+
+    // Migration & Deduplication for Mobile prompts
+    useEffect(() => {
+        if (loadingPrompts) return;
+
+        setPrompts(currentPrompts => {
+            let updatedPrompts = [...currentPrompts];
+            let changed = false;
+
+            // 1. Add missing prompts by ID
+            const existingIds = new Set(updatedPrompts.map(p => p.id));
+            const newDefaults = MOBILE_JOURNAL_PROMPTS.filter(dp => !existingIds.has(dp.id));
+
+            if (newDefaults.length > 0) {
+                updatedPrompts = [...updatedPrompts, ...newDefaults];
+                changed = true;
+            }
+
+            // 2. Remove duplicates
+            const unique = [];
+            const seen = new Set();
+            for (const p of updatedPrompts) {
+                if (!seen.has(p.text)) {
+                    seen.add(p.text);
+                    unique.push(p);
+                } else {
+                    changed = true;
+                }
+            }
+
+            return changed ? unique : currentPrompts;
+        });
+    }, [loadingPrompts]);
     const currentJournalEntry = journalData[journalDateKey] || { responses: {}, notes: '' };
 
     // Gratitude Data

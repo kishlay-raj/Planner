@@ -82,17 +82,64 @@ export function useFirestore(location, initialValue, merge = true) {
         return () => unsubscribe();
     }, [currentUser, location]);
 
-    // Ref for write debounce
+    // Ref for write debounce and pending data
     const timeoutRef = useRef(null);
+    const pendingDataRef = useRef(null);
 
-    // Cleanup timeout on unmount
+    // Keep active references to prevent closure stale problems in cleanup
+    const currentUserRef = useRef(currentUser);
+    const locationRef = useRef(location);
+    const dataRef = useRef(data);
+
+    useEffect(() => {
+        currentUserRef.current = currentUser;
+        locationRef.current = location;
+        dataRef.current = data;
+    }, [currentUser, location, data]);
+
+    const performWrite = useCallback(async (dataToWrite, user, loc) => {
+        if (!user) {
+            const localKey = Array.isArray(loc) ? loc.join('_') : loc;
+            localStorage.setItem(localKey, JSON.stringify(dataToWrite));
+            return;
+        }
+
+        const docRef = doc(db, 'users', user.uid, 'userData', Array.isArray(loc) ? loc.join('_') : loc);
+        try {
+            let dataToSave;
+            if (Array.isArray(dataToWrite)) {
+                dataToSave = { _isArray: true, items: dataToWrite };
+            } else if (dataToWrite !== null && typeof dataToWrite !== 'object') {
+                dataToSave = { _isPrimitive: true, value: dataToWrite };
+            } else {
+                dataToSave = dataToWrite;
+            }
+
+            if (dataToSave === undefined || dataToSave === null) {
+                return;
+            }
+
+            await setDoc(docRef, dataToSave, { merge });
+            if (isDev) console.log(`✅ Firestore write SUCCESS (flush) for "${loc}"`);
+        } catch (e) {
+            console.error("❌ Error saving to Firestore (flush):", e);
+        }
+    }, [merge]);
+
+    // Cleanup timeout and flush on unmount
     useEffect(() => {
         return () => {
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
             }
+            if (pendingDataRef.current !== null) {
+                if (isDev) console.log(`⚠️ Flushing pending write for ${locationRef.current} on unmount`);
+                performWrite(pendingDataRef.current, currentUserRef.current, locationRef.current).catch(err =>
+                    console.error("Flush failed on unmount:", err)
+                );
+            }
         };
-    }, []);
+    }, [performWrite]);
 
     const [saving, setSaving] = useState(false);
 
@@ -102,11 +149,13 @@ export function useFirestore(location, initialValue, merge = true) {
         isTyping.current = true;
 
         // Support functional updates like React's setState
-        const newData = typeof newDataOrFn === 'function' ? newDataOrFn(data) : newDataOrFn;
+        const currentData = pendingDataRef.current !== null ? pendingDataRef.current : data;
+        const newData = typeof newDataOrFn === 'function' ? newDataOrFn(currentData) : newDataOrFn;
 
         // 1. Update local state immediately for responsiveness
         setData(newData);
         setSaving(true);
+        pendingDataRef.current = newData;
 
         // 2. Debounce the write to Firestore
         if (timeoutRef.current) {
@@ -114,6 +163,10 @@ export function useFirestore(location, initialValue, merge = true) {
         }
 
         timeoutRef.current = setTimeout(async () => {
+            const dataToWrite = pendingDataRef.current;
+            pendingDataRef.current = null;
+            timeoutRef.current = null;
+
             if (currentUser) {
                 const docPath = `users/${currentUser.uid}/userData/${Array.isArray(location) ? location.join('_') : location}`;
                 if (isDev) console.log("⏳ Starting Firestore write...");
@@ -122,13 +175,13 @@ export function useFirestore(location, initialValue, merge = true) {
                 try {
                     // Wrap arrays and primitives since Firestore requires objects at root
                     let dataToSave;
-                    if (Array.isArray(newData)) {
-                        dataToSave = { _isArray: true, items: newData };
-                    } else if (newData !== null && typeof newData !== 'object') {
+                    if (Array.isArray(dataToWrite)) {
+                        dataToSave = { _isArray: true, items: dataToWrite };
+                    } else if (dataToWrite !== null && typeof dataToWrite !== 'object') {
                         // String, number, boolean — wrap in an object for Firestore
-                        dataToSave = { _isPrimitive: true, value: newData };
+                        dataToSave = { _isPrimitive: true, value: dataToWrite };
                     } else {
-                        dataToSave = newData;
+                        dataToSave = dataToWrite;
                     }
 
                     // Safety check for undefined/null data
@@ -141,25 +194,17 @@ export function useFirestore(location, initialValue, merge = true) {
                     const dataPreview = JSON.stringify(dataToSave) || '';
                     if (isDev) console.log("📦 Data to save:", dataPreview.substring(0, 200) + (dataPreview.length > 200 ? "..." : ""));
                     
-                    setDoc(docRef, dataToSave, { merge })
-                        .then(() => {
-                            if (isDev) console.log(`✅ Firestore write SUCCESS for "${location}"`);
-                        })
-                        .catch((e) => {
-                            console.error("❌ Error saving to Firestore:", e.code, e.message);
-                            console.error("Full error:", e);
-                        });
-                    
+                    await setDoc(docRef, dataToSave, { merge });
+                    if (isDev) console.log(`✅ Firestore write SUCCESS for "${location}"`);
                     setSaving(false);
                 } catch (e) {
-                    console.error("❌ Error saving to Firestore (preparation):", e.code, e.message);
-                    console.error("Full error:", e);
-                    setSaving(false); // Should expose error too but for now just stop spinner
+                    console.error("❌ Error saving to Firestore:", e.code, e.message);
+                    setSaving(false);
                 }
             } else {
                 if (isDev) console.log("Writing to LocalStorage (No User):", location);
                 const localKey = Array.isArray(location) ? location.join('_') : location;
-                localStorage.setItem(localKey, JSON.stringify(newData));
+                localStorage.setItem(localKey, JSON.stringify(dataToWrite));
                 setSaving(false);
             }
             isTyping.current = false;

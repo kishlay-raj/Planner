@@ -54,52 +54,52 @@ export async function migrateUserData(userId) {
                     break;
 
                 case 'dailyNotes':
-                    // Migrate each date to planner/daily/{date}
+                    // Migrate each date to planner_daily/{date}
                     for (const [dateKey, content] of Object.entries(data)) {
                         if (dateKey.startsWith('_')) continue;
-                        const noteRef = doc(db, 'users', userId, 'planner', 'daily', dateKey);
+                        const noteRef = doc(db, 'users', userId, 'planner_daily', dateKey);
                         batch.set(noteRef, { content, migratedAt: Date.now() });
                     }
                     break;
 
                 case 'dailyJournalData':
-                    // Migrate each date to journal/entries/{date}
+                    // Migrate each date to journal_entries/{date}
                     for (const [dateKey, entry] of Object.entries(data)) {
                         if (dateKey.startsWith('_')) continue;
-                        const journalRef = doc(db, 'users', userId, 'journal', 'entries', dateKey);
+                        const journalRef = doc(db, 'users', userId, 'journal_entries', dateKey);
                         batch.set(journalRef, { ...entry, migratedAt: Date.now() });
                     }
                     break;
 
                 case 'journalPrompts':
-                    // Migrate to journal/config/prompts
-                    const promptsRef = doc(db, 'users', userId, 'journal', 'config', 'prompts');
+                    // Migrate to journal_config/prompts
+                    const promptsRef = doc(db, 'users', userId, 'journal_config', 'prompts');
                     batch.set(promptsRef, data);
                     break;
 
                 case 'weeklyPlannerData':
-                    // Migrate each week to planner/weekly/{weekId}
+                    // Migrate each week to planner_weekly/{weekId}
                     for (const [weekId, weekData] of Object.entries(data)) {
                         if (weekId.startsWith('_')) continue;
-                        const weekRef = doc(db, 'users', userId, 'planner', 'weekly', weekId);
+                        const weekRef = doc(db, 'users', userId, 'planner_weekly', weekId);
                         batch.set(weekRef, weekData);
                     }
                     break;
 
                 case 'monthlyPlannerData':
-                    // Migrate each month to planner/monthly/{monthId}
+                    // Migrate each month to planner_monthly/{monthId}
                     for (const [monthId, monthData] of Object.entries(data)) {
                         if (monthId.startsWith('_')) continue;
-                        const monthRef = doc(db, 'users', userId, 'planner', 'monthly', monthId);
+                        const monthRef = doc(db, 'users', userId, 'planner_monthly', monthId);
                         batch.set(monthRef, monthData);
                     }
                     break;
 
                 case 'yearlyPlannerData':
-                    // Migrate each year to planner/yearly/{year}
+                    // Migrate each year to planner_yearly/{year}
                     for (const [year, yearData] of Object.entries(data)) {
                         if (year.startsWith('_')) continue;
-                        const yearRef = doc(db, 'users', userId, 'planner', 'yearly', year);
+                        const yearRef = doc(db, 'users', userId, 'planner_yearly', year);
                         batch.set(yearRef, yearData);
                     }
                     break;
