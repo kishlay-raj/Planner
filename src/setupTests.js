@@ -1,5 +1,9 @@
 import '@testing-library/jest-dom';
 
+// Define global setImmediate and clearImmediate if they do not exist
+global.setImmediate = global.setImmediate || ((fn, ...args) => global.setTimeout(fn, 0, ...args));
+global.clearImmediate = global.clearImmediate || ((id) => global.clearTimeout(id));
+
 // Mock window.matchMedia
 window.matchMedia = window.matchMedia || function () {
   return {
