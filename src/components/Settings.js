@@ -35,7 +35,8 @@ import {
     WbSunny,
     NightsStay,
     GitHub,
-    Restore
+    Restore,
+    Refresh
 } from '@mui/icons-material';
 import { useFirestore } from '../hooks/useFirestore';
 import { useGitHubSync } from '../hooks/useGitHubSync';
@@ -119,6 +120,31 @@ function Settings({ navConfig, onUpdate, darkMode, onToggleDarkMode }) {
             return;
         }
         restoreFromGitHub(ghToken, ghOwner, ghRepo);
+    };
+
+    const handleHardRefresh = async () => {
+        if (window.confirm('This will reload the app and clear cached data (but keep you logged in). Continue?')) {
+            try {
+                // Clear all caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                }
+
+                // Unregister service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map(reg => reg.unregister()));
+                }
+
+                // Reload without forcing cache bypass (preserves auth)
+                window.location.reload();
+            } catch (error) {
+                console.error('Error during hard refresh:', error);
+                // Fallback to simple reload
+                window.location.reload();
+            }
+        }
     };
 
     const isLoading = syncStatus === 'fetching' || syncStatus === 'pushing' || syncStatus === 'pulling' || syncStatus === 'restoring';
@@ -296,6 +322,31 @@ function Settings({ navConfig, onUpdate, darkMode, onToggleDarkMode }) {
                             </Typography>
                         )}
                     </Box>
+                </Box>
+            </Paper>
+
+            {/* App Maintenance Section */}
+            <Paper elevation={0} sx={{ p: 0, mb: 4, borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
+                <Box sx={{ p: 3, bgcolor: theme.palette.action.hover }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        App Maintenance
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                        Troubleshoot issues by clearing cache and force reloading.
+                    </Typography>
+                </Box>
+                <Divider />
+                <Box sx={{ p: 3 }}>
+                    <Button
+                        variant="outlined"
+                        startIcon={<Refresh />}
+                        onClick={handleHardRefresh}
+                    >
+                        Hard Refresh
+                    </Button>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
+                        This will reload the application, clear cached assets (forcing latest update), and unregister the service worker. Your session will be preserved.
+                    </Typography>
                 </Box>
             </Paper>
 
