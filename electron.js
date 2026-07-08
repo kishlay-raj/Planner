@@ -13,6 +13,37 @@ function createWindow() {
     },
   });
 
+  // Handle Picture-in-Picture / Popout Widget windows
+  win.webContents.setWindowOpenHandler((details) => {
+    const isPip = details.frameName === 'PomodoroWidget' || 
+                  (details.features && (
+                      details.features.includes('picture-in-picture') || 
+                      details.features.includes('pip') || 
+                      (details.features.includes('width=320') && details.features.includes('height=180'))
+                  ));
+    if (isPip) {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          width: 320,
+          height: 180,
+          frame: false,
+          alwaysOnTop: true,
+          resizable: false,
+          minimizable: false,
+          maximizable: false,
+          fullscreenable: false,
+          webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+            sandbox: true
+          }
+        }
+      };
+    }
+    return { action: 'allow' };
+  });
+
   // Load the index.html from a url in dev or local file in prod
   win.loadURL(
     isDev

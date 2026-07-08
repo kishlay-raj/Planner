@@ -45,7 +45,8 @@ export default function PomodoroWidgetContent({
       alignItems: 'center', justifyContent: 'center',
       padding: '10px 16px',
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-      gap: '5px', cursor: 'default', userSelect: 'none',
+      gap: '5px', cursor: 'move', userSelect: 'none',
+      WebkitAppRegion: 'drag',
     }}>
       {/* Mode label */}
       <div style={{
@@ -90,7 +91,8 @@ export default function PomodoroWidgetContent({
                       padding: '2px 6px',
                       width: '100%',
                       outline: 'none',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      WebkitAppRegion: 'no-drag',
                   }}
               />
             ) : (
@@ -100,7 +102,8 @@ export default function PomodoroWidgetContent({
                   display: 'flex', alignItems: 'center', gap: '6px',
                   background: 'rgba(255,255,255,0.15)',
                   borderRadius: '6px', padding: '3px 10px',
-                  overflow: 'hidden', cursor: 'text'
+                  overflow: 'hidden', cursor: 'text',
+                  WebkitAppRegion: 'no-drag',
                 }}
               >
                 <div style={{
@@ -135,7 +138,8 @@ export default function PomodoroWidgetContent({
                       padding: '2px 6px',
                       width: '100%',
                       outline: 'none',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      WebkitAppRegion: 'no-drag',
                   }}
               />
             ) : (
@@ -145,7 +149,8 @@ export default function PomodoroWidgetContent({
                   display: 'flex', alignItems: 'center', gap: '6px',
                   background: 'rgba(255,255,255,0.08)',
                   borderRadius: '6px', padding: '3px 10px',
-                  overflow: 'hidden', cursor: 'text'
+                  overflow: 'hidden', cursor: 'text',
+                  WebkitAppRegion: 'no-drag',
                 }}
               >
                 <div style={{
@@ -178,6 +183,7 @@ export default function PomodoroWidgetContent({
             color: 'white', fontSize: '14px',
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            WebkitAppRegion: 'no-drag',
           }}
         >
           {isActive ? '⏸' : '▶'}
@@ -196,6 +202,7 @@ export default function PomodoroWidgetContent({
               color: 'white', fontSize: '14px',
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              WebkitAppRegion: 'no-drag',
             }}
           >
             ⏭

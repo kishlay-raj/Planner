@@ -26,6 +26,37 @@ function createWindow() {
         ? 'http://localhost:3000'
         : `file://${path.join(__dirname, '../build/index.html')}`;
 
+    // Handle Picture-in-Picture / Popout Widget windows
+    mainWindow.webContents.setWindowOpenHandler((details) => {
+        const isPip = details.frameName === 'PomodoroWidget' || 
+                      (details.features && (
+                          details.features.includes('picture-in-picture') || 
+                          details.features.includes('pip') || 
+                          (details.features.includes('width=320') && details.features.includes('height=180'))
+                      ));
+        if (isPip) {
+            return {
+                action: 'allow',
+                overrideBrowserWindowOptions: {
+                    width: 320,
+                    height: 180,
+                    frame: false,
+                    alwaysOnTop: true,
+                    resizable: false,
+                    minimizable: false,
+                    maximizable: false,
+                    fullscreenable: false,
+                    webPreferences: {
+                        nodeIntegration: false,
+                        contextIsolation: true,
+                        sandbox: true
+                    }
+                }
+            };
+        }
+        return { action: 'allow' };
+    });
+
     mainWindow.loadURL(startUrl);
 
     // Show window when ready

@@ -21,6 +21,8 @@ import FloatingPomodoro from './components/FloatingPomodoro';
 import AntiGravityHabitTracker from './components/AntiGravityHabitTracker';
 import MistakesJournal from './components/MistakesJournal';
 import PomodoroWidgetContent from './components/PomodoroWidgetContent';
+import ProjectManagement from './components/ProjectManagement';
+import ProjectDetails from './components/ProjectDetails';
 
 // Moved theme creation inside component or useMemo to depend on mode
 // But since we need it in JSX, we will refactor to use a useMemo hook for theme creation.
@@ -46,7 +48,16 @@ const defaultSettings = {
 
 function DesktopApp() {
   const [tasks, setTasks] = useFirestore('allTasks', []);
-  const [activePanel, setActivePanel] = useState('planner');
+  const [activePanel, setActivePanel] = useState(() => {
+    const hash = window.location.hash.replace(/^#/, '');
+    const validIds = [
+      'planner', 'planner-week', 'planner-month', 'planner-year', 
+      'anti-gravity', 'daily-journal', 'gratitude-journal', 'independent-notes', 
+      'project-management', 'relapse-journal', 'mistakes', 'routines', 
+      'eisenhower', 'pomodoro'
+    ];
+    return (validIds.includes(hash) || hash.startsWith('project-details-')) ? hash : 'planner';
+  });
   // const [pomodoroMode, setPomodoroMode] = useState('pomodoro'); // Removed: managed in logic below
   const [supportAnchor, setSupportAnchor] = useState(null);
 
@@ -181,6 +192,30 @@ function DesktopApp() {
     setDarkMode(!darkMode);
   };
 
+  // --- HASH ROUTING SIDE EFFECTS ---
+  useEffect(() => {
+    if (window.location.hash !== `#${activePanel}`) {
+      window.location.hash = activePanel;
+    }
+  }, [activePanel]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace(/^#/, '');
+      const validIds = [
+        'planner', 'planner-week', 'planner-month', 'planner-year', 
+        'anti-gravity', 'daily-journal', 'gratitude-journal', 'independent-notes', 
+        'project-management', 'relapse-journal', 'mistakes', 'routines', 
+        'eisenhower', 'pomodoro'
+      ];
+      if (validIds.includes(hash) || hash.startsWith('project-details-')) {
+        setActivePanel(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // --- GLOBAL POMODORO STATE ---
   const [timeLeft, setTimeLeft] = useState(30 * 60);
   const [isActive, setIsActive] = useState(false);
@@ -202,22 +237,55 @@ function DesktopApp() {
   const pipWindowRef = useRef(null);
 
   const handleOpenWidget = async () => {
-    if (!('documentPictureInPicture' in window)) {
-      alert('Picture-in-Picture widget requires Chrome 116+. The timer countdown is still visible in your browser tab title.');
-      return;
+    // Try native Document Picture-in-Picture first (Chrome 116+)
+    if ('documentPictureInPicture' in window) {
+      try {
+        const pip = await window.documentPictureInPicture.requestWindow({
+          width: 320,
+          height: 180,
+        });
+        const style = pip.document.createElement('style');
+        style.textContent = '* { margin:0; padding:0; box-sizing:border-box; } body { overflow:hidden; }';
+        pip.document.head.appendChild(style);
+        pip.addEventListener('pagehide', () => {
+          setPipWindow(null);
+          pipWindowRef.current = null;
+        });
+        pipWindowRef.current = pip;
+        setPipWindow(pip);
+        return; // Success!
+      } catch (e) {
+        console.warn('Native Document PiP failed, falling back to popup window:', e);
+      }
     }
+
+    // Fallback to standard window.open (works on Safari, Firefox, and Electron)
     try {
-      const pip = await window.documentPictureInPicture.requestWindow({
-        width: 320, height: 180,
-      });
-      const style = pip.document.createElement('style');
+      const popup = window.open(
+        '',
+        'PomodoroWidget',
+        'width=320,height=180,resizable=no,scrollbars=no,status=no,menubar=no,toolbar=no'
+      );
+      if (!popup) {
+        alert('Popup blocker blocked the widget! Please allow popups for this site.');
+        return;
+      }
+      const style = popup.document.createElement('style');
       style.textContent = '* { margin:0; padding:0; box-sizing:border-box; } body { overflow:hidden; }';
-      pip.document.head.appendChild(style);
-      pip.addEventListener('pagehide', () => { setPipWindow(null); pipWindowRef.current = null; });
-      pipWindowRef.current = pip;
-      setPipWindow(pip);
+      popup.document.head.appendChild(style);
+      popup.addEventListener('pagehide', () => {
+        setPipWindow(null);
+        pipWindowRef.current = null;
+      });
+      popup.onbeforeunload = () => {
+        setPipWindow(null);
+        pipWindowRef.current = null;
+      };
+      pipWindowRef.current = popup;
+      setPipWindow(popup);
     } catch (e) {
-      console.error('PiP widget failed:', e);
+      console.error('Fallback popup window failed:', e);
+      alert('Failed to open the pop-out widget.');
     }
   };
 
@@ -450,6 +518,7 @@ function DesktopApp() {
     { id: 'daily-journal', label: 'Journal', iconKey: 'menuBook', visible: true },
     { id: 'gratitude-journal', label: 'Gratitude', iconKey: 'favorite', visible: true },
     { id: 'independent-notes', label: 'General Notes', iconKey: 'editNote', visible: true },
+    { id: 'project-management', label: 'Projects', iconKey: 'project', visible: true },
     { id: 'relapse-journal', label: 'Fortification', iconKey: 'security', visible: true },
     { id: 'mistakes', label: 'Mistakes', iconKey: 'warning', visible: true },
     { id: 'routines', label: 'Routines', iconKey: 'selfImprovement', visible: true },
@@ -457,7 +526,16 @@ function DesktopApp() {
     { id: 'pomodoro', label: 'Pomodoro', iconKey: 'timer', visible: true }
   ];
 
-  const [navConfig, setNavConfig] = useFirestore('navConfig', defaultNavConfig);
+  const [rawNavConfig, setNavConfig] = useFirestore('navConfig', defaultNavConfig);
+
+  const navConfig = React.useMemo(() => {
+    if (!rawNavConfig) return defaultNavConfig;
+    const configList = Array.isArray(rawNavConfig) ? rawNavConfig : defaultNavConfig;
+    const validIds = defaultNavConfig.map(item => item.id);
+    const filtered = configList.filter(item => validIds.includes(item.id));
+    const missing = defaultNavConfig.filter(item => !filtered.some(f => f.id === item.id));
+    return [...filtered, ...missing];
+  }, [rawNavConfig]);
 
   const handleNavUpdate = (newConfig) => {
     setNavConfig(newConfig);
@@ -486,6 +564,11 @@ function DesktopApp() {
 
 
   const renderPanel = () => {
+    if (activePanel.startsWith('project-details-')) {
+      const pId = activePanel.replace('project-details-', '');
+      return <ProjectDetails projectId={pId} onBack={() => setActivePanel('project-management')} />;
+    }
+
     switch (activePanel) {
       case 'planner':
         return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} sessionHistory={sessionHistory} />;
@@ -501,6 +584,8 @@ function DesktopApp() {
         return <GratitudeJournal />;
       case 'independent-notes':
         return <NotesPanel customPath="planner/notes/general" title="General Notes" enableLock={true} />;
+      case 'project-management':
+        return <ProjectManagement onProjectClick={(id) => setActivePanel(`project-details-${id}`)} />;
       case 'relapse-journal':
         return <RelapseFortificationJournal />;
       case 'routines':
