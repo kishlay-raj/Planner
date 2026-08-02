@@ -1,6 +1,6 @@
 # Flow Planner 🌊
 
-A modern, intuitive, and comprehensive task management and scheduling application designed to help you organize your life, boost productivity, and focus on what matters. Built with React and Material-UI.
+A modern, intuitive, and comprehensive task management and scheduling application designed to help you organize your life, boost productivity, and focus on what matters. Built with React, Material-UI, and Firebase.
 
 ![Flow Planner Overview](./screenshots/app-screenshot.png)
 
@@ -12,6 +12,7 @@ A modern, intuitive, and comprehensive task management and scheduling applicatio
 Stop relying on simple checklists. Flow Planner integrates an interactive **Eisenhower Matrix** allowing you to categorize your tasks based on urgency and importance.
 - **Priority Columns**: Prioritize what needs to be done *now*, schedule the rest, delegate, or eliminate tasks holding you back.
 - **High-Performance Same-List Reordering**: Drag-and-drop to reorder tasks directly within the same priority column. Powered by an atomic batch-updating mechanism, order updates are saved to Firestore in parallel without any layout lag or excessive React re-renders.
+- **1-Click Pomodoro Task Launcher**: Launch a focus session directly from any task in your daily list with the **🍅 Pomodoro** action chip.
 
 ![Eisenhower Matrix](./screenshots/eisenhower_matrix.png)
 
@@ -25,11 +26,14 @@ Visualize your timeline perfectly. Whether you are planning your year, mapping y
 
 ### 3. Focus & Productivity (Pomodoro Timer & Always-On-Top Widget)
 Integrated directly into the planner, Flow Planner features a comprehensive, state-of-the-art floating Pomodoro mechanism:
-- **Always-On-Top Widget**: Pop out a compact always-on-top mini widget using the native **Document Picture-in-Picture API**. Keep your current primary & secondary focus tasks and live timer countdown visible over all other desktop applications. Easily launchable directly from the main Pomodoro screen.
+- **Always-On-Top Widget**: Pop out a compact always-on-top mini widget. Uses the native **Document Picture-in-Picture API** in supported browsers, and seamlessly falls back to a **native, frameless, and draggable window** when running as an Electron desktop app. Keep your current primary & secondary focus tasks and live timer countdown visible over all other applications. Easily launchable directly from the main Pomodoro screen.
+- **System Activity & Inactivity Reminders**: Tracks active system usage in the background and alerts you if you've been active for over 15 minutes without running a Pomodoro timer. Includes audio alerts, desktop notifications, and interactive action banners (**🍅 Start Focus**, **Snooze**, **Dismiss**). Configurable in Pomodoro & App Settings (5 to 30 mins).
+- **Single-Click Sound Controls**: Instant volume controls right next to the timer: **🔉 -10%**, **🔊 +10%**, **🔊/🔇 Mute Toggle**, live volume badge, and floating bubble mute toggle.
+- **Tailored Duration Stepping**: Fine-tune **Short Breaks in 1-minute steps** and **Focus/Long Breaks in 5-minute steps**.
 - **Inline Task Editing**: Quickly edit your primary and secondary tasks on the fly directly from the Floating Pomodoro bubble or the PiP widget.
 - **Skip Break Options**: Instantly bypass break periods directly from the floating bubble or PiP widget to jump straight back into focus sessions.
 - **Deep Work Single-Focus**: When toggled into "Deep Work" mode, the application hides secondary "gap fillers" to enforce absolute prioritization on your primary task.
-- **Quick-Select Cards**: Seamlessly choose 10, 20, or 40-minute focus durations on both desktop and mobile layouts for faster setup.
+- **Quick-Select & Custom Durations**: Choose 10, 20, or 40-minute focus durations, or use custom stepper controls for fast setup on desktop and mobile.
 - **Live Tab Timer**: The browser tab title dynamically ticks down (e.g., `🍅 24:59 — Flow Planner`) so you can track your state even when the browser is minimized.
 - **System Notifications**: Triggers system-level desktop notifications on complete so you never miss a transition.
 - **Early Completion & Tracking**: Finish Pomodoro sessions early with the dedicated "COMPLETE" button. Flow Planner automatically calculates exact elapsed focus minutes, marks matching primary tasks as completed, and appends early completion notes.
@@ -38,7 +42,16 @@ Integrated directly into the planner, Flow Planner features a comprehensive, sta
 
 ![Pomodoro Timer](./screenshots/pomodoro_timer.png)
 
-### 4. Wellness, Gratitude & Relapse Journals
+### 4. Project Management with Subtasks & Task Notes
+Group related tasks into dedicated **Projects** with full task details across Desktop & Mobile:
+- **Task Notes & Instructions**: Add detailed multi-line notes, specifications, or context to any project task.
+- **Interactive Subtasks Builder**: Add subtasks, track completion progress (`1/3 completed`), and remove subtasks inside task modals.
+- **Inline Subtask Checklist**: Subtasks render directly underneath project tasks with real-time checkboxes so you can check off subtasks directly from the page without opening modals.
+- **Subtask Progress & Note Badges**: View `✓ Completed/Total` chips and `📝 Notes` chips on task rows.
+- **Multi-Device Real-Time Firestore Sync**: Automatically syncs projects, tasks, notes, and subtasks across web, desktop, and mobile via Cloud Firestore.
+- **GitHub Backup Sync**: GitHub sync exports projects into clean Markdown files (`Projects/{project_name}.md`) with nested task checklists and notes.
+
+### 5. Wellness, Gratitude & Relapse Journals
 Productivity is more than just getting things done. Maintain healthy mindsets and habits:
 - **Daily Reflection Journal**: Assess how your day went and how you can naturally improve tomorrow.
 - **Gratitude Journal**: Bring positivity and awareness to parts of your life that mean the most.
@@ -49,17 +62,16 @@ Productivity is more than just getting things done. Maintain healthy mindsets an
 
 ![Journals View](./screenshots/journals_view.png)
 
-### 5. Smart Organization & Note-taking
-- Comprehensive sticky notes and integrated Markdown note taking features on Tasks.
-- Dedicated Important/Today separate views.
-- Deep filtering to slice your schedule by tag (Work, Personal, Study, Health).
+### 6. Reliability & App Maintenance
+- **Service Worker Management**: Built-in cache busting and a dedicated "Hard Refresh" maintenance button in Settings to guarantee you always have the most recent application updates without manual browser clearing.
+- **Robust Data Synchronization**: Bulletproof Firestore persistence syncing your daily journals, habits, tasks, and projects across web, desktop, and mobile instantly.
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher)
+- Node.js (v18 or higher)
 - npm or yarn
 
 ### Installation
@@ -93,8 +105,14 @@ Productivity is more than just getting things done. Maintain healthy mindsets an
    - Switch to the Weekly/Day Planner and drag tasks directly onto available timeslots.
    - Resize edges to add buffers or extend the allotted duration dynamically.
 
-3. **Managing Focus**
-   - Use the built-in Pomodoro cycles to enforce designated deep-work blocks directly attached to sub-tasks.
+3. **Managing Focus & Pomodoro**
+   - Launch focus sessions from any task with the **🍅 Pomodoro** action chip or from the Pomodoro panel.
+   - Fine-tune Short Breaks in 1-minute steps and Focus/Long Breaks in 5-minute steps.
+   - Pop out the always-on-top PiP widget to keep your focus timer visible over all apps.
+
+4. **Project Subtasks & Notes**
+   - Open any Project view, edit tasks to add multi-line notes or subtasks.
+   - Check off subtasks directly from the inline checklist on your project task list.
 
 ---
 
@@ -102,6 +120,8 @@ Productivity is more than just getting things done. Maintain healthy mindsets an
 
 - **ReactJS**: Front-end framework.
 - **Material-UI (MUI)**: Component library and sleek designs.
+- **Firebase / Cloud Firestore**: Real-time multi-device data persistence.
+- **Octokit / GitHub REST API**: Markdown repository backup sync.
 - **React Big Calendar**: Core timeline scheduling visualizer.
 - **React Beautiful DnD**: Smooth, accessible drag-and-drop interactions.
 - **TipTap / React Quill**: Rich-text markup integration for task notes.
@@ -123,6 +143,6 @@ This project is licensed under the MIT License.
 To deploy the application securely via Firebase Hosting:
 ```bash
 npm run deployWebApp
-# Or using Firebase CLI directly:
-firebase deploy --only hosting:flowplanner
+# Or using Firebase CLI:
+npx -y firebase-tools@latest deploy --only hosting:flowplanner
 ```

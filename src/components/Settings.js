@@ -19,7 +19,9 @@ import {
     DialogActions,
     TextField,
     Alert,
-    CircularProgress
+    CircularProgress,
+    LinearProgress,
+    Chip
 } from '@mui/material';
 import {
     DragIndicator,
@@ -36,7 +38,8 @@ import {
     NightsStay,
     GitHub,
     Restore,
-    Refresh
+    Refresh,
+    FolderSpecial
 } from '@mui/icons-material';
 import { useFirestore } from '../hooks/useFirestore';
 import { useGitHubSync } from '../hooks/useGitHubSync';
@@ -52,10 +55,11 @@ const iconMap = {
     selfImprovement: <SelfImprovement />,
     viewQuilt: <ViewQuilt />,
     timer: <Timer />,
-    security: <Box sx={{ fontWeight: 'bold', fontSize: '1.2rem' }}>🛡️</Box>
+    security: <Box sx={{ fontWeight: 'bold', fontSize: '1.2rem' }}>🛡️</Box>,
+    project: <FolderSpecial />
 };
 
-function Settings({ navConfig, onUpdate, darkMode, onToggleDarkMode }) {
+function Settings({ navConfig, onUpdate, darkMode, onToggleDarkMode, pomodoroSettings, handleSettingChange, activeNoPomodoroTime = 0, onTestInactivityAlert, isActive = false }) {
     const theme = useTheme();
 
     const [tasks, setTasks] = useFirestore('allTasks', []);
@@ -183,6 +187,140 @@ function Settings({ navConfig, onUpdate, darkMode, onToggleDarkMode }) {
                     </ListItem>
                 </List>
             </Paper>
+
+            {/* Pomodoro Inactivity Alert Section */}
+            {pomodoroSettings && handleSettingChange && (
+                <Paper elevation={0} sx={{ p: 0, mb: 4, borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
+                    <Box sx={{ p: 3, bgcolor: theme.palette.action.hover, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                        <Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Timer color="primary" />
+                                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                    Pomodoro Focus Alert
+                                </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                                Get notified when active on your system without an active Pomodoro timer.
+                            </Typography>
+                        </Box>
+                        {onTestInactivityAlert && (
+                            <Button
+                                variant="outlined"
+                                color="secondary"
+                                size="small"
+                                onClick={onTestInactivityAlert}
+                                sx={{ borderRadius: 2, fontWeight: 700, whiteSpace: 'nowrap' }}
+                            >
+                                🧪 Test Alert Now
+                            </Button>
+                        )}
+                    </Box>
+                    <Divider />
+                    <List>
+                        <ListItem>
+                            <ListItemText
+                                primary="Focus Inactivity Alert"
+                                secondary="Alert me if I am active on my computer without running a Pomodoro timer"
+                            />
+                            <Switch
+                                edge="end"
+                                checked={pomodoroSettings.enableInactivityAlert !== false}
+                                onChange={(e) => handleSettingChange('enableInactivityAlert', e.target.checked)}
+                            />
+                        </ListItem>
+                        {pomodoroSettings.enableInactivityAlert !== false && (
+                            <>
+                                <Divider component="li" />
+                                <ListItem>
+                                    <ListItemText
+                                        primary="Alert Threshold"
+                                        secondary="How long you must be active without Pomodoro before the alert triggers"
+                                    />
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                        {[1, 5, 10, 15, 20, 30].map((mins) => (
+                                            <Button
+                                                key={mins}
+                                                size="small"
+                                                variant={(pomodoroSettings.inactivityAlertInterval || 15) === mins ? "contained" : "outlined"}
+                                                onClick={() => handleSettingChange('inactivityAlertInterval', mins)}
+                                                sx={{ minWidth: 42, px: 1, py: 0.5, fontWeight: 700 }}
+                                            >
+                                                {mins === 1 ? '1m (debug)' : `${mins}m`}
+                                            </Button>
+                                        ))}
+                                    </Box>
+                                </ListItem>
+
+                                <Divider component="li" />
+                                {/* Live Alert Progress Status */}
+                                <ListItem sx={{ flexDirection: 'column', alignItems: 'stretch', py: 2 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+                                        <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                                            Live Alert Progress
+                                        </Typography>
+                                        <Chip
+                                            size="small"
+                                            color={isActive ? "info" : "warning"}
+                                            variant={isActive ? "outlined" : "filled"}
+                                            label={
+                                                isActive 
+                                                    ? "Pomodoro Active (Paused Tracking)" 
+                                                    : `${Math.floor(activeNoPomodoroTime / 60).toString().padStart(2, '0')}:${(activeNoPomodoroTime % 60).toString().padStart(2, '0')} / ${String(pomodoroSettings.inactivityAlertInterval || 15).padStart(2, '0')}:00`
+                                            }
+                                            sx={{ fontWeight: 700, fontFamily: 'monospace' }}
+                                        />
+                                    </Box>
+
+                                    {isActive ? (
+                                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                                            Timer is currently running. Inactivity counter will restart when timer finishes or stops.
+                                        </Typography>
+                                    ) : (
+                                        (() => {
+                                            const targetSecs = (pomodoroSettings.inactivityAlertInterval || 15) * 60;
+                                            const progress = Math.min(100, Math.round((activeNoPomodoroTime / targetSecs) * 100));
+                                            const remainingSecs = Math.max(0, targetSecs - activeNoPomodoroTime);
+                                            const remMins = Math.floor(remainingSecs / 60);
+                                            const remSecs = remainingSecs % 60;
+
+                                            return (
+                                                <Box sx={{ width: '100%' }}>
+                                                    <LinearProgress
+                                                        variant="determinate"
+                                                        value={progress}
+                                                        sx={{
+                                                            height: 8,
+                                                            borderRadius: 4,
+                                                            bgcolor: theme.palette.action.selected,
+                                                            '& .MuiLinearProgress-bar': {
+                                                                borderRadius: 4,
+                                                                background: progress > 80
+                                                                    ? 'linear-gradient(90deg, #ed6c02, #d32f2f)'
+                                                                    : 'linear-gradient(90deg, #1976d2, #ed6c02)'
+                                                            }
+                                                        }}
+                                                    />
+                                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
+                                                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                                                            {progress}% completed
+                                                        </Typography>
+                                                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+                                                            {remainingSecs === 0 
+                                                                ? 'Alert triggering now!' 
+                                                                : `${remMins}m ${remSecs}s remaining until alert`
+                                                            }
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            );
+                                        })()
+                                    )}
+                                </ListItem>
+                            </>
+                        )}
+                    </List>
+                </Paper>
+            )}
 
             {/* Sidebar Navigation Section */}
             <Paper elevation={0} sx={{ p: 0, mb: 4, borderRadius: 3, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>

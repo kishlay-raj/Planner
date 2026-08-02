@@ -48,11 +48,51 @@ export function useGitHubSync(onSyncComplete) {
             const relapseDoc = await getDoc(doc(db, 'users', uid, 'userData', 'relapseJournalData'));
             const relapseData = relapseDoc.exists() ? relapseDoc.data() : {};
 
+            const userDataSnapshot = await getDocs(collection(db, 'users', uid, 'userData'));
+            const userDataMap = {};
+            userDataSnapshot.forEach(docSnap => {
+                userDataMap[docSnap.id] = docSnap.data();
+            });
+
 
             // --- 2. Organize Data ---
             setStatus('formatting');
             setProgress('Organizing data...');
             const files = {};
+
+            // Backup Projects with Subtasks & Notes
+            const rawProjects = userDataMap['projects'];
+            const projects = Array.isArray(rawProjects?.value) ? rawProjects.value : (Array.isArray(rawProjects) ? rawProjects : []);
+            projects.forEach(p => {
+                const rawTasks = userDataMap[`project_${p.id}_tasks`];
+                const projectTasks = Array.isArray(rawTasks?.value) ? rawTasks.value : (Array.isArray(rawTasks) ? rawTasks : []);
+
+                let mdContent = `# Project: ${p.name || 'Untitled'}\n\n`;
+                if (p.description) mdContent += `> ${p.description}\n\n`;
+                mdContent += `**Priority**: ${p.priority ? 'High' : 'Normal'} | **Created**: ${p.createdAt ? p.createdAt.split('T')[0] : 'N/A'}\n\n`;
+
+                mdContent += `## Priority Tasks\n\n`;
+                if (projectTasks.length > 0) {
+                    projectTasks.forEach(t => {
+                        const check = t.completed ? '[x]' : '[ ]';
+                        mdContent += `- ${check} **[${t.priority || 'P4'}]** ${t.name}\n`;
+                        if (t.notes) {
+                            mdContent += `  - *Notes*: ${t.notes}\n`;
+                        }
+                        if (Array.isArray(t.subtasks) && t.subtasks.length > 0) {
+                            t.subtasks.forEach(st => {
+                                const stCheck = st.completed ? '[x]' : '[ ]';
+                                mdContent += `    - ${stCheck} ${st.text}\n`;
+                            });
+                        }
+                    });
+                } else {
+                    mdContent += `*No tasks logged for this project.*\n`;
+                }
+
+                const safeTitle = (p.name || `project-${p.id}`).replace(/[^a-zA-Z0-9_-]/g, '_');
+                files[`Projects/${safeTitle}.md`] = mdContent;
+            });
 
             const getMonthFolderPath = (dateObj) => {
                 const year = format(dateObj, 'yyyy');

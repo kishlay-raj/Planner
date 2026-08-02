@@ -23,11 +23,12 @@ import ScheduleIcon from '@mui/icons-material/Schedule';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import TimerIcon from '@mui/icons-material/Timer';
 import './TaskList.css';
 import TaskEditDialog from './TaskEditDialog';
 import { format } from 'date-fns';
 
-function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedDate }) {
+function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedDate, onStartPomodoro }) {
   const theme = useTheme();
   const taskList = Array.isArray(tasks) ? tasks : [];
   const [editDialog, setEditDialog] = useState({ open: false, task: null });
@@ -387,6 +388,34 @@ function TaskList({ tasks, onTaskCreate, onTaskUpdate, onTaskSchedule, selectedD
                                   '& .MuiChip-label': { px: 1 }
                                 }}
                               />
+                            )}
+                            {!task.completed && (
+                              <Tooltip title={`Start ${task.duration || 30}m Pomodoro for this task`}>
+                                <Chip
+                                  label="🍅"
+                                  size="small"
+                                  variant="outlined"
+                                  clickable
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onStartPomodoro) {
+                                      onStartPomodoro(task);
+                                    }
+                                  }}
+                                  sx={{
+                                    backgroundColor: alpha('#b74b4b', 0.12),
+                                    color: '#b74b4b',
+                                    fontWeight: 700,
+                                    borderColor: alpha('#b74b4b', 0.4),
+                                    '&:hover': {
+                                      backgroundColor: alpha('#b74b4b', 0.25),
+                                      borderColor: '#b74b4b',
+                                      transform: 'scale(1.05)',
+                                    },
+                                    transition: 'all 0.15s ease-in-out'
+                                  }}
+                                />
+                              </Tooltip>
                             )}
                           </div>
                         </div>

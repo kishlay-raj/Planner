@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse, Switch, Chip } from '@mui/material';
-import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch, WarningAmber, Visibility, VisibilityOff, Timer } from '@mui/icons-material';
+import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch, WarningAmber, Timer, FolderSpecial, Language, Check } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
 import AntiGravityHabitTracker from '../components/AntiGravityHabitTracker';
 import MistakesJournal from '../components/MistakesJournal';
 import WeeklyPlanner from '../components/WeeklyPlanner';
+import ProjectManagement from '../components/ProjectManagement';
+import ProjectDetails from '../components/ProjectDetails';
 import packageJson from '../../package.json';
 import { useAuth } from '../contexts/AuthContext';
 import { useFirestoreCollection, useFirestoreDoc } from '../hooks/useFirestoreNew';
 import { useFirestore } from '../hooks/useFirestore';
 import { useGitHubSync } from '../hooks/useGitHubSync';
 import GoogleIcon from '@mui/icons-material/Google';
-import { format, addDays, subDays, isSameDay, parseISO, startOfWeek, endOfWeek, getISOWeek, getYear, getMonth, addWeeks, subWeeks, addMonths, subMonths, eachDayOfInterval } from 'date-fns';
+import { format, addDays, subDays, isSameDay, parseISO, getISOWeek, getYear, getMonth, addMonths, subMonths } from 'date-fns';
 
 
 
@@ -63,16 +65,17 @@ function MobileDrumColumn({ value, min, max, onChange, disabled }) {
     );
 }
 
-function MobileScrollTimePicker({ timeLeft, isActive, onMinuteChange }) {
+function MobileScrollTimePicker({ timeLeft, isActive, onMinuteChange, mode = 'pomodoro' }) {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
+    const step = mode === 'shortBreak' ? 1 : 5;
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 2, mb: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
                     {!isActive && (
                         <IconButton
-                            onClick={() => onMinuteChange(Math.min(90, minutes + 5))}
+                            onClick={() => onMinuteChange(Math.min(90, minutes + step))}
                             sx={{
                                 color: 'white',
                                 bgcolor: 'rgba(255,255,255,0.12)',
@@ -89,7 +92,7 @@ function MobileScrollTimePicker({ timeLeft, isActive, onMinuteChange }) {
                     <MobileDrumColumn value={minutes} min={1} max={90} onChange={onMinuteChange} disabled={isActive} />
                     {!isActive && (
                         <IconButton
-                            onClick={() => onMinuteChange(Math.max(1, minutes - 5))}
+                            onClick={() => onMinuteChange(Math.max(1, minutes - step))}
                             sx={{
                                 color: 'white',
                                 bgcolor: 'rgba(255,255,255,0.12)',
@@ -153,14 +156,23 @@ const TAB_CONFIG = {
     gratitude: { label: 'Gratitude', icon: <Favorite /> },
     mistakes: { label: 'Mistakes', icon: <WarningAmber /> },
     notes: { label: 'Notes', icon: <EditNote /> },
+    'project-management': { label: 'Projects', icon: <FolderSpecial /> },
     pomodoro: { label: 'Pomodoro', icon: <Timer /> },
     settings: { label: 'Settings', icon: <SettingsIcon /> }
 };
 
 function MobileApp() {
     const { currentUser, loginWithGoogle, logout } = useAuth();
-    const [activeTab, setActiveTab] = useState('today');
-    const [mobileTabOrder, setMobileTabOrder, orderLoading] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'anti-gravity', 'journal', 'gratitude', 'mistakes', 'notes', 'settings']);
+    const [activeTab, setActiveTab] = useState(() => {
+        const hash = window.location.hash.replace(/^#/, '');
+        const validKeys = [
+            'today', 'schedule', 'weekly', 'monthly', 'anti-gravity', 
+            'journal', 'gratitude', 'mistakes', 'notes', 'project-management', 
+            'pomodoro', 'settings'
+        ];
+        return (validKeys.includes(hash) || hash.startsWith('project-details-')) ? hash : 'today';
+    });
+    const [mobileTabOrder, setMobileTabOrder, orderLoading] = useFirestore('mobileTabOrder', ['today', 'schedule', 'weekly', 'monthly', 'anti-gravity', 'journal', 'gratitude', 'mistakes', 'notes', 'project-management', 'settings']);
     const [moreMenuAnchor, setMoreMenuAnchor] = useState(null);
 
     // Migration: ensure existing users get new tabs (gratitude, anti-gravity)
@@ -209,11 +221,44 @@ function MobileApp() {
                 updated = true;
             }
 
+            if (!newOrder.includes('project-management')) {
+                const settingsIndex = newOrder.indexOf('settings');
+                if (settingsIndex !== -1) {
+                    newOrder.splice(settingsIndex, 0, 'project-management');
+                } else {
+                    newOrder.push('project-management');
+                }
+                updated = true;
+            }
+
             if (updated) {
                 setMobileTabOrder(newOrder);
             }
         }
     }, [mobileTabOrder, orderLoading, setMobileTabOrder]);
+
+    // --- HASH ROUTING SIDE EFFECTS ---
+    useEffect(() => {
+        if (window.location.hash !== `#${activeTab}`) {
+            window.location.hash = activeTab;
+        }
+    }, [activeTab]);
+
+    useEffect(() => {
+        const handleHashChange = () => {
+            const hash = window.location.hash.replace(/^#/, '');
+            const validKeys = [
+                'today', 'schedule', 'weekly', 'monthly', 'anti-gravity', 
+                'journal', 'gratitude', 'mistakes', 'notes', 'project-management', 
+                'pomodoro', 'settings'
+            ];
+            if (validKeys.includes(hash) || hash.startsWith('project-details-')) {
+                setActiveTab(hash);
+            }
+        };
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+    }, []);
 
     // Global State
     const [tasks, addTask, updateTask, deleteTask, tasksLoading] = useFirestoreCollection('tasks/active', 'createdAt');
@@ -332,7 +377,7 @@ function MobileApp() {
 
     // 3. Context Data (Read Only for Cascading Display)
     const [todayWeekData] = useFirestoreDoc(`planner/weekly/${todayWeekId}`, { focus: '' }); // Context for Today View
-    const [weekMonthData] = useFirestoreDoc(`planner/monthly/${weekMonthId}`, { monthlyFocus: '' }); // Context for Weekly View
+    useFirestoreDoc(`planner/monthly/${weekMonthId}`, { monthlyFocus: '' }); // Context for Weekly View
     const [monthYearData] = useFirestoreDoc(`planner/yearly/${monthYearId}`, { yearFocus: '' }); // Context for Monthly View
 
 
@@ -372,6 +417,7 @@ function MobileApp() {
 
             return changed ? unique : currentPrompts;
         });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loadingPrompts]);
     const currentJournalEntry = journalData[journalDateKey] || { responses: {}, notes: '' };
 
@@ -392,7 +438,6 @@ function MobileApp() {
     const [addQuestionDialogOpen, setAddQuestionDialogOpen] = useState(false);
     const [newQuestionCategory, setNewQuestionCategory] = useState('');
     const [newQuestionText, setNewQuestionText] = useState('');
-    const [journalManageMode, setJournalManageMode] = useState(false);
 
     const handleAddQuestion = () => {
         if (!newQuestionText.trim()) return;
@@ -425,6 +470,7 @@ function MobileApp() {
         );
     };
 
+    // eslint-disable-next-line no-unused-vars
     const handleToggleDefaultCollapse = (section) => {
         setDefaultCollapsedSections(prev =>
             prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
@@ -908,6 +954,7 @@ function MobileApp() {
             syncToGitHub(ghToken, ghOwner, ghRepo);
         };
 
+        // eslint-disable-next-line no-unused-vars
         const handleGitHubRestore = () => {
             setOpenRestoreDialog(false);
             if (!ghToken || !ghOwner || !ghRepo) {
@@ -1102,12 +1149,17 @@ function MobileApp() {
         return <AntiGravityHabitTracker />;
     };
 
-    // --- MOBILE POMODORO STATE ---
     const [mPrimaryTask, setMPrimaryTask] = useFirestore('pomodoroPrimaryTask', '');
     const [mSecondaryTask, setMSecondaryTask] = useFirestore('pomodoroSecondaryTask', '');
+    const [mPomodoroNotes, setMPomodoroNotes] = useFirestore('pomodoroNotes', '');
+    const [mPomodoroSubtasks, setMPomodoroSubtasks] = useFirestore('pomodoroSubtasks', []);
+    const [mAllowedWebsites, setMAllowedWebsites] = useFirestore('pomodoroAllowedWebsites', '');
     const [mEditingTasks, setMEditingTasks] = useState(false);
+    const [mQuickInput, setMQuickInput] = useState('');
     const [mLocalPrimary, setMLocalPrimary] = useState('');
     const [mLocalSecondary, setMLocalSecondary] = useState('');
+    const [mLocalWebsites, setMLocalWebsites] = useState('');
+    const [mLocalNotes, setMLocalNotes] = useState('');
     const [mTimeLeft, setMTimeLeft] = useState(25 * 60);
     const [mIsActive, setMIsActive] = useState(false);
     const [mMode, setMMode] = useState('pomodoro');
@@ -1155,7 +1207,9 @@ function MobileApp() {
     useEffect(() => {
         setMLocalPrimary(mPrimaryTask || '');
         setMLocalSecondary(mSecondaryTask || '');
-    }, [mPrimaryTask, mSecondaryTask]);
+        setMLocalWebsites(mAllowedWebsites || '');
+        setMLocalNotes(mPomodoroNotes || '');
+    }, [mPrimaryTask, mSecondaryTask, mAllowedWebsites, mPomodoroNotes]);
 
     const mEarlyCompleteElapsedRef = React.useRef(null);
     const mHandleCompleteEarly = () => {
@@ -1192,10 +1246,12 @@ function MobileApp() {
                     date: new Date().toDateString(),
                     primaryTask: mPrimaryTask,
                     secondaryTask: mSecondaryTask,
-                    notes: mEarlyCompleteElapsedRef.current !== null ? "Completed early" : ""
+                    notes: mEarlyCompleteElapsedRef.current !== null ? `${notePrefix}Completed early\n${mPomodoroNotes}` : mPomodoroNotes,
+                    subtasks: mPomodoroSubtasks
                 };
                 setMSessionHistory(prev => [...prev, session]);
                 mEarlyCompleteElapsedRef.current = null;
+                setMPomodoroSubtasks([]);
 
                 if ((mCycles + 1) >= mPomodoroSettings.longBreakInterval) {
                     setMMode('longBreak');
@@ -1228,6 +1284,7 @@ function MobileApp() {
             }
         }
         return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mIsActive, mTimeLeft, mMode, mCycles]);
 
     // ── Live Ongoing Notification (updates every minute while active) ──────────
@@ -1278,6 +1335,8 @@ function MobileApp() {
     const mSaveTasks = () => {
         setMPrimaryTask(mLocalPrimary);
         setMSecondaryTask(mLocalSecondary);
+        setMAllowedWebsites(mLocalWebsites);
+        setMPomodoroNotes(mLocalNotes);
         setMEditingTasks(false);
     };
 
@@ -1288,8 +1347,6 @@ function MobileApp() {
 
     const renderPomodoroView = () => {
         const bgColor = mModeColors[mMode];
-        const mins = Math.floor(mTimeLeft / 60).toString().padStart(2, '0');
-        const secs = (mTimeLeft % 60).toString().padStart(2, '0');
         return (
             <Box sx={{ pb: 10, minHeight: '100vh', bgcolor: bgColor, color: 'white', display: 'flex', flexDirection: 'column' }}>
                 {/* Header */}
@@ -1388,6 +1445,7 @@ function MobileApp() {
                         timeLeft={mTimeLeft}
                         isActive={mIsActive}
                         onMinuteChange={mHandleMinuteChange}
+                        mode={mMode}
                     />
                     {!mIsActive && mMode === 'pomodoro' && (
                         <Box sx={{ display: 'flex', gap: 1.5, mt: 1.5, mb: 0 }}>
@@ -1473,7 +1531,10 @@ function MobileApp() {
                 <Box sx={{ px: 2 }}>
                     {!mEditingTasks ? (
                         <Box
-                            onClick={() => setMEditingTasks(true)}
+                            onClick={(e) => {
+                                if (e.target.closest('.quick-input-area')) return;
+                                setMEditingTasks(true);
+                            }}
                             sx={{
                                 border: '1px dashed rgba(255,255,255,0.35)',
                                 borderRadius: 3,
@@ -1483,20 +1544,106 @@ function MobileApp() {
                                 transition: 'background 0.2s'
                             }}
                         >
-                            {mPrimaryTask ? (
+                            {mPrimaryTask || mAllowedWebsites ? (
                                 <>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: mSecondaryTask ? 1.5 : 0 }}>
-                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'white', flexShrink: 0 }} />
-                                        <Box>
-                                            <Typography sx={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase' }}>Primary Focus</Typography>
-                                            <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>{mPrimaryTask}</Typography>
+                                    {mPrimaryTask && (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: mAllowedWebsites ? 1.5 : 0 }}>
+                                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'white', flexShrink: 0 }} />
+                                            <Box>
+                                                <Typography sx={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase' }}>Primary Focus</Typography>
+                                                <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>{mPrimaryTask}</Typography>
+                                            </Box>
                                         </Box>
-                                    </Box>
-                                    {/* Secondary Task (Gap Filler) removed for Deep Work */}
+                                    )}
+                                    {mAllowedWebsites && (
+                                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, pt: 1.5, borderTop: mPrimaryTask ? '1px solid rgba(255,255,255,0.15)' : 'none' }}>
+                                            <Language sx={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.9)', mt: 0.25 }} />
+                                            <Box sx={{ width: '100%' }}>
+                                                <Typography sx={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase' }}>Allowed Websites</Typography>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.75 }}>
+                                                    {mAllowedWebsites.split(/[\s,]+/).filter(Boolean).map((site, idx) => (
+                                                        <Chip
+                                                            key={idx}
+                                                            label={site}
+                                                            size="small"
+                                                            sx={{
+                                                                height: 20,
+                                                                fontSize: '0.75rem',
+                                                                fontWeight: 600,
+                                                                bgcolor: 'rgba(255,255,255,0.2)',
+                                                                color: 'white',
+                                                                border: '1px solid rgba(255,255,255,0.35)',
+                                                                '& .MuiChip-label': { px: 1 }
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    )}
+                                    {mPomodoroSubtasks && mPomodoroSubtasks.length > 0 && (
+                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pl: 0.5, borderTop: '1px solid rgba(255,255,255,0.15)', pt: 1.5, mt: 1.5 }}>
+                                            <Typography sx={{ fontSize: '0.65rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase', lineHeight: 1, mb: 0.5 }}>Session Subtasks</Typography>
+                                            {mPomodoroSubtasks.map(st => (
+                                                <Box key={st.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Box 
+                                                        className="quick-input-area"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setMPomodoroSubtasks(mPomodoroSubtasks.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s));
+                                                        }}
+                                                        sx={{ width: 16, height: 16, border: '1px solid rgba(255,255,255,0.7)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', bgcolor: st.completed ? 'rgba(255,255,255,0.3)' : 'transparent' }}
+                                                    >
+                                                        {st.completed && <Check sx={{ fontSize: '14px', color: 'white' }} />}
+                                                    </Box>
+                                                    <Typography sx={{ fontSize: '1rem', opacity: st.completed ? 0.5 : 0.9, textDecoration: st.completed ? 'line-through' : 'none' }}>{st.text}</Typography>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    )}
+                                    {mPomodoroNotes && (
+                                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, pl: 0.5, opacity: 0.7, borderTop: '1px solid rgba(255,255,255,0.15)', pt: 1.5, mt: 1.5 }}>
+                                            <Box sx={{
+                                                width: 8, height: 8, borderRadius: '50%',
+                                                border: '1px dashed rgba(255,255,255,0.7)', flexShrink: 0, mt: 0.5
+                                            }} />
+                                            <Box>
+                                                <Typography sx={{ fontSize: '0.65rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase', lineHeight: 1 }}>Session Notes</Typography>
+                                                <Typography sx={{ fontWeight: 400, fontSize: '0.9rem', lineHeight: 1.4, fontStyle: 'italic', mt: 0.5, whiteSpace: 'pre-wrap' }}>{mPomodoroNotes}</Typography>
+                                            </Box>
+                                        </Box>
+                                    )}
+                                    {mIsActive && (
+                                        <Box className="quick-input-area" sx={{ mt: 2, pt: 1.5, borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+                                            <TextField
+                                                fullWidth
+                                                variant="standard"
+                                                placeholder="Add note or start with '-' for subtask..."
+                                                value={mQuickInput}
+                                                onChange={(e) => setMQuickInput(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && mQuickInput.trim()) {
+                                                        e.preventDefault();
+                                                        const val = mQuickInput.trim();
+                                                        if (val.startsWith('-')) {
+                                                            setMPomodoroSubtasks([...mPomodoroSubtasks, { id: Date.now().toString(), text: val.substring(1).trim(), completed: false }]);
+                                                        } else {
+                                                            setMPomodoroNotes(prev => prev ? prev + '\n' + val : val);
+                                                        }
+                                                        setMQuickInput('');
+                                                    }
+                                                }}
+                                                InputProps={{
+                                                    disableUnderline: true,
+                                                    style: { color: 'white', fontSize: '0.95rem', padding: '6px 10px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '6px' }
+                                                }}
+                                            />
+                                        </Box>
+                                    )}
                                 </>
                             ) : (
                                 <Typography sx={{ opacity: 0.5, textAlign: 'center', fontSize: '0.95rem' }}>
-                                    + Set focus tasks for this session
+                                    + Set focus tasks, websites, and notes for this session
                                 </Typography>
                             )}
                         </Box>
@@ -1512,7 +1659,16 @@ function MobileApp() {
                                 sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white', fontSize: '1rem', fontWeight: 600 }, '& input::placeholder': { color: 'rgba(255,255,255,0.35)' } }}
                                 InputProps={{ disableUnderline: false }}
                             />
-                            {/* Secondary Task (Gap Filler) removed for Deep Work */}
+                            <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.7, letterSpacing: 1, textTransform: 'uppercase', mb: 0.5 }}>Allowed Websites</Typography>
+                            <TextField
+                                fullWidth
+                                variant="standard"
+                                placeholder="e.g. github.com, google.com"
+                                value={mLocalWebsites}
+                                onChange={e => setMLocalWebsites(e.target.value)}
+                                sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white', fontSize: '0.95rem' }, '& input::placeholder': { color: 'rgba(255,255,255,0.35)' } }}
+                                InputProps={{ disableUnderline: false }}
+                            />
                             <Box sx={{ display: 'flex', gap: 1 }}>
                                 <Button
                                     variant="contained"
@@ -1549,6 +1705,11 @@ function MobileApp() {
         if (tasksLoading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
 
 
+        if (activeTab.startsWith('project-details-')) {
+            const pId = activeTab.replace('project-details-', '');
+            return <ProjectDetails projectId={pId} onBack={() => setActiveTab('project-management')} />;
+        }
+
         switch (activeTab) {
             case 'today': return renderTodayView();
             case 'schedule': return renderScheduleView();
@@ -1559,6 +1720,7 @@ function MobileApp() {
             case 'gratitude': return renderGratitudeView();
             case 'mistakes': return <MistakesJournal />;
             case 'notes': return renderNotesView();
+            case 'project-management': return <ProjectManagement onProjectClick={(id) => setActiveTab(`project-details-${id}`)} />;
             case 'pomodoro': return renderPomodoroView();
             case 'settings': return renderSettingsView();
             default: return renderTodayView();

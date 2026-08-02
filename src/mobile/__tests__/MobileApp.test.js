@@ -34,6 +34,7 @@ describe('MobileApp Component', () => {
     const mockSetYearData = jest.fn(); // Though we don't spy on context setters usually
 
     beforeEach(() => {
+        window.location.hash = '';
         // Auth Mock
         useAuth.mockReturnValue({
             currentUser: mockUser,
@@ -79,23 +80,37 @@ describe('MobileApp Component', () => {
             return [{}, jest.fn()];
         });
 
+        const mockJournalPrompts = [{ id: 'p1', section: 'Morning', text: 'Morning Prompt?' }];
+        const mockDailyJournalData = {
+            '2026-01-10': { responses: { 'p1': 'My Answer' }, notes: 'Daily Note' }
+        };
+        const mockMobileTabOrder = ['today', 'weekly', 'journal', 'monthly', 'project-management', 'gratitude', 'notes', 'schedule', 'settings'];
+        const mockGithubSettings = { token: '', owner: '', repo: '' };
+        const mockDefaultEmptyArray = [];
+        const mockDefaultEmptyObject = {};
+
         // Journal Mock (useFirestore - legacy)
         useFirestore.mockImplementation((key, defaultValue) => {
             if (key === 'journalPrompts') {
-                return [[{ id: 'p1', section: 'Morning', text: 'Morning Prompt?' }], jest.fn(), false];
+                return [mockJournalPrompts, jest.fn(), false];
             }
             if (key === 'dailyJournalData') {
-                return [{
-                    '2026-01-10': { responses: { 'p1': 'My Answer' }, notes: 'Daily Note' }
-                }, mockSetJournalData, false];
+                return [mockDailyJournalData, mockSetJournalData, false];
             }
-            // Put Journal and Weekly in visible tab slots so tests can click them directly
             if (key === 'mobileTabOrder') {
-                return [['today', 'weekly', 'journal', 'monthly', 'gratitude', 'notes', 'schedule', 'settings'], jest.fn(), false];
+                return [mockMobileTabOrder, jest.fn(), false];
             }
-            // Return the hook's default value for all other keys
-            // (darkMode → false, githubSettings → {...}, gratitudeJournalData → {}, etc.)
-            return [defaultValue !== undefined ? defaultValue : {}, jest.fn(), false];
+            if (key === 'githubSettings') {
+                return [mockGithubSettings, jest.fn(), false];
+            }
+            // Return the hook's default value for all other keys with stable fallback
+            if (defaultValue !== undefined) {
+                if (Array.isArray(defaultValue) && defaultValue.length === 0) {
+                    return [mockDefaultEmptyArray, jest.fn(), false];
+                }
+                return [defaultValue, jest.fn(), false];
+            }
+            return [mockDefaultEmptyObject, jest.fn(), false];
         });
     });
 
@@ -141,12 +156,12 @@ describe('MobileApp Component', () => {
         render(<MobileApp />);
         fireEvent.click(screen.getByText('Weekly'));
 
-        expect(screen.getByText(/^Week \d+$/)).toBeInTheDocument(); // Header
-        const monthlyFocusHeaders = screen.getAllByText('Monthly Focus');
+        expect(screen.getByText(/Week of/i)).toBeInTheDocument(); // Header
+        const monthlyFocusHeaders = screen.getAllByText(/Monthly Focus/i);
         expect(monthlyFocusHeaders.length).toBeGreaterThan(0);
         const monthlyFocusValues = screen.getAllByText('Test Monthly Focus');
         expect(monthlyFocusValues.length).toBeGreaterThan(0); // Context Value
-        expect(screen.getByPlaceholderText('Habit to build...')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/BEHAVIOR/i)).toBeInTheDocument();
         expect(screen.getByDisplayValue('Test Habit')).toBeInTheDocument();
     });
 
@@ -174,5 +189,14 @@ describe('MobileApp Component', () => {
         const logoutBtn = screen.getByLabelText('Logout');
         fireEvent.click(logoutBtn);
         expect(mockLogout).toHaveBeenCalled();
+    });
+
+    test('navigates to Project Management view', () => {
+        render(<MobileApp />);
+        fireEvent.click(screen.getByText('More'));
+        fireEvent.click(screen.getByText('Projects'));
+
+        expect(screen.getByText(/Priority Projects/)).toBeInTheDocument();
+        expect(screen.getByText(/Normal/)).toBeInTheDocument();
     });
 });

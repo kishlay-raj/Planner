@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ThemeProvider, createTheme, CssBaseline, Box, Typography, IconButton, Tooltip, Popover, Link } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Box, Typography, IconButton, Tooltip, Popover, Link, Snackbar, Alert, Button } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import CloseIcon from '@mui/icons-material/Close';
 import PlannerScreen from './components/PlannerScreen';
 import NotesPanel from './components/NotesPanel';
 import PomodoroPanel from './components/PomodoroPanel';
@@ -44,6 +46,8 @@ const defaultSettings = {
   tickingVolume: 50,
   darkMode: false,
   hourFormat: '24-hour',
+  enableInactivityAlert: true,
+  inactivityAlertInterval: 15,
 };
 
 function DesktopApp() {
@@ -230,7 +234,26 @@ function DesktopApp() {
   const [primaryTask, setPrimaryTask] = useFirestore('pomodoroPrimaryTask', '');
   const [secondaryTask, setSecondaryTask] = useFirestore('pomodoroSecondaryTask', '');
   const [pomodoroNotes, setPomodoroNotes] = useFirestore('pomodoroNotes', '');
+  const [pomodoroSubtasks, setPomodoroSubtasks] = useFirestore('pomodoroSubtasks', []);
+  const [allowedWebsites, setAllowedWebsites] = useFirestore('pomodoroAllowedWebsites', '');
   const earlyCompleteElapsedRef = useRef(null);
+
+  // --- SYSTEM ACTIVITY & INACTIVITY ALERT STATE ---
+  const [activeNoPomodoroTime, setActiveNoPomodoroTime] = useState(0);
+  const [inactivityAlertOpen, setInactivityAlertOpen] = useState(false);
+  const lastActivityRef = useRef(Date.now());
+
+  // Listen to system / user interaction events to track active user status
+  useEffect(() => {
+    const handleUserActivity = () => {
+      lastActivityRef.current = Date.now();
+    };
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll', 'focus', 'visibilitychange'];
+    events.forEach(event => window.addEventListener(event, handleUserActivity, { passive: true }));
+    return () => {
+      events.forEach(event => window.removeEventListener(event, handleUserActivity));
+    };
+  }, []);
 
   // --- PIP WIDGET STATE ---
   const [pipWindow, setPipWindow] = useState(null);
@@ -241,11 +264,11 @@ function DesktopApp() {
     if ('documentPictureInPicture' in window) {
       try {
         const pip = await window.documentPictureInPicture.requestWindow({
-          width: 320,
-          height: 180,
+          width: 330,
+          height: 270,
         });
         const style = pip.document.createElement('style');
-        style.textContent = '* { margin:0; padding:0; box-sizing:border-box; } body { overflow:hidden; }';
+        style.textContent = '* { margin:0; padding:0; box-sizing:border-box; } body { overflow-y:auto; overflow-x:hidden; }';
         pip.document.head.appendChild(style);
         pip.addEventListener('pagehide', () => {
           setPipWindow(null);
@@ -264,14 +287,14 @@ function DesktopApp() {
       const popup = window.open(
         '',
         'PomodoroWidget',
-        'width=320,height=180,resizable=no,scrollbars=no,status=no,menubar=no,toolbar=no'
+        'width=330,height=270,resizable=yes,scrollbars=yes,status=no,menubar=no,toolbar=no'
       );
       if (!popup) {
         alert('Popup blocker blocked the widget! Please allow popups for this site.');
         return;
       }
       const style = popup.document.createElement('style');
-      style.textContent = '* { margin:0; padding:0; box-sizing:border-box; } body { overflow:hidden; }';
+      style.textContent = '* { margin:0; padding:0; box-sizing:border-box; } body { overflow-y:auto; overflow-x:hidden; }';
       popup.document.head.appendChild(style);
       popup.addEventListener('pagehide', () => {
         setPipWindow(null);
@@ -326,13 +349,16 @@ function DesktopApp() {
   const playBeep = () => {
     if (!audioContext) return;
     try {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       oscillator.type = 'sine';
       oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      gainNode.gain.setValueAtTime(settings.alarmVolume / 100, audioContext.currentTime);
+      gainNode.gain.setValueAtTime((settings.alarmVolume || 50) / 100, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.5);
@@ -353,6 +379,101 @@ function DesktopApp() {
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.1);
     } catch (e) { console.warn(e); }
+  };
+
+  // --- NATIVE DESKTOP / MACOS NOTIFICATION HELPER ---
+  const fireDesktopNotification = (title, body, tag = 'inactivity-focus-alert', persistent = true) => {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
+    const notifOptions = {
+      body,
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
+      tag,
+      renotify: true,
+      requireInteraction: persistent, // Keeps macOS banner visible until user clicks/dismisses
+      silent: false
+    };
+
+    // Always prefer SW showNotification — required for native macOS system notification banners
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready
+        .then(reg => {
+          reg.showNotification(title, notifOptions);
+        })
+        .catch(() => {
+          try { new Notification(title, notifOptions); } catch (e) { console.warn(e); }
+        });
+    } else {
+      try { new Notification(title, notifOptions); } catch (e) { console.warn(e); }
+    }
+  };
+
+  // --- INACTIVITY ALERT LOGIC ---
+  useEffect(() => {
+    if (isActive || settings.enableInactivityAlert === false) {
+      if (activeNoPomodoroTime !== 0) setActiveNoPomodoroTime(0);
+      if (inactivityAlertOpen) setInactivityAlertOpen(false);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const isUserActive = (Date.now() - lastActivityRef.current) < 2 * 60 * 1000;
+      if (isUserActive) {
+        setActiveNoPomodoroTime(prev => {
+          const nextTime = prev + 1;
+          const targetSeconds = (settings.inactivityAlertInterval || 15) * 60;
+          if (nextTime >= targetSeconds && !inactivityAlertOpen) {
+            setInactivityAlertOpen(true);
+
+            fireDesktopNotification(
+              '🍅 Intentional Focus Alert',
+              `You've been active for ${settings.inactivityAlertInterval || 15} minutes without a Pomodoro timer. Time to focus!`,
+              'inactivity-focus-alert',
+              true
+            );
+
+            if (settings.alarmVolume > 0) {
+              playBeep();
+            }
+          }
+          return nextTime;
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isActive, settings.enableInactivityAlert, settings.inactivityAlertInterval, settings.alarmVolume, inactivityAlertOpen]);
+
+  const handleTestInactivityAlert = () => {
+    setInactivityAlertOpen(true);
+    fireDesktopNotification(
+      '🍅 Intentional Focus Alert (Test)',
+      `This is a test inactivity alert. Time to focus!`,
+      'inactivity-focus-alert',
+      true
+    );
+    if (settings.alarmVolume > 0) {
+      playBeep();
+    }
+  };
+
+  const handleStartPomodoroFromAlert = () => {
+    setInactivityAlertOpen(false);
+    setActiveNoPomodoroTime(0);
+    setMode('pomodoro');
+    setTimeLeft((settings.pomodoro || 30) * 60);
+    setIsActive(true);
+  };
+
+  const handleSnoozeInactivityAlert = () => {
+    setInactivityAlertOpen(false);
+    setActiveNoPomodoroTime(0);
+  };
+
+  const handleDismissInactivityAlert = () => {
+    setInactivityAlertOpen(false);
+    setActiveNoPomodoroTime(0);
   };
 
   const cleanupTick = () => {
@@ -382,23 +503,13 @@ function DesktopApp() {
       }
 
       // --- DESKTOP NOTIFICATION ---
-      if ('Notification' in window && Notification.permission === 'granted') {
-        const isPomodoro = mode === 'pomodoro';
-        const title = isPomodoro ? '🍅 Focus session complete!' : '☕ Break time over!';
-        const body = isPomodoro
-          ? 'Great work! Time for a break.'
-          : 'Break is done. Ready to focus again?';
-        try {
-          new Notification(title, {
-            body,
-            icon: '/favicon.ico',
-            tag: 'pomodoro-complete',  // Replace previous if still showing
-            requireInteraction: false,
-          });
-        } catch (e) {
-          console.warn('Desktop notification failed:', e);
-        }
-      }
+      const isPomodoro = mode === 'pomodoro';
+      const title = isPomodoro ? '🍅 Focus session complete!' : '☕ Break time over!';
+      const body = isPomodoro
+        ? 'Great work! Time for a break.'
+        : 'Break is done. Ready to focus again?';
+      
+      fireDesktopNotification(title, body, 'pomodoro-complete', false);
 
       // Update stats and cycles
       setCycles(c => c + 1);
@@ -419,10 +530,15 @@ function DesktopApp() {
           date: new Date().toDateString(),
           primaryTask: primaryTask,
           secondaryTask: secondaryTask,
-          notes: pomodoroNotes ? notePrefix + pomodoroNotes : (earlyCompleteElapsedRef.current !== null ? "Completed early" : "")
+          allowedWebsites: allowedWebsites,
+          notes: pomodoroNotes ? notePrefix + pomodoroNotes : (earlyCompleteElapsedRef.current !== null ? "Completed early" : ""),
+          subtasks: pomodoroSubtasks
         };
         setSessionHistory(prev => [...prev, session]);
         earlyCompleteElapsedRef.current = null;
+        
+        // Clean up session-specific data
+        setPomodoroSubtasks([]);
       }
 
       // Auto-switch logic
@@ -563,6 +679,15 @@ function DesktopApp() {
   // };
 
 
+  const handleStartPomodoroForTask = (task) => {
+    const taskName = typeof task === 'string' ? task : task?.name || '';
+    const taskDuration = (typeof task === 'object' && task?.duration) ? Number(task.duration) : (settings.pomodoro || 30);
+    setPrimaryTask(taskName);
+    setMode('pomodoro');
+    setTimeLeft(taskDuration * 60);
+    setIsActive(true);
+  };
+
   const renderPanel = () => {
     if (activePanel.startsWith('project-details-')) {
       const pId = activePanel.replace('project-details-', '');
@@ -571,7 +696,7 @@ function DesktopApp() {
 
     switch (activePanel) {
       case 'planner':
-        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} sessionHistory={sessionHistory} />;
+        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} sessionHistory={sessionHistory} onStartPomodoro={handleStartPomodoroForTask} />;
       case 'planner-week':
         return <WeeklyPlanner />;
       case 'planner-month':
@@ -613,6 +738,10 @@ function DesktopApp() {
           setSecondaryTask={setSecondaryTask}
           pomodoroNotes={pomodoroNotes}
           setPomodoroNotes={setPomodoroNotes}
+          pomodoroSubtasks={pomodoroSubtasks}
+          setPomodoroSubtasks={setPomodoroSubtasks}
+          allowedWebsites={allowedWebsites}
+          setAllowedWebsites={setAllowedWebsites}
         />;
       case 'eisenhower':
         return <EisenhowerMatrix />;
@@ -621,15 +750,20 @@ function DesktopApp() {
       case 'mistakes':
         return <MistakesJournal />;
       case 'settings':
-        // Pass darkMode and toggle handler to Settings
+        // Pass darkMode, toggle handler, and pomodoroSettings to Settings
         return <Settings
           navConfig={navConfig}
           onUpdate={handleNavUpdate}
           darkMode={darkMode}
           onToggleDarkMode={toggleDarkMode}
+          pomodoroSettings={settings}
+          handleSettingChange={handleSettingChange}
+          activeNoPomodoroTime={activeNoPomodoroTime}
+          onTestInactivityAlert={handleTestInactivityAlert}
+          isActive={isActive}
         />;
       default:
-        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} sessionHistory={sessionHistory} />;
+        return <PlannerScreen tasks={tasks} onTaskCreate={handleTaskCreate} sessionHistory={sessionHistory} onStartPomodoro={handleStartPomodoroForTask} />;
     }
   };
 
@@ -666,11 +800,17 @@ function DesktopApp() {
             onWorkTypeToggle={toggleWorkType}
             primaryTask={primaryTask}
             secondaryTask={secondaryTask}
+            allowedWebsites={allowedWebsites}
             onOpenWidget={handleOpenWidget}
             widgetOpen={!!pipWindow}
             onSkip={completeTimer}
             onUpdatePrimaryTask={setPrimaryTask}
             onUpdateSecondaryTask={setSecondaryTask}
+            alarmVolume={settings.alarmVolume}
+            onVolumeChange={(val) => {
+              handleSettingChange('alarmVolume', val);
+              handleSettingChange('tickingVolume', val);
+            }}
           />
 
           {/* PiP Widget Portal — renders into the always-on-top mini window */}
@@ -682,13 +822,76 @@ function DesktopApp() {
               workType={workType}
               primaryTask={primaryTask}
               secondaryTask={secondaryTask}
+              allowedWebsites={allowedWebsites}
+              pomodoroNotes={pomodoroNotes}
+              pomodoroSubtasks={pomodoroSubtasks}
               onToggle={toggleTimer}
               onSkip={completeTimer}
               onUpdatePrimaryTask={setPrimaryTask}
               onUpdateSecondaryTask={setSecondaryTask}
+              onUpdateNotes={setPomodoroNotes}
+              onUpdateSubtasks={setPomodoroSubtasks}
             />,
             pipWindow.document.body
           )}
+
+          {/* Inactivity Alert Snackbar */}
+          <Snackbar
+            open={inactivityAlertOpen}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            sx={{ mb: 4 }}
+          >
+            <Alert
+              severity="warning"
+              variant="filled"
+              icon={<NotificationsActiveIcon sx={{ color: 'white' }} />}
+              action={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    variant="outlined"
+                    onClick={handleStartPomodoroFromAlert}
+                    sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.7)', fontWeight: 'bold' }}
+                  >
+                    🍅 Start Focus ({settings.pomodoro || 30}m)
+                  </Button>
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={handleSnoozeInactivityAlert}
+                    sx={{ color: 'white', opacity: 0.9 }}
+                  >
+                    Snooze ({settings.inactivityAlertInterval || 15}m)
+                  </Button>
+                  <IconButton
+                    size="small"
+                    aria-label="close"
+                    color="inherit"
+                    onClick={handleDismissInactivityAlert}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              }
+              sx={{
+                width: '100%',
+                maxWidth: 680,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #d32f2f 0%, #ed6c02 100%)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+                color: 'white',
+                alignItems: 'center'
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                Intentional Focus Reminder
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                You've been active on your system for {settings.inactivityAlertInterval || 15}+ minutes without a Pomodoro timer running.
+              </Typography>
+            </Alert>
+          </Snackbar>
 
           <Box sx={{
             py: 1.5,

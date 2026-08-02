@@ -33,7 +33,8 @@ import {
   WorkOutline,
   TrendingUp,
   AccessTime,
-  OpenInNew
+  OpenInNew,
+  Check
 } from '@mui/icons-material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useFirestore } from '../hooks/useFirestore';
@@ -172,6 +173,10 @@ function PomodoroPanel({
   setSecondaryTask = () => {},
   pomodoroNotes = '',
   setPomodoroNotes = () => {},
+  pomodoroSubtasks = [],
+  setPomodoroSubtasks = () => {},
+  allowedWebsites = '',
+  setAllowedWebsites = () => {},
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [analyticsView, setAnalyticsView] = useState(0); // 0: Daily, 1: Weekly, 2: Monthly
@@ -179,12 +184,16 @@ function PomodoroPanel({
   const [localPrimary, setLocalPrimary] = useState('');
   const [localSecondary, setLocalSecondary] = useState('');
   const [localNotes, setLocalNotes] = useState('');
+  const [localWebsites, setLocalWebsites] = useState('');
+  const [quickInput, setQuickInput] = useState('');
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   React.useEffect(() => {
     setLocalPrimary(primaryTask || '');
     setLocalSecondary(secondaryTask || '');
     setLocalNotes(pomodoroNotes || '');
-  }, [primaryTask, secondaryTask, pomodoroNotes]);
+    setLocalWebsites(allowedWebsites || '');
+  }, [primaryTask, secondaryTask, pomodoroNotes, allowedWebsites]);
 
   const handleSaveTasks = () => {
     setPrimaryTask(localPrimary);
@@ -621,7 +630,11 @@ function PomodoroPanel({
         <Box sx={{ mt: 4, width: '100%', maxWidth: 480 }}>
           {!editingTasks ? (
             <Box
-              onClick={() => setEditingTasks(true)}
+              onClick={(e) => {
+                // Prevent editing mode if they are clicking the quick input area
+                if (e.target.closest('.quick-input-area')) return;
+                setEditingTasks(true);
+              }}
               sx={{
                 cursor: 'pointer',
                 border: '1px dashed rgba(255,255,255,0.3)',
@@ -655,6 +668,26 @@ function PomodoroPanel({
                       </Box>
                     </Box>
                   )}
+                  {pomodoroSubtasks && pomodoroSubtasks.length > 0 && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pl: 0.5, borderTop: '1px solid rgba(255,255,255,0.15)', pt: 1.5, mt: 1.5 }}>
+                      <Typography sx={{ fontSize: '0.65rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase', lineHeight: 1, mb: 0.5 }}>Session Subtasks</Typography>
+                      {pomodoroSubtasks.map(st => (
+                        <Box key={st.id} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box 
+                            className="quick-input-area"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPomodoroSubtasks(pomodoroSubtasks.map(s => s.id === st.id ? { ...s, completed: !s.completed } : s));
+                            }}
+                            sx={{ width: 14, height: 14, border: '1px solid rgba(255,255,255,0.7)', borderRadius: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', bgcolor: st.completed ? 'rgba(255,255,255,0.3)' : 'transparent' }}
+                          >
+                            {st.completed && <Check sx={{ fontSize: '12px', color: 'white' }} />}
+                          </Box>
+                          <Typography sx={{ fontSize: '0.9rem', opacity: st.completed ? 0.5 : 0.9, textDecoration: st.completed ? 'line-through' : 'none' }}>{st.text}</Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
                   {pomodoroNotes && (
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, pl: 0.5, opacity: 0.7, borderTop: '1px solid rgba(255,255,255,0.15)', pt: 1.5, mt: 1.5 }}>
                       <Box sx={{
@@ -662,9 +695,36 @@ function PomodoroPanel({
                         border: '1px dashed rgba(255,255,255,0.7)', flexShrink: 0, mt: 0.5
                       }} />
                       <Box>
-                        <Typography sx={{ fontSize: '0.6rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase', lineHeight: 1 }}>Session Notes</Typography>
-                        <Typography sx={{ fontWeight: 400, fontSize: '0.85rem', lineHeight: 1.4, fontStyle: 'italic', mt: 0.5 }}>{pomodoroNotes}</Typography>
+                        <Typography sx={{ fontSize: '0.65rem', opacity: 0.6, letterSpacing: 1, textTransform: 'uppercase', lineHeight: 1 }}>Session Notes</Typography>
+                        <Typography sx={{ fontWeight: 400, fontSize: '0.85rem', lineHeight: 1.4, fontStyle: 'italic', mt: 0.5, whiteSpace: 'pre-wrap' }}>{pomodoroNotes}</Typography>
                       </Box>
+                    </Box>
+                  )}
+                  {isActive && (
+                    <Box className="quick-input-area" sx={{ mt: 2, pt: 1.5, borderTop: '1px solid rgba(255,255,255,0.15)' }}>
+                      <TextField
+                        fullWidth
+                        variant="standard"
+                        placeholder="Add note or start with '-' for subtask..."
+                        value={quickInput}
+                        onChange={(e) => setQuickInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && quickInput.trim()) {
+                            e.preventDefault();
+                            const val = quickInput.trim();
+                            if (val.startsWith('-')) {
+                              setPomodoroSubtasks([...pomodoroSubtasks, { id: Date.now().toString(), text: val.substring(1).trim(), completed: false }]);
+                            } else {
+                              setPomodoroNotes(prev => prev ? prev + '\n' + val : val);
+                            }
+                            setQuickInput('');
+                          }
+                        }}
+                        InputProps={{
+                          disableUnderline: true,
+                          style: { color: 'white', fontSize: '0.85rem', padding: '4px 8px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '4px' }
+                        }}
+                      />
                     </Box>
                   )}
                 </>
@@ -894,60 +954,97 @@ function PomodoroPanel({
         mt: 4
       }}>
         <Container maxWidth="lg">
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 1 }}>
-            <AccessTime sx={{ color: 'white', opacity: 0.9 }} />
-            <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-              Session History
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <AccessTime sx={{ color: 'white', opacity: 0.9 }} />
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                Session History
+              </Typography>
+            </Box>
+            {sessionHistory.length > 3 && (
+              <Chip
+                label={`${sessionHistory.length} Total Sessions`}
+                size="small"
+                sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: 'white', fontWeight: 600 }}
+              />
+            )}
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {sessionHistory.slice().reverse().map(session => (
-              <Paper key={session.id} sx={{
-                p: 3, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: 'white', borderRadius: 2
-              }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                  <Typography variant="subtitle2" sx={{ opacity: 0.7, fontWeight: 600, letterSpacing: 0.5 }}>
-                    {new Date(session.timestamp).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                  </Typography>
-                  <Chip
-                    size="small"
-                    icon={session.workType === 'deep' ? <Psychology sx={{ fontSize: '1rem' }} /> : <WorkOutline sx={{ fontSize: '1rem' }} />}
-                    label={`${session.duration}m ${session.workType === 'deep' ? 'Deep Work' : 'Shallow Work'}`}
-                    sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', height: 24, '& .MuiChip-icon': { color: 'white' } }}
-                  />
-                </Box>
-                {session.primaryTask && (
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#4ade80', mt: 0.8, flexShrink: 0 }} />
-                    <Box>
-                      <Typography sx={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 }}>Primary</Typography>
-                      <Typography sx={{ fontWeight: 500 }}>{session.primaryTask}</Typography>
-                    </Box>
+            {sessionHistory
+              .slice()
+              .reverse()
+              .slice(0, showAllHistory ? sessionHistory.length : 3)
+              .map(session => (
+                <Paper key={session.id} sx={{
+                  p: 3, bgcolor: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', color: 'white', borderRadius: 2
+                }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                    <Typography variant="subtitle2" sx={{ opacity: 0.7, fontWeight: 600, letterSpacing: 0.5 }}>
+                      {new Date(session.timestamp).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      icon={session.workType === 'deep' ? <Psychology sx={{ fontSize: '1rem' }} /> : <WorkOutline sx={{ fontSize: '1rem' }} />}
+                      label={`${session.duration}m ${session.workType === 'deep' ? 'Deep Work' : 'Shallow Work'}`}
+                      sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', height: 24, '& .MuiChip-icon': { color: 'white' } }}
+                    />
                   </Box>
-                )}
-                {session.secondaryTask && (
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #60a5fa', mt: 0.8, flexShrink: 0 }} />
-                    <Box>
-                      <Typography sx={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 }}>Secondary</Typography>
-                      <Typography sx={{ fontWeight: 400, opacity: 0.9 }}>{session.secondaryTask}</Typography>
+                  {session.primaryTask && (
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#4ade80', mt: 0.8, flexShrink: 0 }} />
+                      <Box>
+                        <Typography sx={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 }}>Primary</Typography>
+                        <Typography sx={{ fontWeight: 500 }}>{session.primaryTask}</Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                )}
-                {session.notes && (
-                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 1.5, pt: 1.5, borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '1px dashed rgba(255,255,255,0.6)', mt: 0.8, flexShrink: 0 }} />
-                    <Box>
-                      <Typography sx={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 }}>Notes</Typography>
-                      <Typography sx={{ fontStyle: 'italic', opacity: 0.8, fontSize: '0.9rem' }}>{session.notes}</Typography>
+                  )}
+                  {session.secondaryTask && (
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 1 }}>
+                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #60a5fa', mt: 0.8, flexShrink: 0 }} />
+                      <Box>
+                        <Typography sx={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 }}>Secondary</Typography>
+                        <Typography sx={{ fontWeight: 400, opacity: 0.9 }}>{session.secondaryTask}</Typography>
+                      </Box>
                     </Box>
-                  </Box>
-                )}
-              </Paper>
-            ))}
+                  )}
+                  {session.notes && (
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mt: 1.5, pt: 1.5, borderTop: '1px dashed rgba(255,255,255,0.15)' }}>
+                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '1px dashed rgba(255,255,255,0.6)', mt: 0.8, flexShrink: 0 }} />
+                      <Box>
+                        <Typography sx={{ fontSize: '0.7rem', opacity: 0.6, textTransform: 'uppercase', letterSpacing: 1 }}>Notes</Typography>
+                        <Typography sx={{ fontStyle: 'italic', opacity: 0.8, fontSize: '0.9rem' }}>{session.notes}</Typography>
+                      </Box>
+                    </Box>
+                  )}
+                </Paper>
+              ))}
             {sessionHistory.length === 0 && (
               <Box sx={{ p: 4, textAlign: 'center', bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
                 <Typography sx={{ opacity: 0.6 }}>No completed sessions yet.</Typography>
+              </Box>
+            )}
+            {sessionHistory.length > 3 && (
+              <Box sx={{ textAlign: 'center', mt: 1 }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowAllHistory(prev => !prev)}
+                  sx={{
+                    color: 'white',
+                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    px: 3,
+                    py: 1,
+                    textTransform: 'none',
+                    bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    '&:hover': {
+                      borderColor: 'white',
+                      bgcolor: 'rgba(255, 255, 255, 0.15)'
+                    }
+                  }}
+                >
+                  {showAllHistory ? 'Show Less' : `Show More (${sessionHistory.length - 3} previous sessions)`}
+                </Button>
               </Box>
             )}
           </Box>

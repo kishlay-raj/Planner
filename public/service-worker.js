@@ -1,8 +1,8 @@
 /* eslint-disable no-restricted-globals */
 
 // Service Worker for Flow Planner PWA
-// Version: dynamic-v2
-const CACHE_NAME = 'flow-planner-dynamic-v2';
+// Version: dynamic-v3
+const CACHE_NAME = 'flow-planner-dynamic-v3';
 
 const STATIC_ASSETS = [
     '/index.html',
@@ -112,15 +112,21 @@ self.addEventListener('notificationclick', (event) => {
 
     event.waitUntil(
         self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-            // If a window is already open, focus it
+            // If a window is already open, focus it and optionally navigate to pomodoro
             for (const client of clientList) {
                 if (client.url && 'focus' in client) {
-                    return client.focus();
+                    client.focus();
+                    if (event.notification.tag === 'pomodoro-live' || event.notification.title.includes('Pomodoro') || event.notification.title.includes('Focus') || event.notification.title.includes('Break')) {
+                        if ('navigate' in client) {
+                            client.navigate(new URL('/#pomodoro', self.location.origin).href);
+                        }
+                    }
+                    return;
                 }
             }
-            // Otherwise open a new window
+            // Otherwise open a new window pointing to the pomodoro tab
             if (self.clients.openWindow) {
-                return self.clients.openWindow('/');
+                return self.clients.openWindow('/#pomodoro');
             }
         })
     );

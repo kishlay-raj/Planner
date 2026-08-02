@@ -16,7 +16,7 @@ import './PlannerScreen.css';
 
 const emptyObject = {};
 
-function PlannerScreen({ sessionHistory = [] }) {
+function PlannerScreen({ sessionHistory = [], onStartPomodoro }) {
   const { currentUser, loginWithGoogle, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const [migrating, setMigrating] = useState(false);
@@ -318,6 +318,7 @@ function PlannerScreen({ sessionHistory = [] }) {
               onTaskUpdate={handleTaskUpdate}
               onTaskSchedule={handleTaskSchedule}
               selectedDate={selectedDate}
+              onStartPomodoro={onStartPomodoro}
             />
           </Paper>
         </Grid>

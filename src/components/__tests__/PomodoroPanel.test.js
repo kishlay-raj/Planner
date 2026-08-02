@@ -28,6 +28,7 @@ window.AudioContext = jest.fn(() => mockAudioContext);
 describe('PomodoroPanel Component', () => {
     const mockOnModeChange = jest.fn();
     const mockSetStats = jest.fn();
+    const mockHandleSettingChange = jest.fn();
 
     const defaultSettings = {
         pomodoro: 30,
@@ -42,7 +43,9 @@ describe('PomodoroPanel Component', () => {
         tickingVolume: 50,
         tickingSound: 'Ticking Slow',
         hourFormat: '24-hour',
-        darkMode: false
+        darkMode: false,
+        enableInactivityAlert: true,
+        inactivityAlertInterval: 15
     };
 
     beforeEach(() => {
@@ -62,11 +65,11 @@ describe('PomodoroPanel Component', () => {
     });
 
     // Stateful wrapper so mode-switches and timer ticks work as real parent would do
-    const renderPanel = () => {
+    const renderPanel = (overrideProps = {}) => {
         const Wrapper = () => {
-            const [currentMode, setCurrentMode] = React.useState('pomodoro');
-            const [currentTimeLeft, setCurrentTimeLeft] = React.useState(defaultSettings.pomodoro * 60);
-            const [currentIsActive, setCurrentIsActive] = React.useState(false);
+            const [currentMode, setCurrentMode] = React.useState(overrideProps.mode || 'pomodoro');
+            const [currentTimeLeft, setCurrentTimeLeft] = React.useState(overrideProps.timeLeft ?? defaultSettings.pomodoro * 60);
+            const [currentIsActive, setCurrentIsActive] = React.useState(overrideProps.isActive || false);
 
             // Simulate the countdown that lives in the real parent
             React.useEffect(() => {
@@ -101,10 +104,11 @@ describe('PomodoroPanel Component', () => {
                         handleSetMode(next);
                     }}
                     settings={defaultSettings}
-                    handleSettingChange={jest.fn()}
+                    handleSettingChange={mockHandleSettingChange}
                     workType="deep"
                     onWorkTypeToggle={jest.fn()}
                     sessionHistory={[]}
+                    {...overrideProps}
                 />
             );
         };
@@ -172,5 +176,19 @@ describe('PomodoroPanel Component', () => {
         expect(screen.getByText('Timer Settings')).toBeInTheDocument();
         // Check that the Focus timer setting is rendered
         expect(screen.getByText('🍅 Focus')).toBeInTheDocument();
+        // Check that Focus Inactivity Alert settings are rendered
+        expect(screen.getByText('Focus Inactivity Alert')).toBeInTheDocument();
+        expect(screen.getByText('⏱️ Inactivity Alert After')).toBeInTheDocument();
+    });
+
+    it('uses 1-minute step quanta for Short Break and 5-minute step for Pomodoro', () => {
+        renderPanel({ mode: 'shortBreak', timeLeft: 300 }); // 05:00
+
+        // Click increment ▲
+        const upBtn = screen.getByText('▲');
+        fireEvent.click(upBtn);
+
+        // In shortBreak, adding 1 min changes setting to 6 mins
+        expect(mockHandleSettingChange).toHaveBeenCalledWith('shortBreak', 6);
     });
 });

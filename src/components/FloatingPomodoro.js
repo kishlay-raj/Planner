@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Box, Paper, Typography, IconButton, Zoom, Chip, Tooltip } from '@mui/material';
-import { PlayArrow, Pause, Psychology, WorkOutline, OpenInNew } from '@mui/icons-material';
+import { PlayArrow, Pause, Psychology, WorkOutline, OpenInNew, VolumeUp, VolumeOff } from '@mui/icons-material';
 
 const FloatingPomodoro = ({
     timeLeft,
@@ -12,12 +12,16 @@ const FloatingPomodoro = ({
     onWorkTypeToggle,
     primaryTask = '',
     secondaryTask = '',
+    allowedWebsites = '',
     onOpenWidget,
     widgetOpen = false,
     onSkip,
     onUpdatePrimaryTask,
-    onUpdateSecondaryTask
+    onUpdateSecondaryTask,
+    alarmVolume = 50,
+    onVolumeChange
 }) => {
+    const prevVolRef = useRef(alarmVolume || 50);
     const [editingPrimary, setEditingPrimary] = React.useState(false);
     const [localPrimary, setLocalPrimary] = React.useState(primaryTask);
     const [editingSecondary, setEditingSecondary] = React.useState(false);
@@ -194,6 +198,31 @@ const FloatingPomodoro = ({
                             </Typography>
                         )
                     )}
+                    {/* Allowed websites */}
+                    {allowedWebsites && (
+                        <Typography
+                            variant="caption"
+                            sx={{
+                                opacity: 0.9,
+                                fontSize: '0.65rem',
+                                fontWeight: 600,
+                                maxWidth: '100%',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                bgcolor: 'rgba(255,255,255,0.12)',
+                                borderRadius: 1,
+                                px: 1, py: 0.25,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.5,
+                                mt: 0.5
+                            }}
+                        >
+                            <span>🌐</span>
+                            <span>Allowed: {allowedWebsites.split(/[\s,]+/).filter(Boolean).join(', ')}</span>
+                        </Typography>
+                    )}
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'center' }}>
@@ -221,6 +250,28 @@ const FloatingPomodoro = ({
                                     }}
                                 >
                                     <span style={{ fontSize: '0.9rem' }}>⏭</span>
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                        {onVolumeChange && (
+                            <Tooltip title={alarmVolume > 0 ? `Sound: ${alarmVolume}% (Click to Mute)` : "Unmute Sound"}>
+                                <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                        if (alarmVolume > 0) {
+                                            prevVolRef.current = alarmVolume;
+                                            onVolumeChange(0);
+                                        } else {
+                                            onVolumeChange(prevVolRef.current || 50);
+                                        }
+                                    }}
+                                    sx={{
+                                        color: 'white',
+                                        bgcolor: alarmVolume === 0 ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255,255,255,0.2)',
+                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                                    }}
+                                >
+                                    {alarmVolume > 0 ? <VolumeUp sx={{ fontSize: '0.9rem' }} /> : <VolumeOff sx={{ fontSize: '0.9rem', color: '#f87171' }} />}
                                 </IconButton>
                             </Tooltip>
                         )}

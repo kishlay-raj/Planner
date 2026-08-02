@@ -1,0 +1,7 @@
+feat: enhance pomodoro widget and notifications
+
+- Add quick notes and subtask management to pop-out widget.
+- Implement native macOS persistent system notifications via ServiceWorker.
+- Limit session history view to 3 items with expand toggle.
+- Add live progress tracking for inactivity alerts in settings.
+- Update PiP widget dimensions and responsiveness.

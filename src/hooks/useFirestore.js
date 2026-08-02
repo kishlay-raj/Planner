@@ -21,6 +21,8 @@ export function useFirestore(location, initialValue, merge = true) {
     const isTyping = useRef(false);
 
     useEffect(() => {
+        setLoading(true);
+        setData(initialValue);
         // Fallback to localStorage if no user
         if (!currentUser) {
             const localKey = Array.isArray(location) ? location.join('_') : location;
@@ -72,6 +74,7 @@ export function useFirestore(location, initialValue, merge = true) {
                 }
             } else {
                 // Document doesn't exist, use initial value
+                setData(initialValue);
             }
             setLoading(false);
         }, (error) => {
