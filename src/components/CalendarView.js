@@ -55,7 +55,7 @@ function CalendarView({ scheduledTasks, onTaskSchedule, onTaskCreate, onTaskUpda
     })
     .map(task => ({
       id: task.id,
-      title: `${task.name} (${task.duration}min) - ${format(new Date(task.scheduledTime), 'HH:mm')} to ${format(new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000), 'HH:mm')}`,
+      title: task.name || task.text || '(No name)',
       start: new Date(task.scheduledTime),
       end: new Date(new Date(task.scheduledTime).getTime() + task.duration * 60000),
       resource: task,

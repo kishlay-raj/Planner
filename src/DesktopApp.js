@@ -816,6 +816,7 @@ function DesktopApp() {
           {/* PiP Widget Portal — renders into the always-on-top mini window */}
           {pipWindow && createPortal(
             <PomodoroWidgetContent
+              pipWindow={pipWindow}
               timeLeft={timeLeft}
               isActive={isActive}
               mode={mode}

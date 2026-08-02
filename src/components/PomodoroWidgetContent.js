@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
  * Uses inline styles because the PiP window is a separate document context.
  */
 export default function PomodoroWidgetContent({
+  pipWindow,
   timeLeft,
   isActive,
   mode,
@@ -26,6 +27,7 @@ export default function PomodoroWidgetContent({
   const [editingSecondary, setEditingSecondary] = useState(false);
   const [localSecondary, setLocalSecondary] = useState(secondaryTask);
   const [quickInput, setQuickInput] = useState('');
+  const [isDetailed, setIsDetailed] = useState(true);
 
   useEffect(() => { setLocalPrimary(primaryTask); }, [primaryTask]);
   useEffect(() => { setLocalSecondary(secondaryTask); }, [secondaryTask]);
@@ -79,6 +81,18 @@ export default function PomodoroWidgetContent({
     longBreak:  { bg: 'linear-gradient(135deg, #457ca3 0%, #386a8e 100%)', label: '🛌 LONG BREAK' },
   };
   const config = modeConfig[mode] || modeConfig.pomodoro;
+
+  const handleToggleDetailed = () => {
+    const nextState = !isDetailed;
+    setIsDetailed(nextState);
+    if (pipWindow && pipWindow.resizeTo) {
+      if (nextState) {
+        pipWindow.resizeTo(330, 270);
+      } else {
+        pipWindow.resizeTo(280, 150);
+      }
+    }
+  };
 
   return (
     <div style={{
@@ -149,6 +163,23 @@ export default function PomodoroWidgetContent({
               ⏭
             </button>
           )}
+
+          <button
+            onClick={handleToggleDetailed}
+            title={isDetailed ? "Simple View" : "Detailed View"}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'rgba(255,255,255,0.7)',
+              fontSize: '18px',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              WebkitAppRegion: 'no-drag',
+              marginLeft: '4px',
+            }}
+          >
+            {isDetailed ? '▲' : '▼'}
+          </button>
         </div>
       </div>
 
@@ -256,7 +287,7 @@ export default function PomodoroWidgetContent({
       </div>
 
       {/* Subtasks List */}
-      {pomodoroSubtasks.length > 0 && (
+      {isDetailed && pomodoroSubtasks.length > 0 && (
         <div style={{
           width: '100%', display: 'flex', flexDirection: 'column', gap: '3px',
           maxHeight: '70px', overflowY: 'auto', paddingRight: '2px'
@@ -295,7 +326,7 @@ export default function PomodoroWidgetContent({
       )}
 
       {/* Notes Display */}
-      {pomodoroNotes && (
+      {isDetailed && pomodoroNotes && (
         <div style={{
           width: '100%', background: 'rgba(0,0,0,0.15)', borderRadius: '4px',
           padding: '4px 8px', fontSize: '10px', fontStyle: 'italic',
@@ -308,9 +339,10 @@ export default function PomodoroWidgetContent({
       )}
 
       {/* Quick Input Field */}
-      <input
-        type="text"
-        placeholder="Add note or start with '-' for subtask..."
+      {isDetailed && (
+        <input
+          type="text"
+          placeholder="Add note or start with '-' for subtask..."
         value={quickInput}
         onChange={(e) => setQuickInput(e.target.value)}
         onKeyDown={handleQuickInputSubmit}
@@ -328,6 +360,7 @@ export default function PomodoroWidgetContent({
           WebkitAppRegion: 'no-drag'
         }}
       />
+      )}
     </div>
   );
 }
