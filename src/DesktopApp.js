@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ThemeProvider, createTheme, CssBaseline, Box, Typography, IconButton, Tooltip, Popover, Link, Snackbar, Alert, Button } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
@@ -18,6 +18,7 @@ import EisenhowerMatrix from './components/EisenhowerMatrix';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import { useFirestore } from './hooks/useFirestore';
+import useTaskNotifications from './hooks/useTaskNotifications';
 import './App.css';
 import FloatingPomodoro from './components/FloatingPomodoro';
 import AntiGravityHabitTracker from './components/AntiGravityHabitTracker';
@@ -382,7 +383,7 @@ function DesktopApp() {
   };
 
   // --- NATIVE DESKTOP / MACOS NOTIFICATION HELPER ---
-  const fireDesktopNotification = (title, body, tag = 'inactivity-focus-alert', persistent = true) => {
+  const fireDesktopNotification = useCallback((title, body, tag = 'inactivity-focus-alert', persistent = true) => {
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
 
     const notifOptions = {
@@ -407,7 +408,16 @@ function DesktopApp() {
     } else {
       try { new Notification(title, notifOptions); } catch (e) { console.warn(e); }
     }
-  };
+  }, []);
+
+  // --- TASK NOTIFICATIONS (15m and 5m warnings) ---
+  const [taskAlertMsg, setTaskAlertMsg] = useState('');
+  const [taskAlertOpen, setTaskAlertOpen] = useState(false);
+  const showAppNotification = useCallback((msg) => {
+    setTaskAlertMsg(msg);
+    setTaskAlertOpen(true);
+  }, []);
+  useTaskNotifications(tasks, fireDesktopNotification, showAppNotification);
 
   // --- INACTIVITY ALERT LOGIC ---
   useEffect(() => {
@@ -891,6 +901,24 @@ function DesktopApp() {
               <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
                 You've been active on your system for {settings.inactivityAlertInterval || 15}+ minutes without a Pomodoro timer running.
               </Typography>
+            </Alert>
+          </Snackbar>
+
+          {/* Task Upcoming Alert Snackbar */}
+          <Snackbar
+            open={taskAlertOpen}
+            autoHideDuration={10000}
+            onClose={() => setTaskAlertOpen(false)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            sx={{ mt: 6 }}
+          >
+            <Alert
+              onClose={() => setTaskAlertOpen(false)}
+              severity="info"
+              variant="filled"
+              sx={{ width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
+            >
+              {taskAlertMsg}
             </Alert>
           </Snackbar>
 

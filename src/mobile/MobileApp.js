@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse, Switch, Chip } from '@mui/material';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Box, Typography, ThemeProvider, createTheme, BottomNavigation, BottomNavigationAction, Paper, Fab, Dialog, DialogTitle, DialogContent, TextField, DialogActions, Button, List, ListItem, ListItemText, Checkbox, IconButton, CircularProgress, Divider, Alert, ToggleButton, ToggleButtonGroup, Menu, MenuItem, ListItemIcon, Collapse, Switch, Chip, Snackbar } from '@mui/material';
 import { FormatListBulleted, Add, Delete, ChevronLeft, ChevronRight, ViewWeek, CalendarViewMonth, MenuBook, Logout, EditNote, Settings as SettingsIcon, GitHub, Refresh, Restore, CalendarToday, MoreHoriz, DragIndicator, ExpandMore, ExpandLess, TrendingUp, Favorite, RocketLaunch, WarningAmber, Timer, FolderSpecial, Language, Check } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import NotesPanel from '../components/NotesPanel';
 import CalendarView from '../components/CalendarView';
 import AntiGravityHabitTracker from '../components/AntiGravityHabitTracker';
+import useTaskNotifications from '../hooks/useTaskNotifications';
 import MistakesJournal from '../components/MistakesJournal';
 import WeeklyPlanner from '../components/WeeklyPlanner';
 import ProjectManagement from '../components/ProjectManagement';
@@ -546,6 +547,14 @@ function MobileApp() {
             });
         }
     };
+
+    // --- TASK NOTIFICATIONS (15m and 5m warnings) ---
+    const [mTaskAlertMsg, setMTaskAlertMsg] = useState('');
+    const [mTaskAlertOpen, setMTaskAlertOpen] = useState(false);
+    const mShowAppNotification = useCallback((msg) => {
+        setMTaskAlertMsg(msg);
+        setMTaskAlertOpen(true);
+    }, []);
 
     const handleTaskUpdate = async (updatedTasks) => {
         const tasksToUpdate = Array.isArray(updatedTasks) ? updatedTasks : [updatedTasks];
@@ -1179,7 +1188,7 @@ function MobileApp() {
         setMNotifPermission(result);
     };
 
-    const mFireNotification = (title, body, icon = '/icon-192.png') => {
+    const mFireNotification = useCallback((title, body, icon = '/icon-192.png') => {
         if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
 
         // Always prefer SW showNotification — required for iOS PWA, also works on Android
@@ -1202,7 +1211,9 @@ function MobileApp() {
             // Desktop fallback
             try { new Notification(title, { body, icon }); } catch (_) {}
         }
-    };
+    }, []);
+
+    useTaskNotifications(tasks, mFireNotification, mShowAppNotification);
 
     useEffect(() => {
         setMLocalPrimary(mPrimaryTask || '');
@@ -1656,6 +1667,12 @@ function MobileApp() {
                                 placeholder="What's the one thing you must do?"
                                 value={mLocalPrimary}
                                 onChange={e => setMLocalPrimary(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        mSaveTasks();
+                                    }
+                                }}
                                 sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white', fontSize: '1rem', fontWeight: 600 }, '& input::placeholder': { color: 'rgba(255,255,255,0.35)' } }}
                                 InputProps={{ disableUnderline: false }}
                             />
@@ -1666,6 +1683,12 @@ function MobileApp() {
                                 placeholder="e.g. github.com, google.com"
                                 value={mLocalWebsites}
                                 onChange={e => setMLocalWebsites(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        mSaveTasks();
+                                    }
+                                }}
                                 sx={{ mb: 2.5, '& .MuiInput-underline:before': { borderColor: 'rgba(255,255,255,0.3)' }, '& .MuiInput-underline:after': { borderColor: 'white' }, input: { color: 'white', fontSize: '0.95rem' }, '& input::placeholder': { color: 'rgba(255,255,255,0.35)' } }}
                                 InputProps={{ disableUnderline: false }}
                             />
@@ -1965,6 +1988,24 @@ function MobileApp() {
                     <Button onClick={handleAddQuestion} variant="contained">Add</Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Task Upcoming Alert Snackbar */}
+            <Snackbar
+                open={mTaskAlertOpen}
+                autoHideDuration={10000}
+                onClose={() => setMTaskAlertOpen(false)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                sx={{ mt: 2 }}
+            >
+                <Alert
+                    onClose={() => setMTaskAlertOpen(false)}
+                    severity="info"
+                    variant="filled"
+                    sx={{ width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
+                >
+                    {mTaskAlertMsg}
+                </Alert>
+            </Snackbar>
         </ThemeProvider>
     );
 }

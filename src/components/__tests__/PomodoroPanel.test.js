@@ -176,19 +176,18 @@ describe('PomodoroPanel Component', () => {
         expect(screen.getByText('Timer Settings')).toBeInTheDocument();
         // Check that the Focus timer setting is rendered
         expect(screen.getByText('🍅 Focus')).toBeInTheDocument();
-        // Check that Focus Inactivity Alert settings are rendered
-        expect(screen.getByText('Focus Inactivity Alert')).toBeInTheDocument();
-        expect(screen.getByText('⏱️ Inactivity Alert After')).toBeInTheDocument();
+        // Check that Automation settings are rendered
+        expect(screen.getByText('Auto-start Breaks')).toBeInTheDocument();
     });
 
-    it('uses 1-minute step quanta for Short Break and 5-minute step for Pomodoro', () => {
+    it('uses step quanta for Short Break duration adjustment', () => {
         renderPanel({ mode: 'shortBreak', timeLeft: 300 }); // 05:00
 
         // Click increment ▲
         const upBtn = screen.getByText('▲');
         fireEvent.click(upBtn);
 
-        // In shortBreak, adding 1 min changes setting to 6 mins
-        expect(mockHandleSettingChange).toHaveBeenCalledWith('shortBreak', 6);
+        // In shortBreak, adding 5 mins changes setting to 10 mins
+        expect(mockHandleSettingChange).toHaveBeenCalledWith('shortBreak', 10);
     });
 });

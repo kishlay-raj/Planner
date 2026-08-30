@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Typography,
   Box,
@@ -743,6 +743,12 @@ function PomodoroPanel({
                 placeholder="What's the one thing you must do?"
                 value={localPrimary}
                 onChange={e => setLocalPrimary(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSaveTasks();
+                  }
+                }}
                 InputProps={{
                   disableUnderline: false,
                   style: { color: 'white', fontSize: '1rem', fontWeight: 600 }
@@ -759,6 +765,12 @@ function PomodoroPanel({
                     placeholder="Quick task to fill small gaps..."
                     value={localSecondary}
                     onChange={e => setLocalSecondary(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSaveTasks();
+                      }
+                    }}
                     InputProps={{
                       disableUnderline: false,
                       style: { color: 'white', fontSize: '0.95rem' }
@@ -776,6 +788,12 @@ function PomodoroPanel({
                 placeholder="Any specific thoughts or goals..."
                 value={localNotes}
                 onChange={e => setLocalNotes(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    handleSaveTasks();
+                  }
+                }}
                 InputProps={{
                   disableUnderline: false,
                   style: { color: 'white', fontSize: '0.9rem' }
