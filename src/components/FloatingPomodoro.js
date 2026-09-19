@@ -16,6 +16,7 @@ const FloatingPomodoro = ({
     onOpenWidget,
     widgetOpen = false,
     onSkip,
+    onStartNewPomodoro,
     onUpdatePrimaryTask,
     onUpdateSecondaryTask,
     alarmVolume = 50,
@@ -250,6 +251,21 @@ const FloatingPomodoro = ({
                                     }}
                                 >
                                     <span style={{ fontSize: '0.9rem' }}>⏭</span>
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                        {onStartNewPomodoro && (
+                            <Tooltip title="Start New Pomodoro">
+                                <IconButton
+                                    size="small"
+                                    onClick={() => onStartNewPomodoro({ startImmediately: true })}
+                                    sx={{
+                                        color: 'white',
+                                        bgcolor: 'rgba(255,255,255,0.2)',
+                                        '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                                    }}
+                                >
+                                    <span style={{ fontSize: '0.85rem' }}>🍅</span>
                                 </IconButton>
                             </Tooltip>
                         )}

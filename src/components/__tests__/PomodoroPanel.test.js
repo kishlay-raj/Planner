@@ -190,4 +190,35 @@ describe('PomodoroPanel Component', () => {
         // In shortBreak, adding 5 mins changes setting to 10 mins
         expect(mockHandleSettingChange).toHaveBeenCalledWith('shortBreak', 10);
     });
+
+    it('saves pomodoro text/notes when Enter is pressed without needing Save button', () => {
+        const mockSetPrimaryTask = jest.fn();
+        const mockSetPomodoroNotes = jest.fn();
+
+        renderPanel({
+            primaryTask: '',
+            pomodoroNotes: '',
+            setPrimaryTask: mockSetPrimaryTask,
+            setPomodoroNotes: mockSetPomodoroNotes
+        });
+
+        // Click to enter task/notes editing mode
+        const editTrigger = screen.getByText('+ Set focus tasks and notes for this session');
+        fireEvent.click(editTrigger);
+
+        expect(screen.getByText('Save')).toBeInTheDocument();
+
+        // Edit session notes
+        const notesInput = screen.getByPlaceholderText(/Any specific thoughts or goals/i);
+        fireEvent.change(notesInput, { target: { value: 'Deep focus on algorithm' } });
+
+        // Press Enter (without shift)
+        fireEvent.keyDown(notesInput, { key: 'Enter', shiftKey: false });
+
+        // Verify it saved without having to click the Save button
+        expect(mockSetPomodoroNotes).toHaveBeenCalledWith('Deep focus on algorithm');
+        // Edit mode should be closed
+        expect(screen.queryByText('Save')).not.toBeInTheDocument();
+    });
 });
+

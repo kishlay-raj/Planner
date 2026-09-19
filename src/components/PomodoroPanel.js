@@ -199,6 +199,7 @@ function PomodoroPanel({
     setPrimaryTask(localPrimary);
     setSecondaryTask(localSecondary);
     setPomodoroNotes(localNotes);
+    if (setAllowedWebsites) setAllowedWebsites(localWebsites);
     setEditingTasks(false);
   };
 
@@ -785,11 +786,11 @@ function PomodoroPanel({
                 multiline
                 minRows={2}
                 variant="standard"
-                placeholder="Any specific thoughts or goals..."
+                placeholder="Any specific thoughts or goals... (Enter to save, Shift+Enter for new line)"
                 value={localNotes}
                 onChange={e => setLocalNotes(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                  if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     handleSaveTasks();
                   }

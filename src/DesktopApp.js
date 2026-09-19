@@ -632,6 +632,27 @@ function DesktopApp() {
     setWorkType(prev => prev === 'deep' ? 'shallow' : 'deep');
   };
 
+  const handleStartNewPomodoro = ({ durationMinutes, taskName, secondaryTaskName, newWorkType, startImmediately = true } = {}) => {
+    cleanupTick();
+    setMode('pomodoro');
+    const mins = (durationMinutes !== undefined && durationMinutes !== null && Number(durationMinutes) > 0)
+      ? Number(durationMinutes)
+      : (settings.pomodoro || 30);
+    setTimeLeft(mins * 60);
+    if (taskName !== undefined) {
+      setPrimaryTask(taskName);
+    }
+    if (secondaryTaskName !== undefined) {
+      setSecondaryTask(secondaryTaskName);
+    }
+    if (newWorkType) {
+      setWorkType(newWorkType);
+    }
+    if (startImmediately) {
+      setIsActive(true);
+    }
+  };
+
   // -------------------------
 
   // Navigation Configuration State
@@ -814,6 +835,7 @@ function DesktopApp() {
             onOpenWidget={handleOpenWidget}
             widgetOpen={!!pipWindow}
             onSkip={completeTimer}
+            onStartNewPomodoro={handleStartNewPomodoro}
             onUpdatePrimaryTask={setPrimaryTask}
             onUpdateSecondaryTask={setSecondaryTask}
             alarmVolume={settings.alarmVolume}
@@ -838,6 +860,10 @@ function DesktopApp() {
               pomodoroSubtasks={pomodoroSubtasks}
               onToggle={toggleTimer}
               onSkip={completeTimer}
+              onStartNewPomodoro={handleStartNewPomodoro}
+              onWorkTypeToggle={toggleWorkType}
+              pomodoroDuration={settings.pomodoro || 30}
+              tasks={tasks}
               onUpdatePrimaryTask={setPrimaryTask}
               onUpdateSecondaryTask={setSecondaryTask}
               onUpdateNotes={setPomodoroNotes}
